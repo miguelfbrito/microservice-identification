@@ -1,17 +1,13 @@
-
+\documentclass[oneside,11pt,a4paper,footinclude=true,headinclude=true,cleardoublepage=empty]{scrbook}
 % example for dissertation.sty
-\documentclass[
   % Replace oneside by twoside if you are printing your thesis on both sides
   % of the paper, leave as is for single sided prints or for viewing on screen.
-  oneside,
   %twoside,
-  11pt, a4paper,
-  footinclude=true,
-  headinclude=true,
-  cleardoublepage=empty
-]{scrbook}
 
 \usepackage{dissertation}
+\usepackage{indentfirst}
+
+
 
 
 
@@ -70,9 +66,9 @@
 
 % Title
 \titleA{Reengenharia de aplicações \textit{web} monolíticas}
-\titleB{Second Part of Title} % (if any)
-\subtitleA{First Part of Subtitle}
-\subtitleB{Second part of Subtitle} % (if any)
+% \titleB{Second Part of Title} % (if any)
+% \subtitleA{First Part of Subtitle}
+% \subtitleB{Second part of Subtitle} % (if any)
 
 % Author
 \author{Miguel António Ferrão Brito}
@@ -98,7 +94,7 @@
 %\makeindex	   % ... or this
 
 % Define Acronyms
-%\input{sec/acronyms}
+\input{sec/3-acronyms.tex}
 %\glsaddall[types={\acronymtype}]
 
 
@@ -110,13 +106,10 @@
 	\umfrontcover	
 	\umtitlepage
 	
-
-	\import{sec/}{acknowledgements.tex}
-
-	\import{sec/}{abstract.tex}
-	
+	\import{sec/}{0-acknowledgements.tex}
+	\import{sec/}{1-abstract.tex}
 	\cleardoublepage
-	\import{sec/}{resumo.tex}
+	\import{sec/}{2-resumo.tex}
 	
 	% Summary Lists ------------------------------------
 	\tableofcontents
@@ -131,9 +124,11 @@
 	
 	\pagenumbering{arabic}
 
-	\import{sec/}{introduction.tex}
+	\import{sec/}{4-introduction.tex}
+	
+	\import{sec/}{5-context.tex}
         
-	\import{sec/}{state_of_the_art.tex}
+	\import{sec/}{6-state_of_the_art.tex}
 
 
 	% CHAPTER - Problem and Challenges ---------------
@@ -147,30 +142,30 @@
 
 	Here we have an example of inserting an image between the text paragraphs.
 	\begin{center}
-		\includegraphics[width=0.2\textwidth]{img/mei-logo-03.jpg}
+% 		\includegraphics[width=0.2\textwidth]{}
 	\end{center}
 
-	\begin{wrapfigure}{r}{0.25\textwidth}	
-		\includegraphics[width=0.2\textwidth]{img/mei-logo-03.jpg}
-	\end{wrapfigure}
+% 	\begin{wrapfigure}{r}{0.25\textwidth}	
+% 		\includegraphics[width=0.2\textwidth]{img/mei-logo-03.jpg}
+% 	\end{wrapfigure}
 	Here we have how an image can be wrapped into the text without having surronding space, and takin advantage of the space to be disposed on the side, without breaking the text readability.
 
 	This approach also benefits from the fact that the text will be related implicitly to the image on its side, although the it should be referenced on the text anyway, otherwise, it should be consulting to perceive to which paragraph the image is related to.
 
 	Here is how we place an image as floating body.
 	Take in attention that the image is displayed on the next page, because there's no more room in this page.
-	\begin{figure}
-	\begin{center}
-		\includegraphics[width=0.5\textwidth]{img/mei-logo-03.jpg}
-	\end{center}
-	\caption{caption}
-	\end{figure}
+% 	\begin{figure}
+% 	\begin{center}
+% 		\includegraphics[width=0.5\textwidth]{img/mei-logo-03.jpg}
+% 	\end{center}
+% 	\caption{caption}
+% 	\end{figure}
 
 
 
-	You can also use an image as an icon, eg.~\href{http://mei.di.uminho.pt}{\includegraphics[width=0.05\textwidth]{img/mei-logo-03.jpg}}, in the main tex.
-	Click on it to visit the website. It is also listed in the list of terms.
-	Another example of an item to appear in the term index: %\gls{um} (needs \Makeindex)
+% 	You can also use an image as an icon, eg.~\href{http://mei.di.uminho.pt}{\includegraphics[width=0.05\textwidth]{img/mei-logo-03.jpg}}, in the main tex.
+% 	Click on it to visit the website. It is also listed in the list of terms.
+% 	Another example of an item to appear in the term index: %\gls{um} (needs \Makeindex)
 
 	
 	% CHAPTER - Contribution -------------------------

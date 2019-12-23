@@ -1,0 +1,44 @@
+\chapter{Introdução}
+
+
+    Nos últimos anos, houve um despoletar da discussão e utilização do paradigma arquitetural de micro-serviços resultante da crescente necessidade em melhorar a modularidade e flexibilidade dos sistemas de \textit{software}, acompanhada do ganho de popularidade da cultura  de \textit{DevOps} e das infraestruturas na \textit{cloud} \citep{most_prominent_areas_of_research_ms_hamzehloui}. 
+    
+    Uma vez que este paradigma é relativamente recente, a literatura é reduzida, havendo a necessidade de nova pesquisa para procurar entender e formalizar processos associados aos micro-serviços \citep{most_prominent_areas_of_research_ms_hamzehloui}.
+    
+    % TODO: adicionar transição 
+    
+    Esta dissertação tem como intenção explorar os principais desafios relativos à transição de um sistema monolítico para uma arquitetura orientada a micro-serviços e propor uma metodologia que auxilie nesse processo, reduzindo o tempo e investimento necessário nos processos de \textit{refactoring}.
+    
+    
+    
+\section{Motivação}
+
+    Um dos principais problemas no decorrer do desenvolvimento de uma aplicação de larga escala, passa pela crescente dificuldade na adição de nova funcionalidade e manutenção da atual dado o aumento de complexidade do projeto em questão \citep{buildingmaintainablesoftware2016}. Deste incremento de complexidade, tipicamente funcionalidades semelhantes começam a espalhar-se por diferentes partes da aplicação, tornando a identificação e correção de \textit{bugs} mais difícil. De forma a lidar com este problema, em ambientes monolíticos, criam-se abstrações para garantir uma maior coesão entre funcionalidades semelhantes, procurando seguir o princípio da responsabilidade única - juntar coisas que se alteram pela mesma razão, e separar as que se alteram por razões diferentes \citep{newman2015microservices}. No entanto, as próprias abstrações com a sua evolução aumentam no seu grau de complexidade, altura em que as vantagens da arquitetura monolítica serão inferior às suas desvantagens \citep{monolithtomicroserviceschen17}.
+    
+    \todo{Deixar tudo explicito, de onde vem a dificuldade?}
+
+    Da dificuldade em gerir a complexidade inerente da evolução dos projetos de grande escala surgem os micro-serviços: pequenos serviços autónomos e coesos, com o objetivo de garantirem e manterem o princípio da responsabilidade única. Os micro-serviços permitem uma maior heterogeneidade de tecnologias, sendo possível cada micro-serviço ser programado numa linguagem diferente desde que haja uma tecnologia comum para comunicação. Permite também um outro conjunto de vantagens, desde uma melhor resiliência, dado o pequeno tamanho dos serviços, uma escalabilidade mais eficiente, sendo os recursos focados na funcionalidade que realmente necessita, facilidade de desenvolvimento uma vez que uma equipa poderá estar focada apenas no seu micro-serviço não tendo que se preocupar com o panorama geral de funcionamento da aplicação.
+    
+    % TODO : Dar um fim a este parágrafo, transição mais suave
+    \todo{Falar sobre a transição, dar contexto}
+
+    O processo de transição de uma aplicação monolítica para uma arquitetura de micro-serviços mais modular é um processo custoso, trabalhoso e cheio de desafios únicos a cada sistema \citep{migratinglegacykazanavicius19}, que poderá obrigar à paragem do desenvolvimento do produto atual. Desta forma, uma metodologia e uma ferramenta que auxilie na identificação e extração de módulos coesos será essencial em diminuir o custo e tempo investido nesta transição, quer por identificar de forma automática possíveis micro-serviços, quer por realizar a maioria do \textit{refactoring} para que a proposta extraída seja funcional. 
+
+    No entanto, será sempre importante que haja um papel ativo das entidades responsáveis na avaliação dos micro-serviços propostos, tendo em mente o modelo de negócio e requisitos funcionais.
+    
+
+\section{Questões de Investigação}
+
+
+
+
+
+
+
+
+    % This dissertation describing the  Master's work developed in the context of 
+    % \gls{mei} held at \gls{di}, \gls{um}.\\
+    % Context,\\ motivation,\\ main aims	(objectives) \\ research hypothesis, (optional) \\ paper organization!
+    
+    % Here is the first reference to an acronym: \gls{qos}.\\
+    % And now the same acronym is referenced by the second time: 	\gls{qos} !
