@@ -6,9 +6,11 @@
 
 \usepackage{dissertation}
 \usepackage{indentfirst}
-
-
-
+\usepackage{pgfgantt}
+\usepackage{floatrow}
+\usepackage[graphicx]{realboxes}
+\usepackage{rotating}
+\usepackage[portuguese]{babel}
 
 
 % ACRONYMS -----------------------------------------------------
@@ -65,7 +67,10 @@
 % ----------------------------------------------------------------
 
 % Title
-\titleA{Reengenharia de aplicações \textit{web} monolíticas}
+
+% \titleA{Reengenharia de aplicações \textit{web} monolíticas }
+\titleA{Extração de micro-serviços de aplicações}
+\titleB{\textit{web} monolíticas}
 % \titleB{Second Part of Title} % (if any)
 % \subtitleA{First Part of Subtitle}
 % \subtitleB{Second part of Subtitle} % (if any)
@@ -74,8 +79,8 @@
 \author{Miguel António Ferrão Brito}
 
 % Supervisor(s)
-\supervisor{The Supervisor of the thesis}
-\cosupervisor{The cosupervisor of the thesis}
+\supervisor{Prof. Dr. Jácome Cunha}
+\cosupervisor{Prof. Dr. João Saraiva}
 
 % University (uncomment if you need to change default values)
 % \def\school{Escola de Engenharia}
@@ -106,18 +111,18 @@
 	\umfrontcover	
 	\umtitlepage
 	
-	\import{sec/}{0-acknowledgements.tex}
-	\import{sec/}{1-abstract.tex}
-	\cleardoublepage
-	\import{sec/}{2-resumo.tex}
+	%\import{sec/}{0-acknowledgements.tex}
+	%\import{sec/}{1-abstract.tex}
+	%\cleardoublepage
+	%\import{sec/}{2-resumo.tex}
 	
 	% Summary Lists ------------------------------------
 	\tableofcontents
 	\listoffigures
-	\listoftables
+%	\listoftables
 	%\lstlistoflistings
 	%\listofabbreviations
-	\printglossary[type=\acronymtype]
+% 	\printglossary[type=\acronymtype]
 	\clearpage
 	\thispagestyle{empty}
 
@@ -130,67 +135,33 @@
         
 	\import{sec/}{6-state_of_the_art.tex}
 
-
-	% CHAPTER - Problem and Challenges ---------------
-	\chapter{The problem and its challenges}
-	         The problem and its challenges.
-
-	\section{Proposed Approach - solution}
-	In this section, it is presented various ways to display an image.
-     \subsection{System Architecture}
-     A block diagram of the planned system / approach
-
-	Here we have an example of inserting an image between the text paragraphs.
-	\begin{center}
-% 		\includegraphics[width=0.2\textwidth]{}
-	\end{center}
-
-% 	\begin{wrapfigure}{r}{0.25\textwidth}	
-% 		\includegraphics[width=0.2\textwidth]{img/mei-logo-03.jpg}
-% 	\end{wrapfigure}
-	Here we have how an image can be wrapped into the text without having surronding space, and takin advantage of the space to be disposed on the side, without breaking the text readability.
-
-	This approach also benefits from the fact that the text will be related implicitly to the image on its side, although the it should be referenced on the text anyway, otherwise, it should be consulting to perceive to which paragraph the image is related to.
-
-	Here is how we place an image as floating body.
-	Take in attention that the image is displayed on the next page, because there's no more room in this page.
-% 	\begin{figure}
-% 	\begin{center}
-% 		\includegraphics[width=0.5\textwidth]{img/mei-logo-03.jpg}
-% 	\end{center}
-% 	\caption{caption}
-% 	\end{figure}
+	\import{sec/}{7-problem.tex}
 
 
 
-% 	You can also use an image as an icon, eg.~\href{http://mei.di.uminho.pt}{\includegraphics[width=0.05\textwidth]{img/mei-logo-03.jpg}}, in the main tex.
-% 	Click on it to visit the website. It is also listed in the list of terms.
-% 	Another example of an item to appear in the term index: %\gls{um} (needs \Makeindex)
-
-	
 	% CHAPTER - Contribution -------------------------
-	\chapter{Development}
+%	\chapter{Development}
 		
-	\section{Decisions}
-    \section{Implementation}
-    \section{Outcomes}
-    Main result(s) and their scientific evidence
-	\section{Summary}
+%	\section{Decisions}
+%    \section{Implementation}
+%    \section{Outcomes}
+%    Main result(s) and their scientific evidence
+%	\section{Summary}
 
 
 	% CHAPTER - Application -------------------------
-	\chapter{Case Studies / Experiments}
-		Application of main result (examples and case studies)
-	\section{Experiment setup}
-    \section{Results}
-    \section{Discussion}
-	\section{Summary}
-
-	% CHAPTER - Conclusion/Future Work --------------
-	\chapter{Conclusion}
-		Conclusions and future work.
-	\section{Conclusions}
-	\section{Prospect for future work}
+%	\chapter{Case Studies / Experiments}
+%		Application of main result (examples and case studies)
+%	\section{Experiment setup}
+%    \section{Results}
+%    \section{Discussion}
+%	\section{Summary}
+%
+%	% CHAPTER - Conclusion/Future Work --------------
+%	\chapter{Conclusion}
+%		Conclusions and future work.
+%	\section{Conclusions}
+%	\section{Prospect for future work}
 			
 	\bookmarksetup{startatroot} % Ends last part.
 	\addtocontents{toc}{\bigskip} % Making the table of contents look good.
@@ -204,29 +175,29 @@
 	
 	
 	% APPENDIX --------------------------------------
-	\umappendix{Appendix}
+%	\umappendix{Appendix}
 	
 	% Add appendix chapters
-	\chapter{Support material}
-	Auxiliary results which are not main-stream; or
+%	\chapter{Support material}
+%	Auxiliary results which are not main-stream; or
 
 	%\chapter{Details of results}
-	Details of results whose length would compromise readability of main text; or
+%	Details of results whose length would compromise readability of main text; or
 
 	%\chapter{Listings}
-	Specifications and Code Listings: should this be the case; or
+%	Specifications and Code Listings: should this be the case; or
 
 	%\chapter{Tooling}
-	Tooling: Should this be the case.
+%	Tooling: Should this be the case.
 
 	%Anyone using \Latex\ should consider having a look at \TUG,
 	%the \tug{\TeX\ Users Group}
 
 
 	% Back Cover -------------------------------------------
-	\umbackcover{
-	NB: place here information about funding, FCT project, etc in which the work is framed. Leave empty otherwise.
-	}
+%	\umbackcover{
+%	NB: place here information about funding, FCT project, etc in which the work is framed. Leave empty otherwise.
+%	}
 
 
 \end{document}
