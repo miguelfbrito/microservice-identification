@@ -1,0 +1,31 @@
+
+initializiing
+
+NODE: 
+CompilationUnit(imports=[], package=PackageDeclaration(annotations=None, documentation=None, modifiers=None, name=com.gaussic.controller), types=[ClassDeclaration(annotations=[Annotation(element=None, name=Entity)], body=[MethodDeclaration(annotations=[], body=[ReturnStatement(expression=Literal(postfix_operators=[], prefix_operators=[], qualifier=None, selectors=[], value=10), label=None)], documentation=None, modifiers={'public'}, name=something, parameters=[], return_type=BasicType(dimensions=[], name=int), throws=None, type_parameters=None)], documentation=None, extends=ReferenceType(arguments=None, dimensions=[], name=SomeStuff, sub_type=None), implements=None, modifiers={'public'}, name=TestAController, type_parameters=None)])
+
+NODE: 
+PackageDeclaration(annotations=None, documentation=None, modifiers=None, name=com.gaussic.controller)
+
+NODE: 
+ClassDeclaration(annotations=[Annotation(element=None, name=Entity)], body=[MethodDeclaration(annotations=[], body=[ReturnStatement(expression=Literal(postfix_operators=[], prefix_operators=[], qualifier=None, selectors=[], value=10), label=None)], documentation=None, modifiers={'public'}, name=something, parameters=[], return_type=BasicType(dimensions=[], name=int), throws=None, type_parameters=None)], documentation=None, extends=ReferenceType(arguments=None, dimensions=[], name=SomeStuff, sub_type=None), implements=None, modifiers={'public'}, name=TestAController, type_parameters=None)
+Class declaration foundTestAController
+
+NODE: 
+Annotation(element=None, name=Entity)
+
+NODE: 
+MethodDeclaration(annotations=[], body=[ReturnStatement(expression=Literal(postfix_operators=[], prefix_operators=[], qualifier=None, selectors=[], value=10), label=None)], documentation=None, modifiers={'public'}, name=something, parameters=[], return_type=BasicType(dimensions=[], name=int), throws=None, type_parameters=None)
+
+NODE: 
+BasicType(dimensions=[], name=int)
+
+NODE: 
+ReturnStatement(expression=Literal(postfix_operators=[], prefix_operators=[], qualifier=None, selectors=[], value=10), label=None)
+
+NODE: 
+Literal(postfix_operators=[], prefix_operators=[], qualifier=None, selectors=[], value=10)
+
+NODE: 
+ReferenceType(arguments=None, dimensions=[], name=SomeStuff, sub_type=None)
+This is a reference type ReferenceType(arguments=None, dimensions=[], name=SomeStuff, sub_type=None)

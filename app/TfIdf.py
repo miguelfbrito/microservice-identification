@@ -38,13 +38,14 @@ files = FileUtils.search_java_files(directory)
 index = 0
 dict = {}
 for f in files:
-    print(f"File{index} {str(f)}")
+    print(f"\n\nFile{index} {str(f)}")
 
     with open(f, 'r') as reader:
         dict[index] = {}
         dict[index]["file"] = f
         curr_text = reader.read()
         dict[index]["text"] = FileUtils.clear_java_words(curr_text)
+        print(dict[index]["text"])
 
     index += 1
 
@@ -59,6 +60,6 @@ def print_stuff(o1, o2):
     print("\n")
 
 
-print_stuff(dict.get(0), dict.get(1))
-print_stuff(dict.get(1), dict.get(3))  # 0.28595 pré-limpeza
-print_stuff(dict.get(1), dict.get(2))  # 0.28595 pré-limpeza
+# print_stuff(dict.get(0), dict.get(1))
+# print_stuff(dict.get(1), dict.get(3))  # 0.28595 pré-limpeza
+# print_stuff(dict.get(1), dict.get(2))  # 0.28595 pré-limpeza

@@ -20,15 +20,21 @@ class FileUtils:
             "new", "null", "package", "private", "protected", "public",
             "return", "short", "static", "strictfp", "super", "switch",
             "synchronized", "this", "throw", "throws", "transient", "true",
-            "try", "void", "volatile", "while"
+            "try", "void", "volatile", "while", "repository", "annotation", "string", "int",
+            "gaussic", "controller", "map", "request", "entity", "method", "integer", "system", "out", "println", "springframework", "beans",
+            "com", "request", "mapping", "value", "autowired"
         }
         # stopwords = {'public', 'int', 'string',
         #              'private', 'void', 'boolean', 'return', 'import', 'package'}
 
         resultwords = []
-        for word in re.split("\W+", string):
+        uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()
+        words = re.split("\W+", uncamel_words)
+        for word in words:
             if word.lower() not in stopwords:
-                resultwords.append(word)
+                # Temporary
+                if word.lower() not in stopwords:
+                    resultwords.append(word)
 
         return (' ').join(resultwords)
     # TODO next:
