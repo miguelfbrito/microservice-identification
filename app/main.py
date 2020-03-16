@@ -1,5 +1,9 @@
 from FileUtils import FileUtils
 from ClassVisitor import ClassVisitor
+
+
+import re
+import LDA as lda
 import javalang
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -8,23 +12,39 @@ import matplotlib.pyplot as plt
 def read_files(files):
     read_files = {}
     for f in files:
-        print(f"Reading {str(f)}")
 
         with open(f, 'r') as reader:
-            read_files[str(f)] = reader.read()
+            matches = re.search(r"\/(?P<class_name>\w*)\.java", str(f))
+            class_name = matches.groupdict()['class_name']
+            read_files[class_name] = {}
+            read_files[class_name]["fullpath"] = str(f)
+            read_files[class_name]["text"] = reader.read()
+
     return read_files
 
 
 def create_graph_dependencies(visitors, graph):
+    """ Based on the AST counts the number of connections and sets them as weight on a graph """
+
     for visitor in visitors:
         for dependency in visitor.get_dependencies():
-            graph.add_edge(visitor.get_class_name(), dependency, weight=2)
+            if visitor.get_class_name() == dependency:
+                continue
+
+            weight = 1
+            curr_edge_weight = graph.get_edge_data(
+                visitor.get_class_name(), dependency)
+            if curr_edge_weight:
+                weight = curr_edge_weight["weight"] + 1
+
+            graph.add_edge(visitor.get_class_name(),
+                           dependency, weight=weight)
+
     return graph
 
 
 def clean_irrelevant_dependencies(visitors, graph):
     classes = [visitor.get_class_name() for visitor in visitors]
-    graph = create_graph_dependencies(visitors, graph)
     nodes = list(graph.nodes)
 
     # Iterate over nodes and remove the ones not present in classes
@@ -37,17 +57,20 @@ def clean_irrelevant_dependencies(visitors, graph):
 
 
 def parse_files_to_ast(read_files):
-    visitors = []
+    class_visitors = []
     graph = nx.DiGraph()
-    for _, text in read_files.items():
-        tree = javalang.parse.parse(text)
+
+    index = 0
+    for values in read_files.values():
+        tree = javalang.parse.parse(values["text"])
+        # print(tree)
 
         visitor = ClassVisitor()
         for _, node in tree:
             visitor.visit(node)
 
-        visitors.append(visitor)
-    return visitors, graph
+        class_visitors.append(visitor)
+    return class_visitors, graph
 
 
 def draw_graph(graph):
@@ -64,6 +87,16 @@ def draw_graph(graph):
     plt.show()
 
 
+def apply_lda_to_files(text):
+
+    lda.apply_lda_to_text(text)
+
+    # pairs_edges = graph.edges()
+    # print(pairs_edges)
+    # for source, target in pairs_edges:
+    #     print(source + "  " + target)
+
+
 def main():
     # 1. Get all java files from the project
     project_name = 'simple-blog'
@@ -71,15 +104,18 @@ def main():
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     files = FileUtils.search_java_files(directory)
 
-    # Read the files
-    read_text = read_files(files)
+    files = read_files(files)
 
     # Parse every file with javalang and create an AST
-    visitors, graph = parse_files_to_ast(read_text)
+    class_visitors, graph = parse_files_to_ast(files)
+    # class_visitors = []
 
-    clean_irrelevant_dependencies(visitors, graph)
+    graph = create_graph_dependencies(class_visitors, graph)
 
-    draw_graph(graph)
+    clean_irrelevant_dependencies(class_visitors, graph)
+
+    for cla in class_visitors:
+        apply_lda_to_files(cla.get_merge_of_strings())
 
 
 main()

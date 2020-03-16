@@ -29,7 +29,7 @@ class FileUtils:
 
         resultwords = []
         uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()
-        words = re.split("\W+", uncamel_words)
+        words = re.split(r"\W+", uncamel_words)
         for word in words:
             if word.lower() not in stopwords:
                 # Temporary
@@ -37,6 +37,3 @@ class FileUtils:
                     resultwords.append(word)
 
         return (' ').join(resultwords)
-    # TODO next:
-    #    - ler os ficheiros
-    #    - para cada par aplicar o tfidf
