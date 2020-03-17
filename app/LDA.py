@@ -4,6 +4,7 @@ from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
 from FileUtils import FileUtils
 import gensim
+import logging
 
 
 def apply_lda_to_text(text):
@@ -16,14 +17,10 @@ def apply_lda_to_text(text):
     # Create p_stemmer of class PorterStemmer
     p_stemmer = PorterStemmer()
 
-    # create sample documents
-    doc_a = "Brocolli is good to eat. My brother likes to eat good brocolli, but not my mother."
-    doc_b = "My mother spends a lot of time driving my brother around to baseball practice."
-
+    # Clean text based on java stop words
     text = FileUtils.clear_java_words(text)
 
-    print()
-    print(text)
+    logging.info(text)
 
     # compile sample documents into a list
     doc_set = [text]
@@ -57,4 +54,4 @@ def apply_lda_to_text(text):
     ldamodel = gensim.models.ldamodel.LdaModel(
         corpus, num_topics=1, id2word=dictionary, passes=20)
 
-    print(ldamodel.print_topics(num_topics=1, num_words=4))
+    print(ldamodel.print_topics(num_topics=1, num_words=3))

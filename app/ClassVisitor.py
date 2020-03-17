@@ -1,4 +1,5 @@
 from multipledispatch import dispatch
+import logging
 import javalang
 
 
@@ -15,45 +16,48 @@ class ClassVisitor:
     @dispatch(javalang.tree.InterfaceDeclaration)
     def visit(self, type):
         self.class_name = type.name
+        logging.info("Visiting interface declaration: " + str(type.name))
 
     @dispatch(javalang.tree.ReferenceType)
     def visit(self, type):
         IGNORED_REFERENCE_TYPES = ["String", "Integer"]
         if type.name not in IGNORED_REFERENCE_TYPES:
             self.dependencies.append(str(type.name))
+            logging.info("Visiting reference type: " + str(type.name))
 
     @dispatch(javalang.tree.ClassDeclaration)
     def visit(self, type):
         self.class_name = type.name
+        logging.info("Visiting class declaration: " + str(type.name))
 
     @dispatch(javalang.tree.FormalParameter)
     def visit(self, type):
         self.formal_parameters.append(str(type.name))
-        # print("Found formal parameter: " + str(type.name))
+        logging.info("Visiting formal parameter: " + str(type.name))
         pass
 
     @dispatch(javalang.tree.Literal)
     def visit(self, type):
         self.literals.append(str(type.value))
-        # print("Found literal: " + str(type.value))
+        logging.info("Visiting literal: " + str(type.value))
         pass
 
     @dispatch(javalang.tree.MethodDeclaration)
     def visit(self, type):
         self.methods.append(str(type.name))
-        # print("Found method declaration: " + str(type.name))
+        logging.info("Visiting method declaration: " + str(type.name))
 
     # Difference to VariableDeclarator?
     @dispatch(javalang.tree.FieldDeclaration)
     def visit(self, type):
         # self.variables.append(type)
-        # print("Found field declaration: " + str(type.name))
+        # print("Visiting field declaration: " + str(type.name))
         pass
 
     @dispatch(javalang.tree.VariableDeclarator)
     def visit(self, type):
         self.variables.append(str(type.name))
-        # print("Found variable declaration: " + str(type.name))
+        logging.info("Visiting variable declaration: " + str(type.name))
 
     @dispatch(object)
     def visit(self, type):

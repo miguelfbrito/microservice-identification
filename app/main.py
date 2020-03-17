@@ -4,6 +4,7 @@ from ClassVisitor import ClassVisitor
 
 import re
 import LDA as lda
+import logging
 import javalang
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -60,8 +61,8 @@ def parse_files_to_ast(read_files):
     class_visitors = []
     graph = nx.DiGraph()
 
-    index = 0
     for values in read_files.values():
+        logging.info(f"Parsing file ${values['fullpath']}")
         tree = javalang.parse.parse(values["text"])
         # print(tree)
 
@@ -98,9 +99,14 @@ def apply_lda_to_files(text):
 
 
 def main():
-    # 1. Get all java files from the project
-    project_name = 'simple-blog'
-    # project_name = 'monomusiccorp'
+
+    logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
+                        format="%(asctime)s:%(levelname)s: %(message)s")
+    # Also prints the logs to stdout
+    # logging.getLogger().addHandler(logging.StreamHandler())
+
+    # project_name = 'simple-blog'
+    project_name = 'monomusiccorp'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     files = FileUtils.search_java_files(directory)
 
@@ -115,7 +121,14 @@ def main():
     clean_irrelevant_dependencies(class_visitors, graph)
 
     for cla in class_visitors:
-        apply_lda_to_files(cla.get_merge_of_strings())
+        print(f"Applying LDA to ${cla.get_class_name()}")
+
+        try:
+            apply_lda_to_files(cla.get_merge_of_strings())
+        except ValueError:
+            logging.warning(
+                "Failed to process a file. It probably contains annotations that the parser is not prepared to handle (eg. @interface)")
+            pass
 
 
 main()
