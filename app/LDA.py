@@ -54,4 +54,4 @@ def apply_lda_to_text(text):
     ldamodel = gensim.models.ldamodel.LdaModel(
         corpus, num_topics=1, id2word=dictionary, passes=20)
 
-    print(ldamodel.print_topics(num_topics=1, num_words=3))
+    return ldamodel.print_topics(num_topics=1, num_words=3)
