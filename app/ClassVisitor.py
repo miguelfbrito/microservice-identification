@@ -12,6 +12,14 @@ class ClassVisitor:
         self.methods = []
         self.formal_parameters = []
         self.literals = []
+        self.comments = []
+
+        self.lda = None
+
+    @dispatch(javalang.tree.InterfaceDeclaration)
+    def visit(self, type):
+        self.class_name = type.name
+        logging.info("Visiting interface declaration: " + str(type.name))
 
     @dispatch(javalang.tree.InterfaceDeclaration)
     def visit(self, type):
@@ -21,14 +29,27 @@ class ClassVisitor:
     @dispatch(javalang.tree.ReferenceType)
     def visit(self, type):
         IGNORED_REFERENCE_TYPES = ["String", "Integer"]
+
         if type.name not in IGNORED_REFERENCE_TYPES:
-            self.dependencies.append(str(type.name))
+            self.dependencies.append((str(type.name), 'NORMAL'))
             logging.info("Visiting reference type: " + str(type.name))
+            logging.info(str(type))
 
     @dispatch(javalang.tree.ClassDeclaration)
     def visit(self, type):
         self.class_name = type.name
+        extends = type.extends
+        implements = type.implements
         logging.info("Visiting class declaration: " + str(type.name))
+        logging.info("-> extends: " + str(extends))
+        logging.info("-> implements: " + str(implements))
+
+        if extends:
+            self.dependencies.append((str(extends.name), 'EXTENDS'))
+
+        if implements:
+            for imp in implements:
+                self.dependencies.append((str(imp.name), 'IMPLEMENTS'))
 
     @dispatch(javalang.tree.FormalParameter)
     def visit(self, type):
@@ -64,7 +85,7 @@ class ClassVisitor:
         pass
 
     def get_merge_of_strings(self):
-        weight_class = 50
+        weight_class = 1
         string = self.dependencies + self.variables + \
             self.methods + self.formal_parameters + self.literals
         string = " ".join(string) + weight_class * (" " + self.class_name)
@@ -84,3 +105,9 @@ class ClassVisitor:
 
     def get_literals(self):
         return self.literals
+
+    def set_lda(self, lda):
+        self.lda = lda
+
+    def get_lda(self):
+        return self.lda

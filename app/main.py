@@ -21,10 +21,11 @@ def read_files(files):
 
         with open(f, 'r') as reader:
             matches = re.search(r"\/(?P<class_name>\w*)\.java", str(f))
-            class_name = matches.groupdict()['class_name']
-            read_files[class_name] = {}
-            read_files[class_name]["fullpath"] = str(f)
-            read_files[class_name]["text"] = reader.read()
+            if matches:
+                class_name = matches.groupdict()['class_name']
+                read_files[class_name] = {}
+                read_files[class_name]["fullpath"] = str(f)
+                read_files[class_name]["text"] = reader.read()
 
     return read_files
 
@@ -37,15 +38,21 @@ def create_graph_dependencies(visitors, graph):
             if visitor.get_class_name() == dependency:
                 continue
 
-            curr_edge_weight = graph.get_edge_data(
+            edge_data = graph.get_edge_data(
                 visitor.get_class_name(), dependency)
-            if curr_edge_weight:
-                print(curr_edge_weight)
+
+            node_name = dependency[0]
+            dependency_type = dependency[1]
+
+            if edge_data:
+                print(edge_data)
                 graph[visitor.get_class_name(
-                )][dependency]['weight'] = curr_edge_weight["weight"] + 1
+                )][dependency]['weight'] = edge_data["weight"] + 1
+                # We will not update the type because the first time we set it, it will be set for
+                # EXTENDS or IMPLEMENTs which have higher priority
             else:
                 graph.add_edge(visitor.get_class_name(),
-                               dependency, weight=1)
+                               node_name, weight=1, dependency_type=dependency_type)
 
     return graph
 
@@ -81,7 +88,7 @@ def parse_files_to_ast(read_files):
 
 
 def draw_graph(graph):
-    pos = nx.spring_layout(graph)
+    pos = nx.spring_layout(graph, weight='weight')
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
     new_labels = dict(map(lambda x: ((x[0], x[1]), str(
