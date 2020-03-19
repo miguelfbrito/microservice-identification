@@ -85,7 +85,7 @@ def draw_graph(graph):
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
     new_labels = dict(map(lambda x: ((x[0], x[1]), str(
-        x[2]['weight'])), graph.edges(data=True)))
+        x[2]['weight']) if x[2]['weight'] > 0 else ""), graph.edges(data=True)))
 
     nx.draw_networkx(graph, pos=pos, node_size=200,
                      font_size=9)
