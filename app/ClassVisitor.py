@@ -1,20 +1,34 @@
 from multipledispatch import dispatch
+import math
 import logging
 import javalang
+
+from FileUtils import FileUtils
 
 
 class ClassVisitor:
 
     def __init__(self):
-        self.class_name = ""
+        # TODO: refactor some of the lists to sets
+        self.class_name = "FailedToLoadClassName"
+        self.annotations = []
         self.dependencies = []
         self.variables = []
         self.methods = []
         self.formal_parameters = []
         self.literals = []
         self.comments = []
-
         self.lda = None
+
+    def extract_comments(self, string):
+        self.comments = FileUtils.extract_comments_from_string(string)
+
+    @dispatch(javalang.tree.Annotation)
+    def visit(self, type):
+        ignored_annotations = ["Override"]
+        if type.name not in ignored_annotations:
+            self.annotations.append(str(type.name))
+            logging.info("Visiting class annotation: " + str(type.name))
 
     @dispatch(javalang.tree.InterfaceDeclaration)
     def visit(self, type):
@@ -28,9 +42,9 @@ class ClassVisitor:
 
     @dispatch(javalang.tree.ReferenceType)
     def visit(self, type):
-        IGNORED_REFERENCE_TYPES = ["String", "Integer"]
+        ignored_reference_types = ["String", "Integer"]
 
-        if type.name not in IGNORED_REFERENCE_TYPES:
+        if type.name not in ignored_reference_types:
             self.dependencies.append((str(type.name), 'NORMAL'))
             logging.info("Visiting reference type: " + str(type.name))
             logging.info(str(type))
@@ -80,16 +94,34 @@ class ClassVisitor:
         self.variables.append(str(type.name))
         logging.info("Visiting variable declaration: " + str(type.name))
 
+    def total_words(self, array):
+        return sum(len(sentence.split()) for sentence in array)
+
+    def get_merge_of_strings(self):
+
+        dependencies = [dep[0] for dep in self.dependencies]
+        len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
+            self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1
+
+        class_name_weight = math.ceil(
+            len_words * 0.5) if "Entity" in self.annotations else 1
+        dependencies_weight = 1
+        variables_weight = 1
+        methods_weight = 1
+        formal_parameters_weight = 1
+        literals_weight = 1
+        comments_weight = 1
+
+        string = dependencies_weight * dependencies + variables_weight * self.variables + methods_weight * \
+            self.methods + formal_parameters_weight * self.formal_parameters + \
+            literals_weight * self.literals + comments_weight * self.comments
+
+        return " ".join(string) + class_name_weight * (" " + self.class_name)
+
+    # Wildcard match
     @dispatch(object)
     def visit(self, type):
         pass
-
-    def get_merge_of_strings(self):
-        weight_class = 1
-        string = self.dependencies + self.variables + \
-            self.methods + self.formal_parameters + self.literals
-        string = " ".join(string) + weight_class * (" " + self.class_name)
-        return string
 
     def get_class_name(self):
         return self.class_name

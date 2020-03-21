@@ -9,6 +9,23 @@ class FileUtils:
         return list(Path(directory).rglob('*.java'))
 
     @staticmethod
+    def extract_comments_from_string(string):
+        slash_comment_pattern = r"\/\/\s?(.*)"
+        asterisk_comment_pattern = r"(?s)/\*.*?\*/"
+
+        asterisk_comments = re.findall(asterisk_comment_pattern, string)
+        comments = []
+        for comment in asterisk_comments:
+            comment = re.sub(r"[/*\n\s]", " ", comment)
+            comment = re.sub(r"\s{1,}", " ", comment).strip()
+            comments.append(comment)
+
+        slash_comments = re.findall(slash_comment_pattern, string)
+        comments = comments + slash_comments
+
+        return comments
+
+    @staticmethod
     def clear_java_words(string):
 
         stopwords = {
@@ -24,8 +41,6 @@ class FileUtils:
             "gaussic", "controller", "map", "request", "entity", "method", "integer", "system", "out", "println", "springframework", "beans",
             "com", "request", "mapping", "value", "autowired"
         }
-        # stopwords = {'public', 'int', 'string',
-        #              'private', 'void', 'boolean', 'return', 'import', 'package'}
 
         resultwords = []
         uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()

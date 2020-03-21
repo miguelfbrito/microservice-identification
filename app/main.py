@@ -47,12 +47,12 @@ def create_graph_dependencies(visitors, graph):
             if edge_data:
                 print(edge_data)
                 graph[visitor.get_class_name(
-                )][dependency]['weight'] = edge_data["weight"] + 1
+                )][dependency]['weight_structural'] = edge_data["weight_structural"] + 1
                 # We will not update the type because the first time we set it, it will be set for
                 # EXTENDS or IMPLEMENTs which have higher priority
             else:
                 graph.add_edge(visitor.get_class_name(),
-                               node_name, weight=1, dependency_type=dependency_type)
+                               node_name, weight_structural=1, dependency_type=dependency_type)
 
     return graph
 
@@ -77,9 +77,10 @@ def parse_files_to_ast(read_files):
     for values in read_files.values():
         logging.info(f"Parsing file ${values['fullpath']}")
         tree = javalang.parse.parse(values["text"])
-        # print(tree)
 
         visitor = ClassVisitor()
+        visitor.extract_comments(values["text"])
+
         for _, node in tree:
             visitor.visit(node)
 
@@ -88,11 +89,11 @@ def parse_files_to_ast(read_files):
 
 
 def draw_graph(graph):
-    pos = nx.spring_layout(graph, weight='weight')
+    pos = nx.spring_layout(graph, weight='weight_tf_idf')
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-    new_labels = dict(map(lambda x: ((x[0], x[1]), str(
-        x[2]['weight']) if x[2]['weight'] > 0 else ""), graph.edges(data=True)))
+    new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
+        x[2]['weight_tf_idf']) if x[2]['weight_tf_idf'] > 0 else ""), graph.edges(data=True)))
 
     nx.draw_networkx(graph, pos=pos, node_size=200,
                      font_size=9)
@@ -124,8 +125,6 @@ def apply_tfidf_to_connections(graph, class_visitors):
 
     edges = graph.edges()
 
-    print(edges)
-
     tf_idf = TfIdf()
     for src, dst in edges:
         src_text = ""
@@ -143,7 +142,7 @@ def apply_tfidf_to_connections(graph, class_visitors):
         similarity = round(tf_idf.apply_tfidf_to_pair(src_text, dst_text), 2)
         print(f"${similarity} ${src} - ${dst}")
 
-        graph[src][dst]['weight'] = similarity
+        graph[src][dst]['weight_tf_idf'] = similarity
 
 
 def heaviest(graph):
@@ -158,8 +157,10 @@ def main():
     # Enables printing of logs to stdout as well
     # logging.getLogger().addHandler(logging.StreamHandler())
 
-    # project_name = 'simple-blog'
-    project_name = 'monomusiccorp'
+    # project_name = 'test'
+    project_name = 'simple-blog'
+    # project_name = 'spring-petclinic'
+    # project_name = 'monomusiccorp'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     files = FileUtils.search_java_files(directory)
 
@@ -171,7 +172,7 @@ def main():
 
     clean_irrelevant_dependencies(class_visitors, graph)
 
-    # apply_lda_to_classes(class_visitors)
+    apply_lda_to_classes(class_visitors)
 
     # cluster = nx.clustering(graph, weight='weight')
     # print(cluster)
