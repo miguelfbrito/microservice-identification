@@ -3,8 +3,28 @@ from stop_words import get_stop_words
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
 from FileUtils import FileUtils
+import re
 import gensim
 import logging
+
+
+def best_match_between_topics(topics_a, topics_b):
+
+    # print(topics_a)
+    # print(topics_b)
+    # print()
+
+    word_match = []
+    if not topics_a or not topics_b:
+        return None
+
+    for a in topics_a:
+        for b in topics_b:
+            if a[1] == b[1]:
+                word_match.append(((float(a[0]) + float(b[0]) / 2), a[1]))
+
+    word_match.sort(key=lambda x: x[0], reverse=True)
+    return word_match[0] if len(word_match) > 0 else None
 
 
 def apply_lda_to_text(text):
@@ -54,4 +74,10 @@ def apply_lda_to_text(text):
     ldamodel = gensim.models.ldamodel.LdaModel(
         corpus, num_topics=1, id2word=dictionary, passes=20)
 
-    return ldamodel.print_topics(num_topics=1, num_words=3)
+    # return ldamodel.show_topics(num_topics=1, num_words=3)
+
+    topics = ldamodel.show_topics(
+        num_topics=1, num_words=6)
+
+    pattern = r"(\d\.?\d*)\*\"(\w*)\""
+    return re.findall(pattern, topics[0][1])

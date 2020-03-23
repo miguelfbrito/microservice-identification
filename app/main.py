@@ -15,6 +15,11 @@ from random import randint
 from random import random
 
 
+WEIGHT_LDA = "weight_lda"
+WEIGHT_TF_IDF = "weight_tf_idf"
+WEIGHT_STRUCTURAL = "weight_structural"
+
+
 def read_files(files):
     read_files = {}
     for f in files:
@@ -35,24 +40,26 @@ def create_graph_dependencies(visitors, graph):
 
     for visitor in visitors:
         for dependency in visitor.get_dependencies():
-            if visitor.get_class_name() == dependency:
+
+            dependency_name = dependency[0]
+            dependency_type = dependency[1]
+
+            # In order to remove duplicates (when a class references itself)
+            if visitor.get_class_name() == dependency_name:
                 continue
 
             edge_data = graph.get_edge_data(
-                visitor.get_class_name(), dependency)
+                visitor.get_class_name(), dependency_name)
 
-            node_name = dependency[0]
-            dependency_type = dependency[1]
-
+            print(edge_data)
             if edge_data:
-                print(edge_data)
                 graph[visitor.get_class_name(
-                )][dependency]['weight_structural'] = edge_data["weight_structural"] + 1
+                )][dependency_name][WEIGHT_STRUCTURAL] = edge_data[WEIGHT_STRUCTURAL] + 1
                 # We will not update the type because the first time we set it, it will be set for
                 # EXTENDS or IMPLEMENTs which have higher priority
             else:
                 graph.add_edge(visitor.get_class_name(),
-                               node_name, weight_structural=1, dependency_type=dependency_type)
+                               dependency_name, weight_structural=1, dependency_type=dependency_type)
 
     return graph
 
@@ -76,7 +83,10 @@ def parse_files_to_ast(read_files):
 
     for values in read_files.values():
         logging.info(f"Parsing file ${values['fullpath']}")
-        tree = javalang.parse.parse(values["text"])
+        try:
+            tree = javalang.parse.parse(values["text"])
+        except javalang.parser.JavaSyntaxError:
+            logging.error(f"Failed to parse file: {values['fullpath']}")
 
         visitor = ClassVisitor()
         visitor.extract_comments(values["text"])
@@ -88,18 +98,30 @@ def parse_files_to_ast(read_files):
     return class_visitors, graph
 
 
-def draw_graph(graph):
+def calculate_absolute_weights(graph):
     pos = nx.spring_layout(graph, weight='weight_tf_idf')
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
+def draw_graph(graph, weight_type):
+
+    # for src, dst in graph.edges():
+    #     edge_data = graph.get_edge_data(src, dst)
+    #     if edge_data and edge_data[weight_type] < 0.3:
+    #         graph[src][dst][weight_type] = 0
+
+    calculate_absolute_weights(graph)
+
+    pos = nx.spring_layout(graph, weight=weight_type)
+
+    # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
     new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-        x[2]['weight_tf_idf']) if x[2]['weight_tf_idf'] > 0 else ""), graph.edges(data=True)))
+        x[2][weight_type]) if x[2][weight_type] > 0 else ""), graph.edges(data=True)))
 
     nx.draw_networkx(graph, pos=pos, node_size=200,
                      font_size=9)
     nx.draw_networkx_edge_labels(
         graph, pos, edge_labels=new_labels, font_size=8)
-    nx.draw_networkx_edges(graph, pos, width=1, arrows=False)
+    nx.draw_networkx_edges(graph, pos, width=0, arrows=False)
 
     plt.show()
 
@@ -107,18 +129,34 @@ def draw_graph(graph):
 def apply_lda_to_classes(class_visitors):
 
     for cla in class_visitors:
-        print(f"Applying LDA to ${cla.get_class_name()}")
+        logging.info(f"Applying LDA to ${cla.get_class_name()}")
 
         try:
             lda_result = lda.apply_lda_to_text(cla.get_merge_of_strings())
 
             # For now we only care about documents evaluated individually, hence the 0.
-            cla.set_lda(lda_result[0])
-            print(cla.get_lda())
+            cla.set_lda(lda_result)
+            logging.info(cla.get_lda())
 
         except ValueError:
             logging.warning(
                 "Failed to process a file. It probably contains annotations that the parser is not prepared to handle (eg. @interface)")
+
+
+def get_src_dst_visitor(src, dst, class_visitors):
+    # TODO: Optimize by changing this list to a dict and doing O(1) accesses
+    src_visitor = None
+    dst_visitor = None
+
+    for visitor in class_visitors:
+        class_name = visitor.get_class_name()
+        if src == class_name:
+            src_visitor = visitor
+
+        if dst == class_name:
+            dst_visitor = visitor
+
+    return src_visitor, dst_visitor
 
 
 def apply_tfidf_to_connections(graph, class_visitors):
@@ -130,24 +168,30 @@ def apply_tfidf_to_connections(graph, class_visitors):
         src_text = ""
         dst_text = ""
 
-        # TODO: Optimize by changing this list to a dict and doing O(1) accesses
-        for visitor in class_visitors:
-            class_name = visitor.get_class_name()
-            if src == class_name:
-                src_text = class_name
-
-            if dst == class_name:
-                dst_text = class_name
+        src_text, dst_text = get_src_dst_visitor(src, dst, class_visitors)
+        src_text = src_text.get_merge_of_strings()
+        dst_text = dst_text.get_merge_of_strings()
 
         similarity = round(tf_idf.apply_tfidf_to_pair(src_text, dst_text), 2)
         print(f"${similarity} ${src} - ${dst}")
 
-        graph[src][dst]['weight_tf_idf'] = similarity
+        graph[src][dst][WEIGHT_TF_IDF] = similarity
 
 
-def heaviest(graph):
-    u, v, w = max(graph.edges(data='weight'), key=itemgetter(2))
-    return (u, v)
+def set_edge_weight_by_identified_topics(graph, class_visitors):
+
+    for src, dst in graph.edges():
+        src_visitor, dst_visitor = get_src_dst_visitor(
+            src, dst, class_visitors)
+
+        # print(
+        #     f"{src_visitor.get_class_name()} - {dst_visitor.get_class_name()}")
+        best_match = lda.best_match_between_topics(
+            src_visitor.get_lda(), dst_visitor.get_lda())
+        logging.info(f"Best match {best_match}")
+
+        graph[src][dst][WEIGHT_LDA] = round(
+            best_match[0], 2) if best_match else 0
 
 
 def main():
@@ -158,8 +202,10 @@ def main():
     # logging.getLogger().addHandler(logging.StreamHandler())
 
     # project_name = 'test'
-    project_name = 'simple-blog'
+    # project_name = 'simple-blog'
     # project_name = 'spring-petclinic'
+    project_name = 'spring-boot-admin/spring-boot-admin-server'
+    # project_name = 'BroadleafCommerce'
     # project_name = 'monomusiccorp'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     files = FileUtils.search_java_files(directory)
@@ -173,30 +219,10 @@ def main():
     clean_irrelevant_dependencies(class_visitors, graph)
 
     apply_lda_to_classes(class_visitors)
+    set_edge_weight_by_identified_topics(graph, class_visitors)
 
-    # cluster = nx.clustering(graph, weight='weight')
-    # print(cluster)
-
-    apply_tfidf_to_connections(graph, class_visitors)
-
-    draw_graph(graph)
-
-    # Girvan Newman #1
-    # communities_generator = nx.algorithms.community.girvan_newman(graph)
-    # top_level_communities = next(communities_generator)
-    # next_level_communities = next(communities_generator)
-    # girvan = sorted(map(sorted, next_level_communities))
-    # print(girvan)
-    # print(len(girvan))
-
-    # Girvan Newman #2
-    # edges = graph.edges()
-    # nx.set_edge_attributes(graph, {(u, v): v for u, v in edges}, 'weight')
-    # comp = nx.algorithms.community.centrality.girvan_newman(
-    #     graph, most_valuable_edge=heaviest)
-    # girv = tuple(sorted(c) for c in next(comp))
-    # print(girv)
-    # print(len(girv))
+    # apply_tfidf_to_connections(graph, class_visitors)
+    draw_graph(graph, WEIGHT_LDA)
 
 
 main()
