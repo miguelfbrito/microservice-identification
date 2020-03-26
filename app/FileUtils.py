@@ -42,6 +42,9 @@ class FileUtils:
     @staticmethod
     def clear_java_words(string):
 
+        if isinstance(string, list):
+            string = string[0]
+
         stopwords = {
             "abstract", "assert", "boolean",
             "break", "byte", "case", "catch", "char", "class", "const",
@@ -53,14 +56,14 @@ class FileUtils:
             "synchronized", "this", "throw", "throws", "transient", "true",
             "try", "void", "volatile", "while", "repository", "annotation", "string", "int",
             "gaussic", "controller", "map", "request", "entity", "method", "integer", "system", "out", "println", "springframework", "beans",
-            "com", "request", "mapping", "value", "autowired", "list", "hash", "set", "test", "id", "date", "spring", "mvc", "test", "mock", "except"
+            "com", "request", "mapping", "value", "autowired", "list", "hash", "set", "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl"
         }
 
         resultwords = []
         uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()
         words = re.split(r"\W+", uncamel_words)
         for word in words:
-            if word.lower() not in stopwords and word.isalpha():
+            if word.isalpha() and word.lower() not in stopwords and len(word) > 2:
                 resultwords.append(word)
 
         return (' ').join(resultwords)

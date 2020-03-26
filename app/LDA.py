@@ -6,6 +6,7 @@ from FileUtils import FileUtils
 import re
 import gensim
 import logging
+import pyLDAvis.gensim
 
 
 def best_match_between_topics(topics_a, topics_b):
@@ -27,7 +28,7 @@ def best_match_between_topics(topics_a, topics_b):
     return word_match[0] if len(word_match) > 0 else None
 
 
-def apply_lda_to_text(text):
+def apply_lda_to_text(docs):
 
     tokenizer = RegexpTokenizer(r'\w+')
 
@@ -38,12 +39,14 @@ def apply_lda_to_text(text):
     p_stemmer = PorterStemmer()
 
     # Clean text based on java stop words
-    text = FileUtils.clear_java_words(text)
+    docs = [FileUtils.clear_java_words(doc) for doc in docs]
 
-    logging.info(text)
+    print(len(docs))
+
+    logging.info(docs)
 
     # compile sample documents into a list
-    doc_set = [text]
+    doc_set = docs
 
     # list for tokenized documents in loop
     texts = []
@@ -72,9 +75,11 @@ def apply_lda_to_text(text):
 
     # generate LDA model
     ldamodel = gensim.models.ldamodel.LdaModel(
-        corpus, num_topics=1, id2word=dictionary, passes=20)
+        corpus, num_topics=5, id2word=dictionary, passes=20)
 
-    # return ldamodel.show_topics(num_topics=1, num_words=3)
+    # print(ldamodel.show_topics())
+    # data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
+    # pyLDAvis.show(data)
 
     topics = ldamodel.show_topics(
         num_topics=1, num_words=6)

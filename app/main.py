@@ -18,6 +18,7 @@ from random import random
 WEIGHT_LDA = "weight_lda"
 WEIGHT_TF_IDF = "weight_tf_idf"
 WEIGHT_STRUCTURAL = "weight_structural"
+WEIGHT_ABSOLUTE = "weight_absolute"
 
 
 def read_files(files):
@@ -99,9 +100,20 @@ def parse_files_to_ast(read_files):
 
 
 def calculate_absolute_weights(graph):
-    pos = nx.spring_layout(graph, weight='weight_tf_idf')
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
+    for src, dst in graph.edges():
+        edge_data = graph[src][dst]
+
+        # If the dependency is of type EXTENDS or IMPLEMENTS (less common than NORMAL)
+        if edge_data["dependency_type"] != "NORMAL":
+            edge_data[WEIGHT_ABSOLUTE] = 1
+        else:
+            edge_data[WEIGHT_ABSOLUTE] = edge_data[WEIGHT_TF_IDF]
+
+        print(f"-> {edge_data}")
+
+
 def draw_graph(graph, weight_type):
 
     # for src, dst in graph.edges():
@@ -126,21 +138,28 @@ def draw_graph(graph, weight_type):
     plt.show()
 
 
-def apply_lda_to_classes(class_visitors):
+def apply_lda_to_classes(class_visitors, all=True):
 
-    for cla in class_visitors:
-        logging.info(f"Applying LDA to ${cla.get_class_name()}")
+    # Apply lda all classes
+    if all:
+        docs = ([[cla.get_merge_of_strings()] for cla in class_visitors])
+        lda_result = lda.apply_lda_to_text(docs)
 
-        try:
-            lda_result = lda.apply_lda_to_text(cla.get_merge_of_strings())
+    else:
+        # Apply lda individually
+        for cla in class_visitors:
+            logging.info(f"Applying LDA to ${cla.get_class_name()}")
 
-            # For now we only care about documents evaluated individually, hence the 0.
-            cla.set_lda(lda_result)
-            logging.info(cla.get_lda())
+            try:
+                lda_result = lda.apply_lda_to_text(cla.get_merge_of_strings())
 
-        except ValueError:
-            logging.warning(
-                "Failed to process a file. It probably contains annotations that the parser is not prepared to handle (eg. @interface)")
+                # For now we only care about documents evaluated individually, hence the 0.
+                cla.set_lda(lda_result)
+                logging.info(cla.get_lda())
+
+            except ValueError:
+                logging.warning(
+                    "Failed to process a file. It probably contains annotations that the parser is not prepared to handle (eg. @interface)")
 
 
 def get_src_dst_visitor(src, dst, class_visitors):
@@ -203,11 +222,12 @@ def main():
 
     # project_name = 'test'
     # project_name = 'simple-blog'
-    # project_name = 'spring-petclinic'
-    project_name = 'spring-boot-admin/spring-boot-admin-server'
-    # project_name = 'BroadleafCommerce'
+    project_name = 'spring-petclinic'
+    # project_name = 'spring-boot-admin/spring-boot-admin-server'
+    # project_name = 'BroadleafCommerce/core/broadleaf-framework'  # 727 classes
     # project_name = 'monomusiccorp'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
+    # directory_test = '/home/mbrito/git/thesis/app'
     files = FileUtils.search_java_files(directory)
 
     files = read_files(files)
@@ -221,7 +241,7 @@ def main():
     apply_lda_to_classes(class_visitors)
     set_edge_weight_by_identified_topics(graph, class_visitors)
 
-    # apply_tfidf_to_connections(graph, class_visitors)
+    draw_graph(graph, WEIGHT_ABSOLUTE)
     draw_graph(graph, WEIGHT_LDA)
 
 
