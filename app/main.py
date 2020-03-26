@@ -238,11 +238,21 @@ def main():
 
     clean_irrelevant_dependencies(class_visitors, graph)
 
-    apply_lda_to_classes(class_visitors)
-    set_edge_weight_by_identified_topics(graph, class_visitors)
+    # Method 1. TF-IDF
+    apply_tfidf_to_connections(graph, class_visitors)
+
+    # Method 2. LDA
+    # apply_lda_to_classes(class_visitors)
+    # set_edge_weight_by_identified_topics(graph, class_visitors)
+
+    # We are looking for the maximum spanning tree not the minimum!
+    # graph = nx.minimum_spanning_tree(
+    # graph.to_undirected(), weight=WEIGHT_ABSOLUTE)
+
+    graph = nx.algorithms.tree.mst.maximum_spanning_tree(
+        graph.to_undirected(), weight=WEIGHT_ABSOLUTE)
 
     draw_graph(graph, WEIGHT_ABSOLUTE)
-    draw_graph(graph, WEIGHT_LDA)
 
 
 main()
