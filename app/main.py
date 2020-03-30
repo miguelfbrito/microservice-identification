@@ -2,10 +2,14 @@ from FileUtils import FileUtils
 from ClassVisitor import ClassVisitor
 from operator import itemgetter
 from TfIdf import TfIdf
+from Clustering import Clustering
 
 import re
 import math
+import community
+import collections
 import LDA as lda
+import numpy as np
 
 import logging
 import javalang
@@ -13,12 +17,15 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from random import randint
 from random import random
+from sklearn.mixture import GaussianMixture
+from sklearn.cluster import AffinityPropagation
+from sklearn.cluster import SpectralClustering
 
 
 WEIGHT_LDA = "weight_lda"
 WEIGHT_TF_IDF = "weight_tf_idf"
 WEIGHT_STRUCTURAL = "weight_structural"
-WEIGHT_ABSOLUTE = "weight_absolute"
+WEIGHT_ABSOLUTE = "weight"
 
 
 def read_files(files):
@@ -52,7 +59,6 @@ def create_graph_dependencies(visitors, graph):
             edge_data = graph.get_edge_data(
                 visitor.get_class_name(), dependency_name)
 
-            print(edge_data)
             if edge_data:
                 graph[visitor.get_class_name(
                 )][dependency_name][WEIGHT_STRUCTURAL] = edge_data[WEIGHT_STRUCTURAL] + 1
@@ -111,17 +117,21 @@ def calculate_absolute_weights(graph):
         else:
             edge_data[WEIGHT_ABSOLUTE] = edge_data[WEIGHT_TF_IDF]
 
-        print(f"-> {edge_data}")
 
-
-def draw_graph(graph, weight_type):
+def draw_graph(graph, weight_type=WEIGHT_ABSOLUTE):
 
     # for src, dst in graph.edges():
     #     edge_data = graph.get_edge_data(src, dst)
     #     if edge_data and edge_data[weight_type] < 0.3:
     #         graph[src][dst][weight_type] = 0
 
-    calculate_absolute_weights(graph)
+    # Edges can't have a weight of 0, resulting in a divide by 0 error on the kamada_kaway_kayout calculation
+    # for u, v in graph.edges():
+    #     data = graph.get_edge_data(u, v)
+    #     if data:
+    #         if data[weight_type] == 0:
+    #             graph[u][v][weight_type] = 0.001
+    # pos = nx.kamada_kawai_layout(graph, weight=weight_type)
 
     pos = nx.spring_layout(graph, weight=weight_type)
 
@@ -129,11 +139,11 @@ def draw_graph(graph, weight_type):
     new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
         x[2][weight_type]) if x[2][weight_type] > 0 else ""), graph.edges(data=True)))
 
-    nx.draw_networkx(graph, pos=pos, node_size=200,
-                     font_size=9)
+    nx.draw_networkx(graph, pos=pos, node_size=500, alpha=0.8,
+                     font_size=10)
     nx.draw_networkx_edge_labels(
-        graph, pos, edge_labels=new_labels, font_size=8)
-    nx.draw_networkx_edges(graph, pos, width=0, arrows=False)
+        graph, pos, edge_labels=new_labels, font_size=7, alpha=0.9)
+    # nx.draw_networkx_edges(graph, pos, width=0, arrows=False)
 
     plt.show()
 
@@ -213,6 +223,65 @@ def set_edge_weight_by_identified_topics(graph, class_visitors):
             best_match[0], 2) if best_match else 0
 
 
+def test_clustering_algorithms(graph):
+    print("\nGirvan Method 1")
+    Clustering.girvan_newman(graph)
+
+    print("\nGirvan Method 2")
+    Clustering.girvan_newman_weight(graph)
+
+    print("\nKernighan Lin Bisection")
+    Clustering.kernighan_lin_bisection(graph)
+
+    print("\nGreedy_modularity_communities")
+    Clustering.greedy_modularity_communities(graph)
+
+    print("\nLabel_propagation_communities")
+    Clustering.label_propagation_communities(graph)
+
+
+def community_detection_by_affinity(graph):
+
+    X = nx.to_numpy_matrix(graph, weight=WEIGHT_ABSOLUTE)
+    print(X)
+
+    # https://stackoverflow.com/questions/49064611/how-to-find-different-groups-in-networkx-using-python
+    g = graph.to_undirected()
+    nn = len(g.nodes)
+
+    mat = np.empty((nn, nn), dtype=float)
+    mat.fill(-100.0)
+    np.fill_diagonal(mat, -0.0)
+
+    node_to_int = {node: index for index, node in enumerate(g.nodes)}
+    print(node_to_int)
+
+   # Ignoring jaccard coefficient for now
+   # preds = nx.jaccard_coefficient(g, g.edges)
+    for u, v in g.edges:
+
+        weight = (g.get_edge_data(u, v)['weight'])
+        u = node_to_int[u]
+        v = node_to_int[v]
+
+        mat[u, v] = weight
+
+    np.median(mat)
+    af = AffinityPropagation(preference=-100, affinity="precomputed")
+    lab = af.fit_predict(mat)
+    len(np.unique(lab))
+
+    partition = community.best_partition(g, weight='weight')
+    values = [partition.get(node) for node in g.nodes()]
+    counter = collections.Counter(values)
+    print(counter)
+
+    sp = nx.spring_layout(g)
+    nx.draw_networkx(g, pos=sp, edgelist=[], with_labels=True,
+                     node_size=250, font_size=8, node_color=values)
+    plt.show()
+
+
 def main():
 
     logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
@@ -229,13 +298,10 @@ def main():
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     # directory_test = '/home/mbrito/git/thesis/app'
     files = FileUtils.search_java_files(directory)
-
     files = read_files(files)
 
     class_visitors, graph = parse_files_to_ast(files)
-
     graph = create_graph_dependencies(class_visitors, graph)
-
     clean_irrelevant_dependencies(class_visitors, graph)
 
     # Method 1. TF-IDF
@@ -245,14 +311,13 @@ def main():
     # apply_lda_to_classes(class_visitors)
     # set_edge_weight_by_identified_topics(graph, class_visitors)
 
-    # We are looking for the maximum spanning tree not the minimum!
-    # graph = nx.minimum_spanning_tree(
-    # graph.to_undirected(), weight=WEIGHT_ABSOLUTE)
+    calculate_absolute_weights(graph)
 
-    graph = nx.algorithms.tree.mst.maximum_spanning_tree(
-        graph.to_undirected(), weight=WEIGHT_ABSOLUTE)
+    # Has an high impact on Girvan Newman clustering
+    # graph = nx.algorithms.tree.mst.maximum_spanning_tree(
+    #     graph.to_undirected(), weight=WEIGHT_ABSOLUTE)
 
-    draw_graph(graph, WEIGHT_ABSOLUTE)
+    community_detection_by_affinity(graph)
 
 
 main()
