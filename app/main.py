@@ -2,7 +2,9 @@ from FileUtils import FileUtils
 from ClassVisitor import ClassVisitor
 from operator import itemgetter
 from TfIdf import TfIdf
+from WeightType import WeightType
 from Clustering import Clustering
+from Graph import Graph
 
 import re
 import math
@@ -15,17 +17,12 @@ import logging
 import javalang
 import networkx as nx
 import matplotlib.pyplot as plt
-from random import randint
+
 from random import random
+from random import randint
+from itertools import cycle
 from sklearn.mixture import GaussianMixture
-from sklearn.cluster import AffinityPropagation
-from sklearn.cluster import SpectralClustering
-
-
-WEIGHT_LDA = "weight_lda"
-WEIGHT_TF_IDF = "weight_tf_idf"
-WEIGHT_STRUCTURAL = "weight_structural"
-WEIGHT_ABSOLUTE = "weight"
+from sklearn.cluster import DBSCAN, FeatureAgglomeration, AffinityPropagation
 
 
 def read_files(files):
@@ -43,53 +40,12 @@ def read_files(files):
     return read_files
 
 
-def create_graph_dependencies(visitors, graph):
-    """ Based on the AST counts the number of connections and sets them as weight on a graph """
-
-    for visitor in visitors:
-        for dependency in visitor.get_dependencies():
-
-            dependency_name = dependency[0]
-            dependency_type = dependency[1]
-
-            # In order to remove duplicates (when a class references itself)
-            if visitor.get_class_name() == dependency_name:
-                continue
-
-            edge_data = graph.get_edge_data(
-                visitor.get_class_name(), dependency_name)
-
-            if edge_data:
-                graph[visitor.get_class_name(
-                )][dependency_name][WEIGHT_STRUCTURAL] = edge_data[WEIGHT_STRUCTURAL] + 1
-                # We will not update the type because the first time we set it, it will be set for
-                # EXTENDS or IMPLEMENTs which have higher priority
-            else:
-                graph.add_edge(visitor.get_class_name(),
-                               dependency_name, weight_structural=1, dependency_type=dependency_type)
-
-    return graph
-
-
-def clean_irrelevant_dependencies(visitors, graph):
-    classes = [visitor.get_class_name() for visitor in visitors]
-    nodes = list(graph.nodes)
-
-    # Iterate over nodes and remove the ones not present in classes
-    for node in nodes:
-        try:
-            if node not in classes:
-                graph.remove_node(node)
-        except nx.exception.NetworkXError:
-            print("Node not found while removing")
-
-
 def parse_files_to_ast(read_files):
-    class_visitors = []
+    class_visitors = {}
     graph = nx.DiGraph()
 
     for values in read_files.values():
-        logging.info(f"Parsing file ${values['fullpath']}")
+        logging.info(f"Parsing file {values['fullpath']}")
         try:
             tree = javalang.parse.parse(values["text"])
         except javalang.parser.JavaSyntaxError:
@@ -101,7 +57,8 @@ def parse_files_to_ast(read_files):
         for _, node in tree:
             visitor.visit(node)
 
-        class_visitors.append(visitor)
+        print(visitor.get_class_name())
+        class_visitors[visitor.get_class_name()] = visitor
     return class_visitors, graph
 
 
@@ -113,12 +70,12 @@ def calculate_absolute_weights(graph):
 
         # If the dependency is of type EXTENDS or IMPLEMENTS (less common than NORMAL)
         if edge_data["dependency_type"] != "NORMAL":
-            edge_data[WEIGHT_ABSOLUTE] = 1
+            edge_data[WeightType.ABSOLUTE] = 1
         else:
-            edge_data[WEIGHT_ABSOLUTE] = edge_data[WEIGHT_TF_IDF]
+            edge_data[WeightType.ABSOLUTE] = edge_data[WeightType.TF_IDF]
 
 
-def draw_graph(graph, weight_type=WEIGHT_ABSOLUTE):
+def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
 
     # for src, dst in graph.edges():
     #     edge_data = graph.get_edge_data(src, dst)
@@ -158,7 +115,7 @@ def apply_lda_to_classes(class_visitors, all=True):
     else:
         # Apply lda individually
         for cla in class_visitors:
-            logging.info(f"Applying LDA to ${cla.get_class_name()}")
+            logging.info(f"Applying LDA to {cla.get_class_name()}")
 
             try:
                 lda_result = lda.apply_lda_to_text(cla.get_merge_of_strings())
@@ -194,17 +151,13 @@ def apply_tfidf_to_connections(graph, class_visitors):
 
     tf_idf = TfIdf()
     for src, dst in edges:
-        src_text = ""
-        dst_text = ""
-
-        src_text, dst_text = get_src_dst_visitor(src, dst, class_visitors)
-        src_text = src_text.get_merge_of_strings()
-        dst_text = dst_text.get_merge_of_strings()
+        src_text = class_visitors[src].get_merge_of_strings()
+        dst_text = class_visitors[dst].get_merge_of_strings()
 
         similarity = round(tf_idf.apply_tfidf_to_pair(src_text, dst_text), 2)
-        print(f"${similarity} ${src} - ${dst}")
+        logging.info(f"{similarity} {src} - {dst}")
 
-        graph[src][dst][WEIGHT_TF_IDF] = similarity
+        graph[src][dst][WeightType.TF_IDF] = similarity
 
 
 def set_edge_weight_by_identified_topics(graph, class_visitors):
@@ -219,7 +172,7 @@ def set_edge_weight_by_identified_topics(graph, class_visitors):
             src_visitor.get_lda(), dst_visitor.get_lda())
         logging.info(f"Best match {best_match}")
 
-        graph[src][dst][WEIGHT_LDA] = round(
+        graph[src][dst][WeightType.LDA] = round(
             best_match[0], 2) if best_match else 0
 
 
@@ -240,46 +193,96 @@ def test_clustering_algorithms(graph):
     Clustering.label_propagation_communities(graph)
 
 
-def community_detection_by_affinity(graph):
-
-    X = nx.to_numpy_matrix(graph, weight=WEIGHT_ABSOLUTE)
-    print(X)
-
+def prepare_matrix(graph):
     # https://stackoverflow.com/questions/49064611/how-to-find-different-groups-in-networkx-using-python
+    # X = nx.to_numpy_matrix(graph, weight=WEIGHT)
+
     g = graph.to_undirected()
     nn = len(g.nodes)
 
     mat = np.empty((nn, nn), dtype=float)
-    mat.fill(-100.0)
+    mat.fill(-50)  # -50?
     np.fill_diagonal(mat, -0.0)
 
     node_to_int = {node: index for index, node in enumerate(g.nodes)}
-    print(node_to_int)
 
-   # Ignoring jaccard coefficient for now
-   # preds = nx.jaccard_coefficient(g, g.edges)
     for u, v in g.edges:
-
         weight = (g.get_edge_data(u, v)['weight'])
         u = node_to_int[u]
         v = node_to_int[v]
 
-        mat[u, v] = weight
+        mat[u, v] = -50 * (1 - weight)
 
     np.median(mat)
-    af = AffinityPropagation(preference=-100, affinity="precomputed")
-    lab = af.fit_predict(mat)
-    len(np.unique(lab))
 
+    return mat, node_to_int
+
+
+# TODO : Investigate other methods of clustering
+# https://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster
+def community_detection_by_affinity(graph):
+
+    mat, node_to_int = prepare_matrix(graph)
+
+    af = AffinityPropagation(preference=-50)
+    labels = af.fit_predict(mat)
+
+    inv_node_to_int = {v: k for k, v in node_to_int.items()}
+
+    clusters = {}
+    for index, lab in enumerate(labels):
+        class_name = inv_node_to_int[index]
+        if lab not in clusters:
+            clusters[lab] = []
+        clusters[lab].append(class_name)
+
+    print(f"\nClusters: {clusters}")
+    print(f"Total Clusters: {len(clusters)}")
+
+    pos = nx.spring_layout(graph)
+    nx.draw_networkx(graph, pos=pos, edgelist=[], node_color=labels, with_labels=True,
+                     node_size=250, font_size=8)
+    plt.show()
+
+
+def community_detection_louvain(g):
+    g = g.to_undirected()
     partition = community.best_partition(g, weight='weight')
     values = [partition.get(node) for node in g.nodes()]
+    print(f"Values: {values} {len(values)}")
+    print("Graph")
+    print(g.nodes)
     counter = collections.Counter(values)
     print(counter)
 
+    nodes = list(g.nodes)
+    clusters = {}
+    for index, val in enumerate(values):
+        if val not in clusters:
+            clusters[val] = []
+
+        clusters[val].append(nodes[index])
+
+    print(f"Clusters: {clusters}")
+    print(f"Total Clusters: {len(clusters)}")
+    print(
+        f"Total Clusters >2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
+
     sp = nx.spring_layout(g)
-    nx.draw_networkx(g, pos=sp, edgelist=[], with_labels=True,
+    nx.draw_networkx(g, pos=sp, with_labels=True,
                      node_size=250, font_size=8, node_color=values)
     plt.show()
+
+    cluster_distribution = [len(cluster) for cluster in clusters.values()]
+    print(cluster_distribution)
+
+    return clusters
+
+    # y_pos = np.arange(len(clusters.items()))
+    # plt.bar(y_pos, cluster_distribution)
+    # plt.ylabel("Cluster Size")
+    # plt.xlabel("Cluster Index")
+    # plt.show()
 
 
 def main():
@@ -289,11 +292,11 @@ def main():
     # Enables printing of logs to stdout as well
     # logging.getLogger().addHandler(logging.StreamHandler())
 
-    # project_name = 'test'
     # project_name = 'simple-blog'
+    # project_name = 'spring-blog'
     project_name = 'spring-petclinic'
     # project_name = 'spring-boot-admin/spring-boot-admin-server'
-    # project_name = 'BroadleafCommerce/core/broadleaf-framework'  # 727 classes
+    # project_name = 'broadleaf-commerce/core/broadleaf-framework'  # 727 classes
     # project_name = 'monomusiccorp'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     # directory_test = '/home/mbrito/git/thesis/app'
@@ -301,8 +304,8 @@ def main():
     files = read_files(files)
 
     class_visitors, graph = parse_files_to_ast(files)
-    graph = create_graph_dependencies(class_visitors, graph)
-    clean_irrelevant_dependencies(class_visitors, graph)
+    graph = Graph.create_dependencies(class_visitors, graph)
+    Graph.clean_irrelevant_dependencies(class_visitors, graph)
 
     # Method 1. TF-IDF
     apply_tfidf_to_connections(graph, class_visitors)
@@ -313,11 +316,13 @@ def main():
 
     calculate_absolute_weights(graph)
 
+    # draw_graph(graph)
+
+    clusters = community_detection_louvain(graph)
+
+
     # Has an high impact on Girvan Newman clustering
     # graph = nx.algorithms.tree.mst.maximum_spanning_tree(
-    #     graph.to_undirected(), weight=WEIGHT_ABSOLUTE)
-
-    community_detection_by_affinity(graph)
-
-
+    #     graph.to_undirected(), weight=WeightType.ABSOLUTE)
+    # community_detection_by_affinity(graph)
 main()

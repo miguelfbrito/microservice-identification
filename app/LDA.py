@@ -70,6 +70,9 @@ def apply_lda_to_text(docs):
     # turn our tokenized documents into a id <-> term dictionary
     dictionary = corpora.Dictionary(texts)
 
+    # filter dictionary from outliers
+    dictionary.filter_extremes(no_below=3, no_above=0.8, keep_n=10000)
+
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
 
@@ -77,9 +80,9 @@ def apply_lda_to_text(docs):
     ldamodel = gensim.models.ldamodel.LdaModel(
         corpus, num_topics=5, id2word=dictionary, passes=20)
 
-    # print(ldamodel.show_topics())
-    # data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
-    # pyLDAvis.show(data)
+    print(ldamodel.show_topics())
+    data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
+    pyLDAvis.show(data)
 
     topics = ldamodel.show_topics(
         num_topics=1, num_words=6)

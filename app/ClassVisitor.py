@@ -94,6 +94,11 @@ class ClassVisitor:
         self.variables.append(str(type.name))
         logging.info("Visiting variable declaration: " + str(type.name))
 
+    @dispatch(javalang.tree.Import)
+    def visit(self, type):
+        # TODO : import static class dependencies from files
+        logging.info("Visiting import: " + str(type))
+
     def total_words(self, array):
         return sum(len(sentence.split()) for sentence in array)
 
