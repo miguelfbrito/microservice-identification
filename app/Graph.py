@@ -10,6 +10,10 @@ class Graph:
 
         for class_name, visitor in visitors.items():
 
+            if len(visitor.get_dependencies()) == 0:
+                graph.add_node(class_name)
+                continue
+
             for dependency in visitor.get_dependencies():
 
                 dependency_name = dependency[0]
