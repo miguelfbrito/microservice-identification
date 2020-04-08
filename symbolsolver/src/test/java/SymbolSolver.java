@@ -1,7 +1,11 @@
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
@@ -11,8 +15,11 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeS
 import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
 import com.github.javaparser.utils.SourceRoot;
+import javassist.expr.MethodCall;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -21,65 +28,36 @@ import java.util.Optional;
 public class SymbolSolver {
 
     @Test
-    public void parseWholeProject() {
-        //https://javaparser.org/setting-up-for-analysing-a-whole-project/
+    public void parseProject() throws IOException {
+
         String projectName = "test";
         String root = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
-        Path path = Path.of(root);
-        final ProjectRoot projectRoot = new ParserCollectionStrategy().collect(path);
+        final ProjectRoot projectRoot = new ParserCollectionStrategy().collect(Path.of(root));
 
-        List<ParseResult<CompilationUnit>> parseResults = null;
+        System.out.println(projectRoot.getSourceRoots());
+        for(SourceRoot sr : projectRoot.getSourceRoots()){
 
-        TypeSolver reflectionTypeSolver = new ReflectionTypeSolver();
-        TypeSolver typeSolver = new CombinedTypeSolver();
-        TypeSolver javaParserTypeSolver = new JavaParserTypeSolver(projectRoot.getRoot());
-        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(reflectionTypeSolver);
-        combinedTypeSolver.add(javaParserTypeSolver);
-/*
-        combinedTypeSolver.add(typeSolver);
-*/
-        JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
+            // The SymbolSolver has to receive a SourceRoot instead of a Project Root!
+            CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+            combinedTypeSolver.add(new ReflectionTypeSolver());
+            combinedTypeSolver.add(new JavaParserTypeSolver(sr.getRoot()));
+            JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
 
+            sr.getParserConfiguration().setSymbolResolver(symbolSolver);
+            List<ParseResult<CompilationUnit>> parseResults = sr.tryToParse();
 
-        for (SourceRoot sr : projectRoot.getSourceRoots()) {
-            System.out.println(sr);
-            try {
-                sr.getParserConfiguration().setSymbolResolver(symbolSolver);
-                parseResults = sr.tryToParse();
-
-                for (ParseResult<CompilationUnit> parseResult : parseResults) {
-                    Optional<CompilationUnit> result = parseResult.getResult();
-                    if (result.isPresent()) {
-                        CompilationUnit cu = result.get();
-                        System.out.println(cu);
-                        cu.findAll(AssignExpr.class).forEach(ae -> {
-                            ResolvedType resolvedType = ae.calculateResolvedType();
-                            System.out.println(ae.toString() + " is a : " + resolvedType);
+            for(ParseResult<CompilationUnit> parseResult : parseResults){
+                parseResult.getResult().ifPresent(compilationUnit -> {
+                    compilationUnit.findAll(MethodCallExpr.class).forEach(methodCall -> {
+                        // getScope() shouldn't be needed according to documentation and examples
+                        // However, took me a whole day to figure out it must be included in MethodCallExpr, works fine for simpler types.
+                        methodCall.getScope().ifPresent(rs -> {
+                            ResolvedType resolvedType = rs.calculateResolvedType();
+                            System.out.println(resolvedType);
                         });
-
-                        List<MethodCallExpr> methodCallExprs = cu.findAll(MethodCallExpr.class);
-
-                        for (MethodCallExpr mce : methodCallExprs) {
-                            String qualifiedName = mce.resolve().toString();
-                            System.out.println("\n\nField type: " + qualifiedName);
-                            System.out.println(mce.toString());
-                        }
-/*
-                        }
-                VoidVisitor<?> methodNameVisitor = new MethodNamePrinter();
-                methodNameVisitor.visit(result.get(), null);
-*/
-                    }
-
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
+                    });
+                });
             }
         }
-
-
     }
-
 }
