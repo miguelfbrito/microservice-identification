@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MyGraph<T> {
+public class MyGraph {
 
-    private Graph<T, DependencyEdge> graph;
+    private Graph<MyClass, DependencyEdge> graph;
 
     public MyGraph() {
         graph = new DirectedMultigraph<>(DependencyEdge.class);
@@ -25,19 +25,20 @@ public class MyGraph<T> {
 
     public void create(List<CompilationUnit> compilationUnits) {
         createNodes(compilationUnits);
-        createEdges(compilationUnits);
+        //createEdges(compilationUnits);
 
     }
 
     private void createNodes(List<CompilationUnit> compilationUnits) {
         ClassOrInterfaceDeclarationVisitor classOrInterfaceDeclarationVisitor = new ClassOrInterfaceDeclarationVisitor();
-        Set<T> nodes = new HashSet<>();
+        Set<ClassOrInterfaceDeclaration> nodes = new HashSet<>();
 
         for (CompilationUnit cu : compilationUnits) {
             cu.accept(classOrInterfaceDeclarationVisitor, nodes);
 
-            for (T type : nodes) {
-                graph.addVertex(type);
+            for (ClassOrInterfaceDeclaration node : nodes) {
+                MyClass myClass = new MyClass(node);
+                graph.addVertex(myClass);
             }
             nodes.clear();
         }
@@ -67,6 +68,10 @@ public class MyGraph<T> {
         }
 
 
+    }
+
+    public Graph<MyClass, DependencyEdge> getGraph() {
+        return graph;
     }
 
     public void addEdges() {
