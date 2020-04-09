@@ -1,10 +1,10 @@
 from FileUtils import FileUtils
-from ClassVisitor import ClassVisitor
+from Graph import Graph
 from operator import itemgetter
 from TfIdf import TfIdf
 from WeightType import WeightType
 from Clustering import Clustering
-from Graph import Graph
+from Visitors.ClassVisitor import ClassVisitor
 
 import re
 import math
@@ -23,6 +23,9 @@ from random import randint
 from itertools import cycle
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import DBSCAN, FeatureAgglomeration, AffinityPropagation
+
+
+parsed_files = {}
 
 
 def read_files(files):
@@ -44,21 +47,25 @@ def parse_files_to_ast(read_files):
     class_visitors = {}
     graph = nx.DiGraph()
 
-    for values in read_files.values():
+    for file_name, values in read_files.items():
         logging.info(f"Parsing file {values['fullpath']}")
         try:
             tree = javalang.parse.parse(values["text"])
+            parsed_files[file_name] = tree
         except javalang.parser.JavaSyntaxError:
             logging.error(f"Failed to parse file: {values['fullpath']}")
 
         visitor = ClassVisitor()
         visitor.extract_comments(values["text"])
 
+        print("\n\n\n------------ Class_Name " + file_name)
         for _, node in tree:
             visitor.visit(node)
+            print(node)
+            print()
 
-        print(visitor.get_class_name())
         class_visitors[visitor.get_class_name()] = visitor
+
     return class_visitors, graph
 
 
@@ -306,6 +313,7 @@ def main():
     class_visitors, graph = parse_files_to_ast(files)
     graph = Graph.create_dependencies(class_visitors, graph)
     Graph.clean_irrelevant_dependencies(class_visitors, graph)
+    original_graph = graph.copy()
 
     # Method 1. TF-IDF
     apply_tfidf_to_connections(graph, class_visitors)
