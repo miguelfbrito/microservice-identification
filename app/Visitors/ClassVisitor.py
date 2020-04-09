@@ -11,6 +11,7 @@ class ClassVisitor:
     def __init__(self):
         # TODO: refactor some of the lists to sets
         self.class_name = "FailedToLoadClassName"
+        self.package_name = "FailedToLoadPackageName"
         self.annotations = []
         self.dependencies = []
         self.variables = []
@@ -35,14 +36,14 @@ class ClassVisitor:
         self.class_name = type.name
         logging.info("Visiting interface declaration: " + str(type.name))
 
-    @dispatch(javalang.tree.InterfaceDeclaration)
+    @dispatch(javalang.tree.PackageDeclaration)
     def visit(self, type):
-        self.class_name = type.name
-        logging.info("Visiting interface declaration: " + str(type.name))
+        self.package_name = type.name
+        logging.info("Visiting package declaration: " + str(type))
 
     @dispatch(javalang.tree.ReferenceType)
     def visit(self, type):
-        ignored_reference_types = ["String", "Integer"]
+        ignored_reference_types = {"String", "Integer"}
 
         if type.name not in ignored_reference_types:
             self.dependencies.append((str(type.name), 'NORMAL'))
@@ -155,3 +156,6 @@ class ClassVisitor:
 
     def get_lda(self):
         return self.lda
+
+    def get_package_name(self):
+        return self.package_name

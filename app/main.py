@@ -45,9 +45,9 @@ def read_files(files):
 
 def parse_files_to_ast(read_files):
     class_visitors = {}
-    graph = nx.DiGraph()
 
     for file_name, values in read_files.items():
+
         logging.info(f"Parsing file {values['fullpath']}")
         try:
             tree = javalang.parse.parse(values["text"])
@@ -58,15 +58,13 @@ def parse_files_to_ast(read_files):
         visitor = ClassVisitor()
         visitor.extract_comments(values["text"])
 
-        print("\n\n\n------------ Class_Name " + file_name)
         for _, node in tree:
             visitor.visit(node)
-            print(node)
-            print()
 
+        qualified_name = f"{visitor.get_package_name()}.{visitor.get_class_name()}"
         class_visitors[visitor.get_class_name()] = visitor
 
-    return class_visitors, graph
+    return class_visitors
 
 
 def calculate_absolute_weights(graph):
@@ -259,6 +257,9 @@ def community_detection_louvain(g):
     print(f"Values: {values} {len(values)}")
     print("Graph")
     print(g.nodes)
+
+    for node in g.nodes:
+        node
     counter = collections.Counter(values)
     print(counter)
 
@@ -273,7 +274,7 @@ def community_detection_louvain(g):
     print(f"Clusters: {clusters}")
     print(f"Total Clusters: {len(clusters)}")
     print(
-        f"Total Clusters >2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
+        f"Total Clusters len>2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
 
     sp = nx.spring_layout(g)
     nx.draw_networkx(g, pos=sp, with_labels=True,
@@ -292,6 +293,15 @@ def community_detection_louvain(g):
     # plt.show()
 
 
+def visitors_to_qualified_name(visitors):
+    qualified_visitors = {}
+    for class_name, visitor in visitors.items():
+        qualified_name = f"{visitor.get_package_name()}.{class_name}"
+        qualified_visitors[qualified_name] = visitor
+
+    return qualified_visitors
+
+
 def main():
 
     logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
@@ -300,23 +310,27 @@ def main():
     # logging.getLogger().addHandler(logging.StreamHandler())
 
     # project_name = 'simple-blog'
+    # project_name = 'test'
     # project_name = 'spring-blog'
-    project_name = 'spring-petclinic'
+    # project_name = 'spring-petclinic'
     # project_name = 'spring-boot-admin/spring-boot-admin-server'
     # project_name = 'broadleaf-commerce/core/broadleaf-framework'  # 727 classes
-    # project_name = 'monomusiccorp'
+    project_name = 'monomusiccorp'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     # directory_test = '/home/mbrito/git/thesis/app'
     files = FileUtils.search_java_files(directory)
     files = read_files(files)
 
-    class_visitors, graph = parse_files_to_ast(files)
+    graph = nx.DiGraph()
+    class_visitors = parse_files_to_ast(files)
+
     graph = Graph.create_dependencies(class_visitors, graph)
-    Graph.clean_irrelevant_dependencies(class_visitors, graph)
-    original_graph = graph.copy()
+
+    qualified_visitors = visitors_to_qualified_name(class_visitors)
+    Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
 
     # Method 1. TF-IDF
-    apply_tfidf_to_connections(graph, class_visitors)
+    apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
     # apply_lda_to_classes(class_visitors)
