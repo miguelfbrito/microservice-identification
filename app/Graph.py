@@ -44,6 +44,11 @@ class Graph:
                     # instead belong to framewors or external libraries
                     logging.warning(
                         f"Key not found for {dependency} at {qualified_name}")
+
+                    # This exception can cause a node to not be added. Verify and add if needed
+                    if not graph.has_node(qualified_name):
+                        graph.add_node(qualified_name)
+
         return graph
 
     @staticmethod
