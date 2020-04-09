@@ -316,3 +316,11 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+
+symbolsolver/symbolsolver.iml
+
+*.class
+
+symbolsolver/.idea/
+
+symbolsolver/target/classes/META-INF/
