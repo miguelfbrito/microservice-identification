@@ -44,12 +44,9 @@ public class Parser {
                         // However, took me a whole day to figure out it must be included in MethodCallExpr, works fine for simpler types.
                         methodCall.getScope().ifPresent(rs -> {
                             try {
-
                                 ResolvedType resolvedType = rs.calculateResolvedType();
-                                System.out.println(resolvedType);
-
                             } catch (Exception e) {
-                                System.out.println("[UnsolvedSymbolException] on " + rs.toString());
+                                // System.out.println("[UnsolvedSymbolException] on " + rs.toString());
                             }
                         });
                     });

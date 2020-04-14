@@ -1,22 +1,14 @@
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.*;
-import com.github.javaparser.ast.visitor.VoidVisitor;
-import com.github.javaparser.resolution.UnsolvedSymbolException;
-import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
 import com.github.javaparser.utils.SourceRoot;
-import javassist.expr.MethodCall;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -56,12 +48,9 @@ public class SymbolSolver {
                         // However, took me a whole day to figure out it must be included in MethodCallExpr, works fine for simpler types.
                         methodCall.getScope().ifPresent(rs -> {
                             try {
-
                                 ResolvedType resolvedType = rs.calculateResolvedType();
-                                System.out.println(resolvedType);
-
                             } catch(Exception e){
-                                System.out.println("[UnsolvedSymbolException] on " + rs.toString());
+                                 // System.out.println("[UnsolvedSymbolException] on " + rs.toString());
                             }
                         });
                     });
