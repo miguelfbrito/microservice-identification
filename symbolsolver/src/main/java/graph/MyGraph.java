@@ -2,34 +2,43 @@ package graph;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
+import graph.entities.MyClass;
+import graph.entities.MyMethod;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedMultigraph;
 import visitors.ClassOrInterfaceDeclarationVisitor;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class MyGraph {
 
     private Graph<MyClass, DependencyEdge> graph;
+    private Map<String, MyClass> classes;
 
     public MyGraph() {
         graph = new DirectedMultigraph<>(DependencyEdge.class);
+        classes = new HashMap<>();
+    }
+
+    public MyGraph(List<CompilationUnit> compilationUnits) {
+        graph = new DirectedMultigraph<>(DependencyEdge.class);
+        classes = new HashMap<>();
+        this.addNodes(compilationUnits);
+        this.extractMethodDeclarations();
     }
 
     public void create(List<CompilationUnit> compilationUnits) {
-        createNodes(compilationUnits);
+        addNodes(compilationUnits);
         //createEdges(compilationUnits);
-
     }
 
-    private void createNodes(List<CompilationUnit> compilationUnits) {
+    public void addNodes(List<CompilationUnit> compilationUnits) {
         ClassOrInterfaceDeclarationVisitor classOrInterfaceDeclarationVisitor = new ClassOrInterfaceDeclarationVisitor();
         Set<ClassOrInterfaceDeclaration> nodes = new HashSet<>();
 
@@ -38,43 +47,54 @@ public class MyGraph {
 
             for (ClassOrInterfaceDeclaration node : nodes) {
                 MyClass myClass = new MyClass(node);
+                node.getFullyQualifiedName().ifPresent(name -> classes.put(name, myClass));
                 graph.addVertex(myClass);
             }
             nodes.clear();
         }
 
-        System.out.println("\nGRAPH");
+        System.out.println("\nGraph:");
         System.out.println(graph.toString());
     }
 
-    private void createEdges(List<CompilationUnit> compilationUnits) {
-
-        for (CompilationUnit compilationUnit : compilationUnits) {
-            for (MethodCallExpr methodCall : compilationUnit.findAll(MethodCallExpr.class)) {
-                methodCall.getScope().ifPresent(rs -> {
-                    try {
-                        ResolvedType resolvedType = rs.calculateResolvedType();
-                        ResolvedReferenceType resolvedReferenceType = resolvedType.asReferenceType();
-                        System.out.println("ResolvedType: " + resolvedType);
-                        System.out.println("MethodCall " + methodCall);
-                        System.out.println("Reference qualified name");
-                        System.out.println(resolvedType.asReferenceType().getQualifiedName());
-
-                    } catch (Exception e) {
-                        System.out.println("[UnsolvedSymbolException] on " + rs.toString());
-                    }
-                });
-            }
-        }
-
+    public void addEdges(){
 
     }
+
+    public void extractMethodDeclarations() {
+        for (MyClass myClass : this.graph.vertexSet()) {
+            List<MyMethod> methods = new ArrayList<>();
+            myClass.getVisitor().findAll(MethodDeclaration.class).forEach(methodDeclaration -> {
+                        MyMethod method = new MyMethod(methodDeclaration.getName().toString());
+                        List<String> parametersDataType = new ArrayList<>();
+
+                        for (Parameter parameter : methodDeclaration.getParameters()) {
+                            parametersDataType.add(parameter.getTypeAsString());
+                        }
+
+                        method.setParametersDataType(parametersDataType);
+                        method.setReturnDataType(methodDeclaration.getTypeAsString());
+                        methods.add(method);
+                    }
+            );
+            myClass.setMethods(methods);
+        }
+    }
+
 
     public Graph<MyClass, DependencyEdge> getGraph() {
         return graph;
     }
 
-    public void addEdges() {
+    public Map<String, MyClass> getClasses() {
+        return classes;
+    }
 
+    public void setGraph(Graph<MyClass, DependencyEdge> graph) {
+        this.graph = graph;
+    }
+
+    public void setClasses(Map<String, MyClass> classes) {
+        this.classes = classes;
     }
 }

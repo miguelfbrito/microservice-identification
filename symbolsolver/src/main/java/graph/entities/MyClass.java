@@ -1,14 +1,16 @@
-package graph;
+package graph.entities;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.visitor.VoidVisitor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class MyClass {
     private String simpleName;
     private String qualifiedName;
     private ClassOrInterfaceDeclaration visitor;
+    private List<MyMethod> methods;
 
     /**
      * Should only be used as a mean to find a match in the graph through hashing
@@ -34,6 +36,22 @@ public class MyClass {
 
     public ClassOrInterfaceDeclaration getVisitor() {
         return visitor;
+    }
+
+    public List<MyMethod> getMethods() {
+        return methods;
+    }
+
+    public void setMethods(List<MyMethod> methods) {
+        this.methods = methods;
+    }
+
+    public List<String> getAllMethodsDataTypes(){
+        List<String> methodsDataTypes = new ArrayList<>();
+        for(MyMethod m : methods){
+            methodsDataTypes.addAll(m.getAllDataTypes());
+        }
+        return methodsDataTypes;
     }
 
     @Override
