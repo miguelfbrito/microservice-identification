@@ -11,7 +11,7 @@ import java.util.List;
 
 public class ByMethodCallInvocation extends MyGraph {
 
-    public ByMethodCallInvocation(List<CompilationUnit> compilationUnits){
+    public ByMethodCallInvocation(List<CompilationUnit> compilationUnits) {
         super(compilationUnits);
         this.addEdges();
     }

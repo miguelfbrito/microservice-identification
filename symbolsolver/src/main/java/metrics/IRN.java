@@ -49,18 +49,21 @@ public class IRN implements Metric {
             MyClass target = graph.getEdgeTarget(edge);
 
             if(!clusters.containsKey(source.getQualifiedName())){
-                System.out.println("\t[Node not found source] " + source.getSimpleName());
+                // System.out.println("\t[Node not found source] " + source.getSimpleName());
+                continue;
             }
 
             if(!clusters.containsKey(target.getQualifiedName())) {
-                System.out.println("\t[Node not found target] " +target.getSimpleName());
+                // System.out.println("\t[Node not found target] " +target.getSimpleName());
+                continue;
             }
+
             try {
                 if (!clusters.get(source.getQualifiedName()).equals(clusters.get(target.getQualifiedName()))) {
                     totalIrn += edge.getValue();
                 }
             } catch (NullPointerException e) {
-                // TODO : Investigate why are there some ocasions throwing a NullPointer
+                // TODO : Investigate why are there some occasions throwing a NullPointer
                 // Probably because of a mismatch between identified classes from JavaParser and JavaLang
                 // e.printStackTrace();
             }

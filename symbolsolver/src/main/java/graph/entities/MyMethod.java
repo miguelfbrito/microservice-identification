@@ -32,12 +32,6 @@ public class MyMethod {
         return returnDataType;
     }
 
-    public List<String> getAllDataTypes() {
-        List<String> returnedDataTypes = new ArrayList<>(parametersDataType);
-        returnedDataTypes.add(returnDataType);
-        return returnedDataTypes;
-    }
-
     public void setReturnDataType(String returnDataType) {
         this.returnDataType = returnDataType;
     }

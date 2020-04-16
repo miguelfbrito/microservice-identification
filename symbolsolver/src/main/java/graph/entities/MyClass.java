@@ -46,14 +46,6 @@ public class MyClass {
         this.methods = methods;
     }
 
-    public List<String> getAllMethodsDataTypes(){
-        List<String> methodsDataTypes = new ArrayList<>();
-        for(MyMethod m : methods){
-            methodsDataTypes.addAll(m.getAllDataTypes());
-        }
-        return methodsDataTypes;
-    }
-
     @Override
     public String toString() {
         return "MyClass{" +
