@@ -36,19 +36,16 @@ public class ByClassOrInterfaceType extends MyGraph {
 
                 try {
                     String qualifiedName = classOrInterfaceType.resolve().getQualifiedName();
-                    System.out.println("[Found qualified name]  " + qualifiedName);
 
                     MyClass target = getClasses().get(qualifiedName);
                     DependencyEdge edge = getGraph().getEdge(source, target);
                     if (target != null && !source.getQualifiedName().equals(target.getQualifiedName())) {
-                        System.out.println(source.getQualifiedName() + " - " + target.getQualifiedName());
                         if (edge == null) {
                             getGraph().addEdge(source, target, new DependencyEdge(""));
                         } else {
                             edge.setValue(edge.getValue() + 1);
                         }
                     }
-                    System.out.println("TYPE: " + qualifiedName);
                 } catch(UnsupportedOperationException e){
                     /*
                         TODO: Find why this happens and how to do a pre-check for ClassOrInterfaceType that can't be resolved
@@ -61,7 +58,7 @@ public class ByClassOrInterfaceType extends MyGraph {
                        e.g.: Any references to Spring framework classes that aren't explicitly declared on the project
                        should trigger this exception.
                      */
-                    System.out.println("[UnsolvedSymbolException] " + classOrInterfaceType.getName());
+                    // System.out.println("[UnsolvedSymbolException] " + classOrInterfaceType.getName());
                 }
 
             }

@@ -23,7 +23,6 @@ public class IRN implements Metric {
     }
 
 
-
     @Override
     public double calculate() {
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
@@ -48,13 +47,8 @@ public class IRN implements Metric {
             MyClass source = graph.getEdgeSource(edge);
             MyClass target = graph.getEdgeTarget(edge);
 
-            if(!clusters.containsKey(source.getQualifiedName())){
+            if (!clusters.containsKey(source.getQualifiedName()) || !clusters.containsKey(target.getQualifiedName())) {
                 // System.out.println("\t[Node not found source] " + source.getSimpleName());
-                continue;
-            }
-
-            if(!clusters.containsKey(target.getQualifiedName())) {
-                // System.out.println("\t[Node not found target] " +target.getSimpleName());
                 continue;
             }
 
