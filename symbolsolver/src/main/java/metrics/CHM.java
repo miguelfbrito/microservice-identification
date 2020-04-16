@@ -69,7 +69,7 @@ public class CHM implements Metric {
         union.addAll(target);
         intersection.retainAll(target);
 
-        return (double) intersection.size() / union.size();
+        return !union.isEmpty() ? (double) intersection.size() / union.size() : 0;
     }
 
     @Override
