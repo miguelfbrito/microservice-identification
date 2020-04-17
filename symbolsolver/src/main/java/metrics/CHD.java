@@ -1,13 +1,15 @@
 package metrics;
 
 import graph.DependencyEdge;
-import graph.entities.MyClass;
 import graph.MyGraph;
-import graph.entities.MyMethod;
+import graph.entities.MyClass;
 import org.jgrapht.Graph;
+import utils.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -15,52 +17,29 @@ import java.util.stream.Collectors;
  * CHM = 1 - (Lack of Cohesion at message level)
  * The message level refers to datatypes of parameters on method declarations and its return datatypes.
  */
-public class CHM implements Metric {
+public class CHD implements Metric {
 
     private MyGraph myGraph;
 
-    public CHM(MyGraph myGraph) {
+    public CHD(MyGraph myGraph) {
         this.myGraph = myGraph;
     }
 
-
     @Override
     public double calculate() {
-        Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
-
-        int pairAmount = 0;
-        double totalSimilarity = 0;
-
-        for (DependencyEdge edge : graph.edgeSet()) {
-            MyClass source = graph.getEdgeSource(edge);
-            MyClass target = graph.getEdgeTarget(edge);
-
-            totalSimilarity += calculateJaccardCoefficient(source, target);
-            pairAmount++;
-        }
-
-        return (1 - totalSimilarity) / pairAmount;
+        return 0.0;
     }
 
     private double calculateJaccardCoefficient(MyClass source, MyClass target) {
-        // Calculate jaccard coefficient for parameters data types
         Set<String> sourceParameters = new HashSet<>();
         Set<String> targetParameters = new HashSet<>();
 
-        source.getMethods().forEach(m -> sourceParameters.addAll(m.getParametersDataType()));
-        target.getMethods().forEach(m -> targetParameters.addAll(m.getParametersDataType()));
-        double coefficientParameters = JaccardCoefficient.calculate(sourceParameters, targetParameters);
+        source.getMethods().forEach(m -> sourceParameters.addAll(StringUtils.extractCamelCaseLower(m.getName())));
+        target.getMethods().forEach(m -> targetParameters.addAll(StringUtils.extractCamelCaseLower(m.getName())));
 
-        // Calculate jaccard coefficient for return data types
-        Set<String> sourceReturn = new HashSet<>();
-        Set<String> targetReturn = new HashSet<>();
-
-        source.getMethods().forEach(m -> sourceReturn.add(m.getReturnDataType()));
-        target.getMethods().forEach(m -> targetReturn.add(m.getReturnDataType()));
-        double coefficientReturn = JaccardCoefficient.calculate(sourceReturn, targetReturn);
-
-        return (coefficientParameters + coefficientReturn) / 2;
+        return JaccardCoefficient.calculate(sourceParameters, targetParameters);
     }
+
 
     @Override
     public double calculateCluster(Map<String, Integer> clusters) {
@@ -96,22 +75,4 @@ public class CHM implements Metric {
 
 }
 
-
-class ClusterLOCInfo {
-    public int pairAmount = 0;
-    public double totalSimilarity = 0.0;
-
-    public ClusterLOCInfo(int pairAmount, double totalSimilarity) {
-        this.pairAmount = pairAmount;
-        this.totalSimilarity = totalSimilarity;
-    }
-
-    @Override
-    public String toString() {
-        return "ClusterLOCInfo{" +
-                "pairAmount=" + pairAmount +
-                ", totalSimilarity=" + totalSimilarity +
-                '}';
-    }
-}
 
