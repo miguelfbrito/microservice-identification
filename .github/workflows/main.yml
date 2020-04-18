@@ -20,6 +20,15 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+    - name: Check out repo with test data
+      uses: actions/checkout@master
+      with:
+          repository: miguelfbrito/thesis-web-applications
+          token: ${{ secrets.token_actions }}
+    - name: echo test
+      run: ls
+    - name: echo test 2
+      run: echo 'hello'
     - name: Run tests through maven
       run: mvn test
       working-directory: ./symbolsolver
