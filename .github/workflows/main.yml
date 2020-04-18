@@ -11,7 +11,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  run-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,14 +21,7 @@ jobs:
       with:
         java-version: 11
     - name: Check out repo with test data
-      uses: actions/checkout@master
-      with:
-          repository: miguelfbrito/thesis-web-applications
-          token: ${{ secrets.token_actions }}
-    - name: echo test
-      run: ls
-    - name: echo test 2
-      run: echo 'hello'
-    - name: Run tests through maven
+      run: git clone https://miguelfbrito:${{ secrets.token_actions }}@github.com/miguelfbrito/thesis-web-applications
+    - name: Run tests 
       run: mvn test
       working-directory: ./symbolsolver
