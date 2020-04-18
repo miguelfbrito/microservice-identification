@@ -1,3 +1,7 @@
+target/*
+target
+.vscode/*
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -324,3 +328,5 @@ symbolsolver/symbolsolver.iml
 symbolsolver/.idea/
 
 symbolsolver/target/classes/META-INF/
+
+symbolsolver/target/surefire-reports/
