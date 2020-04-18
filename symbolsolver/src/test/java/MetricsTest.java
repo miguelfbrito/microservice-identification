@@ -209,7 +209,7 @@ public class MetricsTest {
         String path = "/home/mbrito/git/thesis-web-applications/monoliths/spring-blog";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 117);
+        assertEquals(irn, 100); // 117
     }
 
     @Test
@@ -219,7 +219,7 @@ public class MetricsTest {
         String path = "/home/mbrito/git/thesis-web-applications/monoliths/monomusiccorp";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 82);
+        assertEquals(irn, 12); // 82
     }
 
 
