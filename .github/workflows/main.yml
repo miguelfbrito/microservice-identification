@@ -1,17 +1,17 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Java CI with Maven
+name: Run tests (Java CI with Maven)
 
 on:
   push:
-    branches: [ master ]
+    branches:  
+    - '*'
   pull_request:
     branches: [ master ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -20,8 +20,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - name: Ls
-      run: ls
-    - name: Run projects through maven
+    - name: Run tests through maven
       run: mvn surefire:test
       working-directory: ./symbolsolver
