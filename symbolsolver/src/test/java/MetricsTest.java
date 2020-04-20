@@ -62,7 +62,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-petclinic";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.876, 0.01);
+        assertEquals(0.876, chm, 0.01);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-petclinic";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.889, 0.01);
+        assertEquals(0.5, chm, 0.01);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.889, 0.001);
+        assertEquals(0.889, chm, 0.001);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.831, 0.001);
+        assertEquals(0.831, chm, 0.001);
     }
 
     @Test
@@ -100,7 +100,17 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/monomusiccorp";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.876, 0.001);
+        assertEquals(0.876, chm, 0.001);
+    }
+
+    @Test
+    public void CHMMonoMusicSingleCluster() throws IOException {
+
+        String clusters = "[['de.infonautika.monomusiccorp.app.ApplicationSecurity', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.RelationMethodRegistry', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.MethodCuriProvider', 'de.infonautika.monomusiccorp.app.security.ModifiableUserDetailsManager', 'de.infonautika.monomusiccorp.app.security.ModifiableUserDetailsManagerImpl', 'de.infonautika.monomusiccorp.app.controller.ResourceNotFoundException', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.CuriInfo', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.RelationMethod', 'de.infonautika.monomusiccorp.app.security.DefaultUsers', 'de.infonautika.monomusiccorp.app.security.MutableUserDetails', 'de.infonautika.monomusiccorp.app.security.SecurityServiceImpl', 'de.infonautika.monomusiccorp.app.business.errors.ConflictException', 'de.infonautika.monomusiccorp.app.business.ApplicationState', 'de.infonautika.monomusiccorp.app.controller.CatalogController', 'de.infonautika.monomusiccorp.app.repository.ProductLookup', 'de.infonautika.monomusiccorp.app.controller.resources.ProductResource', 'de.infonautika.monomusiccorp.app.controller.resources.ProductResourceAssembler', 'de.infonautika.monomusiccorp.app.domain.Product', 'de.infonautika.monomusiccorp.app.controller.StockController', 'de.infonautika.monomusiccorp.app.repository.StockItemRepository', 'de.infonautika.monomusiccorp.app.controller.resources.StockItemResource', 'de.infonautika.monomusiccorp.app.domain.StockItem', 'de.infonautika.monomusiccorp.app.controller.resources.StockItemResourceAssembler', 'de.infonautika.monomusiccorp.app.repository.ProductRepository', 'de.infonautika.monomusiccorp.app.repository.ProductLookupImpl', 'de.infonautika.monomusiccorp.app.controller.StockControllerTest', 'de.infonautika.monomusiccorp.app.util.VoidOptional', 'de.infonautika.monomusiccorp.app.controller.utils.AuthorizedInvocationFilter', 'de.infonautika.monomusiccorp.app.controller.utils.links.Invocation', 'de.infonautika.monomusiccorp.app.controller.InfoController', 'de.infonautika.monomusiccorp.app.controller.resources.MessageResource', 'de.infonautika.monomusiccorp.app.controller.UserController', 'de.infonautika.monomusiccorp.app.security.AuthenticationFacade', 'de.infonautika.monomusiccorp.app.controller.utils.LinkSupport', 'de.infonautika.monomusiccorp.app.controller.utils.links.LinkCreator', 'de.infonautika.monomusiccorp.app.controller.utils.links.LinkFacade', 'de.infonautika.monomusiccorp.app.controller.utils.links.InvocationInterceptor', 'de.infonautika.monomusiccorp.app.security.AuthenticationFacadeImpl', 'de.infonautika.monomusiccorp.app.controller.CatalogControllerTest', 'de.infonautika.monomusiccorp.app.controller.UserControllerTest', 'de.infonautika.monomusiccorp.app.controller.utils.DummyController', 'de.infonautika.monomusiccorp.app.controller.utils.links.MyController', 'de.infonautika.monomusiccorp.app.controller.ShoppingController', 'de.infonautika.monomusiccorp.app.business.BusinessProcess', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProvider', 'de.infonautika.monomusiccorp.app.controller.resources.PositionResource', 'de.infonautika.monomusiccorp.app.controller.resources.PositionResourceAssembler', 'de.infonautika.monomusiccorp.app.domain.Customer', 'de.infonautika.monomusiccorp.app.repository.CustomerLookup', 'de.infonautika.monomusiccorp.app.controller.CustomerController', 'de.infonautika.monomusiccorp.app.controller.resources.CustomerResource', 'de.infonautika.monomusiccorp.app.controller.resources.CustomerResourceAssembler', 'de.infonautika.monomusiccorp.app.business.CustomerInfo', 'de.infonautika.monomusiccorp.app.domain.Address', 'de.infonautika.monomusiccorp.app.repository.CustomerRepository', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProviderImpl', 'de.infonautika.monomusiccorp.app.repository.CustomerLookupImpl', 'de.infonautika.monomusiccorp.app.controller.CustomerControllerTest', 'de.infonautika.monomusiccorp.app.controller.ShoppingControllerTest', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProviderImplTest', 'de.infonautika.monomusiccorp.app.domain.Position', 'de.infonautika.monomusiccorp.app.domain.PricedPosition', 'de.infonautika.monomusiccorp.app.domain.Money', 'de.infonautika.monomusiccorp.app.security.SecurityService', 'de.infonautika.monomusiccorp.app.business.InvoiceDelivery', 'de.infonautika.monomusiccorp.app.domain.Invoice', 'de.infonautika.monomusiccorp.app.business.DummyInvoiceDeliveryImpl', 'de.infonautika.monomusiccorp.app.business.BusinessProcessImpl', 'de.infonautika.monomusiccorp.app.repository.OrderRepository', 'de.infonautika.monomusiccorp.app.repository.ShoppingBasketRepository', 'de.infonautika.monomusiccorp.app.repository.InvoiceRepository', 'de.infonautika.monomusiccorp.app.domain.ShoppingBasket', 'de.infonautika.monomusiccorp.app.domain.Order', 'de.infonautika.monomusiccorp.app.domain.HasPositions', 'de.infonautika.monomusiccorp.app.domain.HasPricedPositions', 'de.infonautika.monomusiccorp.app.business.StateSetup', 'de.infonautika.monomusiccorp.app.domain.ShoppingBasketTest', 'de.infonautika.monomusiccorp.app.business.errors.ForbiddenException', 'de.infonautika.monomusiccorp.app.controller.OrdersController', 'de.infonautika.monomusiccorp.app.repository.PickingOrderRepository', 'de.infonautika.monomusiccorp.app.controller.resources.OrderStatusResource', 'de.infonautika.monomusiccorp.app.business.errors.DoesNotExistException', 'de.infonautika.monomusiccorp.app.domain.PickingOrder', 'de.infonautika.monomusiccorp.app.controller.resources.OrderStatusResourceAssembler', 'de.infonautika.monomusiccorp.app.controller.resources.PricedPositionResource', 'de.infonautika.monomusiccorp.app.controller.resources.PricedPositionResourceAssembler', 'de.infonautika.monomusiccorp.app.business.StockNotification', 'de.infonautika.monomusiccorp.app.business.DummyStockNotificationImpl', 'de.infonautika.monomusiccorp.app.business.errors.BusinessError', 'de.infonautika.monomusiccorp.app.controller.OrdersControllerTest', 'de.infonautika.monomusiccorp.app.controller.utils.Results', 'de.infonautika.monomusiccorp.app.controller.utils.links.FailedToLoadClassName', 'de.infonautika.monomusiccorp.app.security.UserRole', 'de.infonautika.monomusiccorp.app.persist.LocalDateTimeConverter', 'de.infonautika.monomusiccorp.app.domain.Currencies', 'de.infonautika.monomusiccorp.app.JsonTesterRule', 'de.infonautika.monomusiccorp.app.DescribingMatcherBuilder', 'de.infonautika.monomusiccorp.app.BiDescribingMatcher', 'de.infonautika.monomusiccorp.app.BiDescribingMatcherBuilder', 'de.infonautika.monomusiccorp.app.controller.ControllerConstants', 'de.infonautika.monomusiccorp.app.controller.MatcherDebug']]";
+        String path = PROJECTS_ROOT + "/monomusiccorp";
+
+        double chm = CHMProjectTest(clusters, path);
+        assertEquals(0.876, chm, 0.001);
     }
 
     @Test
@@ -110,7 +120,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/test";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.75, 0.01);
+        assertEquals(0.75, chm, 0.01);
     }
 
 
@@ -141,9 +151,8 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-petclinic";
 
         double chd = CHDProjectTest(clusters, path);
-        assertEquals(chd, 0.889, 0.01);
+        assertEquals(0.889, chd, 0.01);
     }
-
 
     @Test
     public void CHDSpringBlog() throws IOException {
@@ -152,7 +161,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double chd = CHDProjectTest(clusters, path);
-        assertEquals(chd, 0.919, 0.001);
+        assertEquals(0.919, chd, 0.001);
     }
 
     @Test
@@ -161,29 +170,37 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double chd = CHDProjectTest(clusters, path);
-        assertEquals(chd, 0.884, 0.001);
+        assertEquals(0.884, chd, 0.001);
     }
 
     @Test
     public void CHDMonoMusic() throws IOException {
-
         String clusters = "[['de.infonautika.monomusiccorp.app.ApplicationSecurity', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.RelationMethodRegistry', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.MethodCuriProvider', 'de.infonautika.monomusiccorp.app.security.ModifiableUserDetailsManager', 'de.infonautika.monomusiccorp.app.security.ModifiableUserDetailsManagerImpl', 'de.infonautika.monomusiccorp.app.controller.ResourceNotFoundException', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.CuriInfo', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.RelationMethod', 'de.infonautika.monomusiccorp.app.security.DefaultUsers', 'de.infonautika.monomusiccorp.app.security.MutableUserDetails', 'de.infonautika.monomusiccorp.app.security.SecurityServiceImpl', 'de.infonautika.monomusiccorp.app.business.errors.ConflictException'], ['de.infonautika.monomusiccorp.app.business.ApplicationState', 'de.infonautika.monomusiccorp.app.controller.CatalogController', 'de.infonautika.monomusiccorp.app.repository.ProductLookup', 'de.infonautika.monomusiccorp.app.controller.resources.ProductResource', 'de.infonautika.monomusiccorp.app.controller.resources.ProductResourceAssembler', 'de.infonautika.monomusiccorp.app.domain.Product', 'de.infonautika.monomusiccorp.app.controller.StockController', 'de.infonautika.monomusiccorp.app.repository.StockItemRepository', 'de.infonautika.monomusiccorp.app.controller.resources.StockItemResource', 'de.infonautika.monomusiccorp.app.domain.StockItem', 'de.infonautika.monomusiccorp.app.controller.resources.StockItemResourceAssembler', 'de.infonautika.monomusiccorp.app.repository.ProductRepository', 'de.infonautika.monomusiccorp.app.repository.ProductLookupImpl', 'de.infonautika.monomusiccorp.app.controller.StockControllerTest'], ['de.infonautika.monomusiccorp.app.util.VoidOptional'], ['de.infonautika.monomusiccorp.app.controller.utils.AuthorizedInvocationFilter', 'de.infonautika.monomusiccorp.app.controller.utils.links.Invocation', 'de.infonautika.monomusiccorp.app.controller.InfoController', 'de.infonautika.monomusiccorp.app.controller.resources.MessageResource', 'de.infonautika.monomusiccorp.app.controller.UserController', 'de.infonautika.monomusiccorp.app.security.AuthenticationFacade', 'de.infonautika.monomusiccorp.app.controller.utils.LinkSupport', 'de.infonautika.monomusiccorp.app.controller.utils.links.LinkCreator', 'de.infonautika.monomusiccorp.app.controller.utils.links.LinkFacade', 'de.infonautika.monomusiccorp.app.controller.utils.links.InvocationInterceptor', 'de.infonautika.monomusiccorp.app.security.AuthenticationFacadeImpl', 'de.infonautika.monomusiccorp.app.controller.CatalogControllerTest', 'de.infonautika.monomusiccorp.app.controller.UserControllerTest', 'de.infonautika.monomusiccorp.app.controller.utils.DummyController', 'de.infonautika.monomusiccorp.app.controller.utils.links.MyController'], ['de.infonautika.monomusiccorp.app.controller.ShoppingController', 'de.infonautika.monomusiccorp.app.business.BusinessProcess', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProvider', 'de.infonautika.monomusiccorp.app.controller.resources.PositionResource', 'de.infonautika.monomusiccorp.app.controller.resources.PositionResourceAssembler', 'de.infonautika.monomusiccorp.app.domain.Customer', 'de.infonautika.monomusiccorp.app.repository.CustomerLookup', 'de.infonautika.monomusiccorp.app.controller.CustomerController', 'de.infonautika.monomusiccorp.app.controller.resources.CustomerResource', 'de.infonautika.monomusiccorp.app.controller.resources.CustomerResourceAssembler', 'de.infonautika.monomusiccorp.app.business.CustomerInfo', 'de.infonautika.monomusiccorp.app.domain.Address', 'de.infonautika.monomusiccorp.app.repository.CustomerRepository', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProviderImpl', 'de.infonautika.monomusiccorp.app.repository.CustomerLookupImpl', 'de.infonautika.monomusiccorp.app.controller.CustomerControllerTest', 'de.infonautika.monomusiccorp.app.controller.ShoppingControllerTest', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProviderImplTest'], ['de.infonautika.monomusiccorp.app.domain.Position', 'de.infonautika.monomusiccorp.app.domain.PricedPosition', 'de.infonautika.monomusiccorp.app.domain.Money', 'de.infonautika.monomusiccorp.app.security.SecurityService', 'de.infonautika.monomusiccorp.app.business.InvoiceDelivery', 'de.infonautika.monomusiccorp.app.domain.Invoice', 'de.infonautika.monomusiccorp.app.business.DummyInvoiceDeliveryImpl', 'de.infonautika.monomusiccorp.app.business.BusinessProcessImpl', 'de.infonautika.monomusiccorp.app.repository.OrderRepository', 'de.infonautika.monomusiccorp.app.repository.ShoppingBasketRepository', 'de.infonautika.monomusiccorp.app.repository.InvoiceRepository', 'de.infonautika.monomusiccorp.app.domain.ShoppingBasket', 'de.infonautika.monomusiccorp.app.domain.Order', 'de.infonautika.monomusiccorp.app.domain.HasPositions', 'de.infonautika.monomusiccorp.app.domain.HasPricedPositions', 'de.infonautika.monomusiccorp.app.business.StateSetup', 'de.infonautika.monomusiccorp.app.domain.ShoppingBasketTest'], ['de.infonautika.monomusiccorp.app.business.errors.ForbiddenException', 'de.infonautika.monomusiccorp.app.controller.OrdersController', 'de.infonautika.monomusiccorp.app.repository.PickingOrderRepository', 'de.infonautika.monomusiccorp.app.controller.resources.OrderStatusResource', 'de.infonautika.monomusiccorp.app.business.errors.DoesNotExistException', 'de.infonautika.monomusiccorp.app.domain.PickingOrder', 'de.infonautika.monomusiccorp.app.controller.resources.OrderStatusResourceAssembler', 'de.infonautika.monomusiccorp.app.controller.resources.PricedPositionResource', 'de.infonautika.monomusiccorp.app.controller.resources.PricedPositionResourceAssembler', 'de.infonautika.monomusiccorp.app.business.StockNotification', 'de.infonautika.monomusiccorp.app.business.DummyStockNotificationImpl', 'de.infonautika.monomusiccorp.app.business.errors.BusinessError', 'de.infonautika.monomusiccorp.app.controller.OrdersControllerTest'], ['de.infonautika.monomusiccorp.app.controller.utils.Results'], ['de.infonautika.monomusiccorp.app.controller.utils.links.FailedToLoadClassName'], ['de.infonautika.monomusiccorp.app.security.UserRole'], ['de.infonautika.monomusiccorp.app.persist.LocalDateTimeConverter'], ['de.infonautika.monomusiccorp.app.domain.Currencies'], ['de.infonautika.monomusiccorp.app.JsonTesterRule'], ['de.infonautika.monomusiccorp.app.DescribingMatcherBuilder', 'de.infonautika.monomusiccorp.app.BiDescribingMatcher', 'de.infonautika.monomusiccorp.app.BiDescribingMatcherBuilder'], ['de.infonautika.monomusiccorp.app.controller.ControllerConstants'], ['de.infonautika.monomusiccorp.app.controller.MatcherDebug']]";
         String path = PROJECTS_ROOT + "/monomusiccorp";
 
+        double chd = CHDProjectTest(clusters, path);
+        assertEquals(0.837, chd, 0.001);
+    }
+
+    @Test
+    public void CHDMonoMusicSingleCluster() throws IOException {
+        String clusters = "[['de.infonautika.monomusiccorp.app.ApplicationSecurity', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.RelationMethodRegistry', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.MethodCuriProvider', 'de.infonautika.monomusiccorp.app.security.ModifiableUserDetailsManager', 'de.infonautika.monomusiccorp.app.security.ModifiableUserDetailsManagerImpl', 'de.infonautika.monomusiccorp.app.controller.ResourceNotFoundException', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.CuriInfo', 'de.infonautika.monomusiccorp.app.controller.utils.links.curi.RelationMethod', 'de.infonautika.monomusiccorp.app.security.DefaultUsers', 'de.infonautika.monomusiccorp.app.security.MutableUserDetails', 'de.infonautika.monomusiccorp.app.security.SecurityServiceImpl', 'de.infonautika.monomusiccorp.app.business.errors.ConflictException', 'de.infonautika.monomusiccorp.app.business.ApplicationState', 'de.infonautika.monomusiccorp.app.controller.CatalogController', 'de.infonautika.monomusiccorp.app.repository.ProductLookup', 'de.infonautika.monomusiccorp.app.controller.resources.ProductResource', 'de.infonautika.monomusiccorp.app.controller.resources.ProductResourceAssembler', 'de.infonautika.monomusiccorp.app.domain.Product', 'de.infonautika.monomusiccorp.app.controller.StockController', 'de.infonautika.monomusiccorp.app.repository.StockItemRepository', 'de.infonautika.monomusiccorp.app.controller.resources.StockItemResource', 'de.infonautika.monomusiccorp.app.domain.StockItem', 'de.infonautika.monomusiccorp.app.controller.resources.StockItemResourceAssembler', 'de.infonautika.monomusiccorp.app.repository.ProductRepository', 'de.infonautika.monomusiccorp.app.repository.ProductLookupImpl', 'de.infonautika.monomusiccorp.app.controller.StockControllerTest', 'de.infonautika.monomusiccorp.app.util.VoidOptional', 'de.infonautika.monomusiccorp.app.controller.utils.AuthorizedInvocationFilter', 'de.infonautika.monomusiccorp.app.controller.utils.links.Invocation', 'de.infonautika.monomusiccorp.app.controller.InfoController', 'de.infonautika.monomusiccorp.app.controller.resources.MessageResource', 'de.infonautika.monomusiccorp.app.controller.UserController', 'de.infonautika.monomusiccorp.app.security.AuthenticationFacade', 'de.infonautika.monomusiccorp.app.controller.utils.LinkSupport', 'de.infonautika.monomusiccorp.app.controller.utils.links.LinkCreator', 'de.infonautika.monomusiccorp.app.controller.utils.links.LinkFacade', 'de.infonautika.monomusiccorp.app.controller.utils.links.InvocationInterceptor', 'de.infonautika.monomusiccorp.app.security.AuthenticationFacadeImpl', 'de.infonautika.monomusiccorp.app.controller.CatalogControllerTest', 'de.infonautika.monomusiccorp.app.controller.UserControllerTest', 'de.infonautika.monomusiccorp.app.controller.utils.DummyController', 'de.infonautika.monomusiccorp.app.controller.utils.links.MyController', 'de.infonautika.monomusiccorp.app.controller.ShoppingController', 'de.infonautika.monomusiccorp.app.business.BusinessProcess', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProvider', 'de.infonautika.monomusiccorp.app.controller.resources.PositionResource', 'de.infonautika.monomusiccorp.app.controller.resources.PositionResourceAssembler', 'de.infonautika.monomusiccorp.app.domain.Customer', 'de.infonautika.monomusiccorp.app.repository.CustomerLookup', 'de.infonautika.monomusiccorp.app.controller.CustomerController', 'de.infonautika.monomusiccorp.app.controller.resources.CustomerResource', 'de.infonautika.monomusiccorp.app.controller.resources.CustomerResourceAssembler', 'de.infonautika.monomusiccorp.app.business.CustomerInfo', 'de.infonautika.monomusiccorp.app.domain.Address', 'de.infonautika.monomusiccorp.app.repository.CustomerRepository', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProviderImpl', 'de.infonautika.monomusiccorp.app.repository.CustomerLookupImpl', 'de.infonautika.monomusiccorp.app.controller.CustomerControllerTest', 'de.infonautika.monomusiccorp.app.controller.ShoppingControllerTest', 'de.infonautika.monomusiccorp.app.intermediate.CurrentCustomerProviderImplTest', 'de.infonautika.monomusiccorp.app.domain.Position', 'de.infonautika.monomusiccorp.app.domain.PricedPosition', 'de.infonautika.monomusiccorp.app.domain.Money', 'de.infonautika.monomusiccorp.app.security.SecurityService', 'de.infonautika.monomusiccorp.app.business.InvoiceDelivery', 'de.infonautika.monomusiccorp.app.domain.Invoice', 'de.infonautika.monomusiccorp.app.business.DummyInvoiceDeliveryImpl', 'de.infonautika.monomusiccorp.app.business.BusinessProcessImpl', 'de.infonautika.monomusiccorp.app.repository.OrderRepository', 'de.infonautika.monomusiccorp.app.repository.ShoppingBasketRepository', 'de.infonautika.monomusiccorp.app.repository.InvoiceRepository', 'de.infonautika.monomusiccorp.app.domain.ShoppingBasket', 'de.infonautika.monomusiccorp.app.domain.Order', 'de.infonautika.monomusiccorp.app.domain.HasPositions', 'de.infonautika.monomusiccorp.app.domain.HasPricedPositions', 'de.infonautika.monomusiccorp.app.business.StateSetup', 'de.infonautika.monomusiccorp.app.domain.ShoppingBasketTest', 'de.infonautika.monomusiccorp.app.business.errors.ForbiddenException', 'de.infonautika.monomusiccorp.app.controller.OrdersController', 'de.infonautika.monomusiccorp.app.repository.PickingOrderRepository', 'de.infonautika.monomusiccorp.app.controller.resources.OrderStatusResource', 'de.infonautika.monomusiccorp.app.business.errors.DoesNotExistException', 'de.infonautika.monomusiccorp.app.domain.PickingOrder', 'de.infonautika.monomusiccorp.app.controller.resources.OrderStatusResourceAssembler', 'de.infonautika.monomusiccorp.app.controller.resources.PricedPositionResource', 'de.infonautika.monomusiccorp.app.controller.resources.PricedPositionResourceAssembler', 'de.infonautika.monomusiccorp.app.business.StockNotification', 'de.infonautika.monomusiccorp.app.business.DummyStockNotificationImpl', 'de.infonautika.monomusiccorp.app.business.errors.BusinessError', 'de.infonautika.monomusiccorp.app.controller.OrdersControllerTest', 'de.infonautika.monomusiccorp.app.controller.utils.Results', 'de.infonautika.monomusiccorp.app.controller.utils.links.FailedToLoadClassName', 'de.infonautika.monomusiccorp.app.security.UserRole', 'de.infonautika.monomusiccorp.app.persist.LocalDateTimeConverter', 'de.infonautika.monomusiccorp.app.domain.Currencies', 'de.infonautika.monomusiccorp.app.JsonTesterRule', 'de.infonautika.monomusiccorp.app.DescribingMatcherBuilder', 'de.infonautika.monomusiccorp.app.BiDescribingMatcher', 'de.infonautika.monomusiccorp.app.BiDescribingMatcherBuilder', 'de.infonautika.monomusiccorp.app.controller.ControllerConstants', 'de.infonautika.monomusiccorp.app.controller.MatcherDebug']]";
+        String path = PROJECTS_ROOT + "/monomusiccorp";
 
         double chd = CHDProjectTest(clusters, path);
-        assertEquals(chd, 0.837, 0.001);
+        assertEquals(0.837, chd, 0.001);
     }
 
     @Test
     public void CHDTest() throws IOException {
-
         String clusters = "[['com.test.Main', 'com.test.OtherClass'], ['com.test.ClassB']]";
         String path = PROJECTS_ROOT + "/test";
 
         double chd = CHDProjectTest(clusters, path);
-        assertEquals(chd, 1.0, 0.01);
+        assertEquals(1.0, chd, 0.01);
     }
+
+
 
 
 
@@ -214,7 +231,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-petclinic";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 20);
+        assertEquals(20, irn);
     }
 
 
@@ -225,7 +242,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 45);
+        assertEquals(45, irn);
     }
 
     @Test
@@ -234,7 +251,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 117);
+        assertEquals(117, irn);
     }
 
     @Test
@@ -244,7 +261,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/monomusiccorp";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 82);
+        assertEquals(82, irn);
     }
 
 
@@ -255,7 +272,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/test";
 
         double irn = IRNProjectTest(clusters, path);
-        assertEquals(irn, 0);
+        assertEquals(0, irn);
     }
 
 
