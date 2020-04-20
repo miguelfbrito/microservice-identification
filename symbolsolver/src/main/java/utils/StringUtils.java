@@ -30,6 +30,22 @@ public class StringUtils {
         return new HashSet<>(Arrays.asList(string.split("(?<=[a-z])(?=[A-Z])")));
     }
 
+    public static List<String> extractVariableType(String string) {
+
+        List<String> strings = new ArrayList<>();
+        String pattern = "(\\b\\w*\\b)(?!\\<)";
+        Pattern p = Pattern.compile(pattern);
+        Matcher m = p.matcher(string);
+
+        while (m.find()) {
+            if (!m.group(0).equals("")) {
+                strings.add(m.group(0));
+            }
+        }
+
+        return strings;
+    }
+
     public static Set<String> extractCamelCaseLower(String string) {
         Set<String> extracted = new HashSet<>();
         for (String s : string.split("(?<=[a-z])(?=[A-Z])")) {

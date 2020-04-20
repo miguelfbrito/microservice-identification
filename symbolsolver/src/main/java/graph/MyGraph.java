@@ -4,16 +4,13 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
 import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DirectedMultigraph;
+import utils.StringUtils;
 import visitors.ClassOrInterfaceDeclarationVisitor;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class MyGraph {
@@ -69,7 +66,7 @@ public class MyGraph {
                         List<String> parametersDataType = new ArrayList<>();
 
                         for (Parameter parameter : methodDeclaration.getParameters()) {
-                            parametersDataType.add(parameter.getTypeAsString());
+                            parametersDataType.addAll(StringUtils.extractVariableType(parameter.getTypeAsString()));
                         }
 
                         method.setParametersDataType(parametersDataType);

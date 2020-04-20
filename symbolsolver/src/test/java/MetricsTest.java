@@ -33,8 +33,6 @@ public class MetricsTest {
 
     @BeforeAll
     public static void checkEnv() {
-        System.out.println("ENVIRONMENT " + System.getenv("CI_GITHUB"));
-        System.out.println("ALL ENVIRONMENT: " + System.getenv().toString());
         if (System.getenv("CI") == null) {
             PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/monoliths";
         } else {
@@ -47,6 +45,8 @@ public class MetricsTest {
         Map<String, Integer> mapClusters = StringUtils.readClustersFromString(clusters);
 
         System.out.println("Path: " + path);
+        System.out.println("Clusters <class, clusterId>:" + mapClusters);
+        System.out.println("Number of classes: " + mapClusters.size());
 
         MyGraph graphReference = new ByClassOrInterfaceType(compilationUnits);
         Metric CHM = new CHM(graphReference);
@@ -62,9 +62,17 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-petclinic";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.889, 0.01);
+        assertEquals(chm, 0.876, 0.01);
     }
 
+    @Test
+    public void CHMSpringPetClinicSingleClusters() throws IOException {
+        String clusters = "[['FailedToLoadPackageName.MavenWrapperDownloader', 'org.springframework.samples.petclinic.vet.Specialty', 'org.springframework.samples.petclinic.vet.Vets', 'org.springframework.samples.petclinic.vet.Vet', 'org.springframework.samples.petclinic.vet.VetRepository', 'org.springframework.samples.petclinic.vet.VetController', 'org.springframework.samples.petclinic.PetclinicIntegrationTests', 'org.springframework.samples.petclinic.vet.VetTests', 'org.springframework.samples.petclinic.vet.VetControllerTests', 'org.springframework.samples.petclinic.model.NamedEntity', 'org.springframework.samples.petclinic.model.Person', 'org.springframework.samples.petclinic.model.BaseEntity', 'org.springframework.samples.petclinic.service.EntityUtils', 'org.springframework.samples.petclinic.model.ValidatorTests', 'org.springframework.samples.petclinic.system.CrashController', 'org.springframework.samples.petclinic.system.CrashControllerTests', 'org.springframework.samples.petclinic.system.WelcomeController', 'org.springframework.samples.petclinic.system.CacheConfiguration', 'org.springframework.samples.petclinic.visit.VisitRepository', 'org.springframework.samples.petclinic.visit.Visit', 'org.springframework.samples.petclinic.owner.VisitController', 'org.springframework.samples.petclinic.service.ClinicServiceTests', 'org.springframework.samples.petclinic.owner.VisitControllerTests', 'org.springframework.samples.petclinic.owner.OwnerRepository', 'org.springframework.samples.petclinic.owner.Owner', 'org.springframework.samples.petclinic.owner.OwnerController', 'org.springframework.samples.petclinic.owner.OwnerControllerTests', 'org.springframework.samples.petclinic.owner.PetRepository', 'org.springframework.samples.petclinic.owner.PetType', 'org.springframework.samples.petclinic.owner.Pet', 'org.springframework.samples.petclinic.owner.PetTypeFormatter', 'org.springframework.samples.petclinic.owner.PetValidator', 'org.springframework.samples.petclinic.owner.PetController', 'org.springframework.samples.petclinic.owner.PetControllerTests', 'org.springframework.samples.petclinic.owner.PetTypeFormatterTests']]";
+        String path = PROJECTS_ROOT + "/spring-petclinic";
+
+        double chm = CHMProjectTest(clusters, path);
+        assertEquals(chm, 0.889, 0.01);
+    }
 
     @Test
     public void CHMSpringBlog() throws IOException {
@@ -82,7 +90,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/spring-blog";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.8323, 0.001);
+        assertEquals(chm, 0.831, 0.001);
     }
 
     @Test
@@ -92,7 +100,7 @@ public class MetricsTest {
         String path = PROJECTS_ROOT + "/monomusiccorp";
 
         double chm = CHMProjectTest(clusters, path);
-        assertEquals(chm, 0.892, 0.001);
+        assertEquals(chm, 0.876, 0.001);
     }
 
     @Test
