@@ -18,12 +18,14 @@ public class MyClass {
      */
     public MyClass(String qualifiedName){
         this.qualifiedName = qualifiedName;
+        this.methods = new ArrayList<>();
     }
 
     public MyClass(ClassOrInterfaceDeclaration visitor) {
         this.visitor = visitor;
         visitor.getFullyQualifiedName().ifPresent(qualifiedName -> this.qualifiedName = qualifiedName);
         this.simpleName = visitor.getName().toString();
+        this.methods = new ArrayList<>();
     }
 
     public String getSimpleName() {

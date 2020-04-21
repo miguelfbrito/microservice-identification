@@ -10,6 +10,13 @@ public class MyMethod {
 
     public MyMethod(String name) {
         this.name = name;
+        this.parametersDataType = new ArrayList<>();
+    }
+
+    public MyMethod(String name, List<String> parametersDataType, String returnDataType) {
+        this.name = name;
+        this.parametersDataType = parametersDataType;
+        this.returnDataType = returnDataType;
     }
 
     public String getName() {

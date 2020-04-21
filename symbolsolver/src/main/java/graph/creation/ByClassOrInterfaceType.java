@@ -29,11 +29,6 @@ public class ByClassOrInterfaceType extends MyGraph {
 
         for (MyClass source : getClasses().values()) {
             for (ClassOrInterfaceType classOrInterfaceType : source.getVisitor().findAll(ClassOrInterfaceType.class)) {
-                /*
-                TODO: Identificar o tipo de node adequado que faz a ligação para o exterior em vez de recorrer
-                a algo tão genérico como o Expression que está a causar problemas em certos tipos.
-                 */
-
                 try {
                     String qualifiedName = classOrInterfaceType.resolve().getQualifiedName();
 

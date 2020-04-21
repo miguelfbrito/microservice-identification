@@ -3,17 +3,14 @@ package metrics;
 import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
-import graph.entities.MyMethod;
 import org.jgrapht.Graph;
 
 import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * Calculate the CoHesion at Message level (CHM)
  * CHM = 1 - (Lack of Cohesion at message level)
- * The message level refers to datatypes of parameters on method declarations and its return datatypes.
+ * Calculates the similarity between datatypes of method inputs and outputs between classes
  */
 public class CHM implements Metric {
 
@@ -62,20 +59,66 @@ public class CHM implements Metric {
         return (coefficientParameters + coefficientReturn) / 2;
     }
 
+    public Map<Integer, Integer> totalOperationsPerCluster(Map<String, Integer> clusters) {
+        Map<String, MyClass> classes = this.myGraph.getClasses();
+        Map<Integer, Integer> clusterIdMethodSum = new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry : clusters.entrySet()) {
+
+            if (!classes.containsKey(entry.getKey())) {
+                continue;
+            }
+
+            int totalMethods = classes.get(entry.getKey()).getMethods().size();
+
+            if (!clusterIdMethodSum.containsKey(entry.getValue())) {
+                clusterIdMethodSum.put(entry.getValue(), totalMethods);
+            } else {
+                clusterIdMethodSum.put(entry.getValue(), clusterIdMethodSum.get(entry.getValue()) + totalMethods);
+            }
+        }
+
+        return clusterIdMethodSum;
+    }
+
     @Override
     public double calculateCluster(Map<String, Integer> clusters) {
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
         Map<Integer, ClusterLOCInfo> clusterResults = new HashMap<>();
 
+
+        Map<Integer, Integer> totalOperationsPerCluster = totalOperationsPerCluster(clusters);
+        for (Map.Entry<Integer, Integer> entry : totalOperationsPerCluster.entrySet()) {
+            System.out.println("ClusterId: " + entry.getKey() + " - " + entry.getValue());
+        }
+        System.out.println("Number of clusters: " + totalOperationsPerCluster.size());
+
+        /**
+         *
+         TODO: avaliar se o cálculo deve ser feito apartir dos pares? Não estamos a ignorar assim as classes que não têm
+         métodos e portanto um jaccard de 1?
+         */
         for (DependencyEdge edge : graph.edgeSet()) {
             MyClass source = graph.getEdgeSource(edge);
             MyClass target = graph.getEdgeTarget(edge);
 
+            // Belong to the same cluster
             if (clusters.get(source.getQualifiedName()) != null &&
                     clusters.get(source.getQualifiedName()) == clusters.get(target.getQualifiedName())) {
                 int clusterId = clusters.get(source.getQualifiedName());
 
-                double jaccard = (1 - calculateJaccardCoefficient(source, target));
+                double jaccard = (calculateJaccardCoefficient(source, target));
+
+                int currTotal = totalOperationsPerCluster.get(clusterId);
+                if (currTotal == 0) {
+                    jaccard = 1;
+                }
+/*
+                // TODO : Reconsiderar se esta parte é necessária à equação
+                else {
+                    jaccard = jaccard / ((double) currTotal * (currTotal - 1) / 2);
+                }
+*/
 
                 if (clusterResults.containsKey(clusterId)) {
                     clusterResults.get(clusterId).pairAmount++;
@@ -88,10 +131,10 @@ public class CHM implements Metric {
 
         double totalDiff = 0;
         for (ClusterLOCInfo cluster : clusterResults.values()) {
-            totalDiff += cluster.totalSimilarity / cluster.pairAmount;
+            totalDiff += (cluster.totalSimilarity / cluster.pairAmount);
         }
 
-        return totalDiff / (double) clusterResults.size();
+        return clusterResults.isEmpty() ? 1 : totalDiff / (double) clusterResults.size();
     }
 
 }
