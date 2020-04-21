@@ -18,7 +18,7 @@ public class JaccardCoefficient {
         union.addAll(target);
         intersection.retainAll(target);
 
-        return !union.isEmpty() ? (double) intersection.size() / union.size() : 0;
+        return !intersection.isEmpty() ? (double) intersection.size() / union.size() : 0;
     }
 
 
