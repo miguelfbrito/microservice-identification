@@ -24,8 +24,6 @@ import static org.junit.jupiter.api.Disabled.*;
 public class CHMTest {
 
 
-
-
     public MyClass createClassOnGraph(MyGraph myGraph, String className, List<MyMethod> methods, Map<String, Integer> clusters, int clusterId) {
         MyClass classA = new MyClass(className);
         classA.getMethods().addAll(methods);
@@ -199,7 +197,6 @@ public class CHMTest {
         double chm = CHM.calculateCluster(clusters);
         assertEquals(1, chm, 0.01);
     }
-
 
 
 }

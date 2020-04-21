@@ -48,8 +48,6 @@ public class CHM implements Metric {
         target.getMethods().forEach(m -> targetParameters.addAll(m.getParametersDataType()));
         double coefficientParameters = JaccardCoefficient.calculate(sourceParameters, targetParameters);
 
-        System.out.println("Parameters: " + source.getMethods() + " ; " + target.getMethods());
-
         // Calculate jaccard coefficient for return data types
         Set<String> sourceReturn = new HashSet<>();
         Set<String> targetReturn = new HashSet<>();
@@ -90,9 +88,6 @@ public class CHM implements Metric {
 
 
         Map<Integer, Integer> totalOperationsPerCluster = totalOperationsPerCluster(clusters);
-        for (Map.Entry<Integer, Integer> entry : totalOperationsPerCluster.entrySet()) {
-            System.out.println("ClusterId: " + entry.getKey() + " - " + entry.getValue());
-        }
         System.out.println("Number of clusters: " + totalOperationsPerCluster.size());
 
         /**
@@ -111,9 +106,10 @@ public class CHM implements Metric {
 
                 double jaccard = (calculateJaccardCoefficient(source, target));
 
-                if (jaccard == 0)
-                    jaccard = 1;
-                System.out.println("\tJaccard: " + jaccard);
+                if(totalOperationsPerCluster.get(clusterId) == 0){
+                    System.out.println("Este cluster tem 0 operações!");
+                }
+
 
 /*
                 int currTotal = totalOperationsPerCluster.get(clusterId);
