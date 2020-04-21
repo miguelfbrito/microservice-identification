@@ -6,7 +6,7 @@ import java.util.List;
 public class MyMethod {
     private String name;
     private List<String> parametersDataType;
-    private String returnDataType;
+    private List<String> returnDataType;
 
     public MyMethod(String name) {
         this.name = name;
@@ -14,6 +14,12 @@ public class MyMethod {
     }
 
     public MyMethod(String name, List<String> parametersDataType, String returnDataType) {
+        this.name = name;
+        this.parametersDataType = parametersDataType;
+        this.returnDataType.add(returnDataType);
+    }
+
+    public MyMethod(String name, List<String> parametersDataType, List<String> returnDataType) {
         this.name = name;
         this.parametersDataType = parametersDataType;
         this.returnDataType = returnDataType;
@@ -35,11 +41,19 @@ public class MyMethod {
         this.parametersDataType = parametersDataType;
     }
 
-    public String getReturnDataType() {
+    public List<String> getReturnDataType() {
         return returnDataType;
     }
 
-    public void setReturnDataType(String returnDataType) {
+    public void setReturnDataType(List<String> returnDataType) {
         this.returnDataType = returnDataType;
+    }
+
+    @Override
+    public String toString() {
+        return "MyMethod{" +
+                "parametersDataType=" + parametersDataType +
+                ", returnDataType='" + returnDataType + '\'' +
+                '}';
     }
 }

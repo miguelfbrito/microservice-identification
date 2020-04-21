@@ -54,7 +54,7 @@ public class MyGraph {
         System.out.println(graph.toString());
     }
 
-    public void addEdges(){
+    public void addEdges() {
 
     }
 
@@ -70,7 +70,7 @@ public class MyGraph {
                         }
 
                         method.setParametersDataType(parametersDataType);
-                        method.setReturnDataType(methodDeclaration.getTypeAsString());
+                        method.setReturnDataType(StringUtils.extractVariableType(methodDeclaration.getTypeAsString()));
                         methods.add(method);
                     }
             );

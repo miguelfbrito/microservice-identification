@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class StringUtils {
 
@@ -39,11 +40,14 @@ public class StringUtils {
 
         while (m.find()) {
             if (!m.group(0).equals("")) {
-                strings.add(m.group(0));
+                strings.add(m.group(0).toLowerCase());
             }
         }
 
-        return strings;
+        // Set<String> stopTypes = new HashSet<>(Arrays.asList("integer", "int", "long", "string", "void", "object"));
+
+        return strings; //.stream().filter(s -> !stopTypes.contains(s)).collect(Collectors.toList());
+
     }
 
     public static Set<String> extractCamelCaseLower(String string) {

@@ -48,12 +48,14 @@ public class CHM implements Metric {
         target.getMethods().forEach(m -> targetParameters.addAll(m.getParametersDataType()));
         double coefficientParameters = JaccardCoefficient.calculate(sourceParameters, targetParameters);
 
+        System.out.println("Parameters: " + source.getMethods() + " ; " + target.getMethods());
+
         // Calculate jaccard coefficient for return data types
         Set<String> sourceReturn = new HashSet<>();
         Set<String> targetReturn = new HashSet<>();
 
-        source.getMethods().forEach(m -> sourceReturn.add(m.getReturnDataType()));
-        target.getMethods().forEach(m -> targetReturn.add(m.getReturnDataType()));
+        source.getMethods().forEach(m -> sourceReturn.addAll(m.getReturnDataType()));
+        target.getMethods().forEach(m -> targetReturn.addAll(m.getReturnDataType()));
         double coefficientReturn = JaccardCoefficient.calculate(sourceReturn, targetReturn);
 
         return (coefficientParameters + coefficientReturn) / 2;
@@ -104,15 +106,21 @@ public class CHM implements Metric {
 
             // Belong to the same cluster
             if (clusters.get(source.getQualifiedName()) != null &&
-                    clusters.get(source.getQualifiedName()) == clusters.get(target.getQualifiedName())) {
+                    clusters.get(source.getQualifiedName()).equals(clusters.get(target.getQualifiedName()))) {
                 int clusterId = clusters.get(source.getQualifiedName());
 
                 double jaccard = (calculateJaccardCoefficient(source, target));
 
+                if (jaccard == 0)
+                    jaccard = 1;
+                System.out.println("\tJaccard: " + jaccard);
+
+/*
                 int currTotal = totalOperationsPerCluster.get(clusterId);
                 if (currTotal == 0) {
                     jaccard = 1;
                 }
+*/
 /*
                 // TODO : Reconsiderar se esta parte é necessária à equação
                 else {
