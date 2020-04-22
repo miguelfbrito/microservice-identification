@@ -40,4 +40,13 @@ public class Service {
     public void setOperations(int operations) {
         this.operations = operations;
     }
+
+    @Override
+    public String toString() {
+        return "Service{" +
+                "classes=" + classes +
+                ", operations=" + operations +
+                ", clusterId=" + clusterId +
+                '}';
+    }
 }

@@ -11,20 +11,21 @@ public class MyClass {
     // TODO: consider changint to set
     private List<MyMethod> methods;
     private Set<String> operations; // List of methods called from another service
-    private final Service service;
+    private Service service;
 
     /**
      * Should only be used as a mean to find a match in the graph through hashing
+     *
      * @param qualifiedName
      */
-    public MyClass(String qualifiedName){
+    public MyClass(String qualifiedName) {
         this.qualifiedName = qualifiedName;
         this.methods = new ArrayList<>();
         this.operations = new HashSet<>();
         this.service = null;
     }
 
-    public MyClass(String qualifiedName, Service service){
+    public MyClass(String qualifiedName, Service service) {
         this.qualifiedName = qualifiedName;
         this.methods = new ArrayList<>();
         this.operations = new HashSet<>();
@@ -78,6 +79,12 @@ public class MyClass {
 
     public Service getService() {
         return service;
+    }
+
+    public void setService(Service service) {
+        if (service.getClasses().containsKey(qualifiedName)) {
+            this.service = service;
+        }
     }
 
     @Override
