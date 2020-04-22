@@ -53,28 +53,15 @@ public class MyGraph {
             cu.accept(classOrInterfaceDeclarationVisitor, nodes);
 
             for (ClassOrInterfaceDeclaration node : nodes) {
-                node.getFullyQualifiedName().ifPresent(name -> {
-                    MyClass myClass = getNodeFromService(name);
-                    if (myClass != null) {
-                        myClass.setVisitor(node);
-                        graph.addVertex(myClass);
-                    }
-                });
+                MyClass myClass = new MyClass(node);
+                node.getFullyQualifiedName().ifPresent(name -> classes.put(name, myClass));
+                graph.addVertex(myClass);
             }
             nodes.clear();
         }
 
         System.out.println("\nGraph:");
         System.out.println(graph.toString());
-    }
-
-    private MyClass getNodeFromService(String qualifiedName) {
-        for (Service s : services.values()) {
-            if (s.getClasses().containsKey(qualifiedName)) {
-                return s.getClasses().get(qualifiedName);
-            }
-        }
-        return null;
     }
 
     public void addEdges() {
