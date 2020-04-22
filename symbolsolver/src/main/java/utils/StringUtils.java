@@ -1,5 +1,7 @@
 package utils;
 
+import graph.entities.MyClass;
+import graph.entities.Service;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -24,6 +26,29 @@ public class StringUtils {
             }
             group++;
         }
+        return clusters;
+    }
+
+
+    public static Map<Integer, Service> extractClustersToServices(String string) {
+
+        Map<String, Integer> clustersFromString = readClustersFromString(string);
+        Map<Integer, Service> clusters = new HashMap<>();
+
+        for (Map.Entry<String, Integer> entry : clustersFromString.entrySet()) {
+
+            // TODO : clean this up
+            if (clusters.containsKey(entry.getValue())) {
+                clusters.get(entry.getValue()).getClasses().put(entry.getKey(),
+                        new MyClass(entry.getKey(), clusters.get(entry.getValue())));
+            } else {
+                Service service = new Service();
+                service.getClasses().put(entry.getKey(), new MyClass(entry.getKey(), service));
+                clusters.put(service.getClusterId(), service);
+            }
+
+        }
+
         return clusters;
     }
 

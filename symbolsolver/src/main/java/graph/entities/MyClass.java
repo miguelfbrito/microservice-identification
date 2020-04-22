@@ -11,6 +11,7 @@ public class MyClass {
     // TODO: consider changint to set
     private List<MyMethod> methods;
     private Set<String> operations; // List of methods called from another service
+    private final Service service;
 
     /**
      * Should only be used as a mean to find a match in the graph through hashing
@@ -20,6 +21,14 @@ public class MyClass {
         this.qualifiedName = qualifiedName;
         this.methods = new ArrayList<>();
         this.operations = new HashSet<>();
+        this.service = null;
+    }
+
+    public MyClass(String qualifiedName, Service service){
+        this.qualifiedName = qualifiedName;
+        this.methods = new ArrayList<>();
+        this.operations = new HashSet<>();
+        this.service = service;
     }
 
     public MyClass(ClassOrInterfaceDeclaration visitor) {
@@ -28,6 +37,7 @@ public class MyClass {
         this.simpleName = visitor.getName().toString();
         this.methods = new ArrayList<>();
         this.operations = new HashSet<>();
+        this.service = null;
     }
 
     public String getSimpleName() {
@@ -58,8 +68,16 @@ public class MyClass {
         this.operations = operations;
     }
 
+    public void setVisitor(ClassOrInterfaceDeclaration visitor) {
+        this.visitor = visitor;
+    }
+
     public boolean isServiceInterface() {
         return !operations.isEmpty();
+    }
+
+    public Service getService() {
+        return service;
     }
 
     @Override

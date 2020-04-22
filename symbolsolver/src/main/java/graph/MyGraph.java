@@ -6,6 +6,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import graph.entities.MyClass;
 import graph.entities.MyMethod;
+import graph.entities.Service;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DirectedMultigraph;
 import utils.StringUtils;
@@ -17,6 +18,7 @@ public class MyGraph {
 
     private Graph<MyClass, DependencyEdge> graph;
     private Map<String, MyClass> classes;
+    private Map<Integer, Service> services;
 
     public MyGraph() {
         graph = new DirectedMultigraph<>(DependencyEdge.class);
@@ -26,6 +28,14 @@ public class MyGraph {
     public MyGraph(List<CompilationUnit> compilationUnits) {
         graph = new DirectedMultigraph<>(DependencyEdge.class);
         classes = new HashMap<>();
+        this.addNodes(compilationUnits);
+        this.extractMethodDeclarations();
+    }
+
+    public MyGraph(List<CompilationUnit> compilationUnits, Map<Integer, Service> services) {
+        graph = new DirectedMultigraph<>(DependencyEdge.class);
+        classes = new HashMap<>();
+        this.services = services;
         this.addNodes(compilationUnits);
         this.extractMethodDeclarations();
     }
@@ -43,15 +53,28 @@ public class MyGraph {
             cu.accept(classOrInterfaceDeclarationVisitor, nodes);
 
             for (ClassOrInterfaceDeclaration node : nodes) {
-                MyClass myClass = new MyClass(node);
-                node.getFullyQualifiedName().ifPresent(name -> classes.put(name, myClass));
-                graph.addVertex(myClass);
+                node.getFullyQualifiedName().ifPresent(name -> {
+                    MyClass myClass = getNodeFromService(name);
+                    if (myClass != null) {
+                        myClass.setVisitor(node);
+                        graph.addVertex(myClass);
+                    }
+                });
             }
             nodes.clear();
         }
 
         System.out.println("\nGraph:");
         System.out.println(graph.toString());
+    }
+
+    private MyClass getNodeFromService(String qualifiedName) {
+        for (Service s : services.values()) {
+            if (s.getClasses().containsKey(qualifiedName)) {
+                return s.getClasses().get(qualifiedName);
+            }
+        }
+        return null;
     }
 
     public void addEdges() {
