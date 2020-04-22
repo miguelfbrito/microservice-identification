@@ -315,7 +315,8 @@ def main():
     # project_name = 'spring-petclinic'
     # project_name = 'spring-boot-admin/spring-boot-admin-server'
     # project_name = 'broadleaf-commerce/core/broadleaf-framework'  # 727 classes
-    project_name = 'monomusiccorp'
+    # project_name = 'monomusiccorp'
+    project_name = 'jpetstore'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
     # directory_test = '/home/mbrito/git/thesis/app'
     files = FileUtils.search_java_files(directory)
