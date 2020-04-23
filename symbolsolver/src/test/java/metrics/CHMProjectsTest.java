@@ -38,7 +38,7 @@ public class CHMProjectsTest {
         Parse parse = new Parse();
         ParseResult parseResult = parse.completeParseClusters(compilationUnits, clusters);
 
-        MyGraph graphReference = new ByMethodCallInvocation(parseResult);
+     //   MyGraph graphReference = new ByMethodCallInvocation(parseResult);
         Metric CHM = new CHM(parseResult);
         double chm = CHM.calculateService();
         System.out.println("CHM Project: " + chm);
@@ -76,9 +76,10 @@ public class CHMProjectsTest {
     }
 
     @Test
+    @Disabled
     public void CHMTest() throws IOException {
 
-        String clusters = "[['com.test.Main', 'com.test.OtherClass']]";
+        String clusters = "[['com.test.Main'], ['com.test.OtherClass']]";
         String path = PROJECTS_ROOT + "/test";
 
         double chm = CHMProjectTest(clusters, path);

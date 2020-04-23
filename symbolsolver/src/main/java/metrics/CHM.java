@@ -82,10 +82,8 @@ public class CHM implements Metric {
                     double jaccard = calculateJaccardCoefficient(sourceMethod, targetMethod);
                     serviceJaccard += jaccard;
 
-/*
                     System.out.println("Pair: " + sourceOperation + " - " + targetOperation + " : " + jaccard);
                     System.out.println("\t -- " + sourceClassName + " - " + targetClassName);
-*/
                 }
             }
 
@@ -102,29 +100,8 @@ public class CHM implements Metric {
         }
 
 
-
         return chm / services.size();
     }
-
-
 }
 
-
-class ClusterLOCInfo {
-    public int pairAmount = 0;
-    public double totalSimilarity = 0.0;
-
-    public ClusterLOCInfo(int pairAmount, double totalSimilarity) {
-        this.pairAmount = pairAmount;
-        this.totalSimilarity = totalSimilarity;
-    }
-
-    @Override
-    public String toString() {
-        return "ClusterLOCInfo{" +
-                "pairAmount=" + pairAmount +
-                ", totalSimilarity=" + totalSimilarity +
-                '}';
-    }
-}
 
