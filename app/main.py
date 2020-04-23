@@ -58,8 +58,14 @@ def parse_files_to_ast(read_files):
         visitor = ClassVisitor()
         visitor.extract_comments(values["text"])
 
-        for _, node in tree:
+        print("\n--- Class " + file_name)
+
+        prev = 999999
+
+        for before, node in tree:
             visitor.visit(node)
+
+            prev = len(before)
 
         qualified_name = f"{visitor.get_package_name()}.{visitor.get_class_name()}"
         class_visitors[visitor.get_class_name()] = visitor
@@ -318,14 +324,16 @@ def main():
     # project_name = 'monomusiccorp'
     project_name = 'jpetstore'
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
-    # directory_test = '/home/mbrito/git/thesis/app'
+    # directory_test = '/home/mbrito/git/thesis/app/'
     files = FileUtils.search_java_files(directory)
     files = read_files(files)
 
     graph = nx.DiGraph()
     class_visitors = parse_files_to_ast(files)
+    print(f"Class visitors: {class_visitors}")
 
     graph = Graph.create_dependencies(class_visitors, graph)
+    print(f"Graph after dependencies: {graph.nodes}")
 
     qualified_visitors = visitors_to_qualified_name(class_visitors)
     Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
@@ -339,10 +347,14 @@ def main():
 
     calculate_absolute_weights(graph)
 
-    # draw_graph(graph)
+    draw_graph(graph)
+
+    # print(f"Graph before clustering: {graph.nodes}")
 
     clusters = community_detection_louvain(graph)
 
+    print(
+        f"\n\nClusters : {[clusters[key] for key in clusters if len(clusters[key]) > 2]}")
 
     # Has an high impact on Girvan Newman clustering
     # graph = nx.algorithms.tree.mst.maximum_spanning_tree(

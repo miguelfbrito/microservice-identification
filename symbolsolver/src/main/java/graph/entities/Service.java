@@ -1,23 +1,19 @@
 package graph.entities;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Service {
 
-
     private Map<String, MyClass> classes;
-    // TODO: Consider change to a set of Strings. Could be useful to display service operations
+    // TODO: Consider changing to a set of Strings. Could be useful to display service operations
     private int operations;
-    private int clusterId;
+    private int id;
 
-    public Service(int clusterId) {
+    public Service(int id) {
         this.classes = new HashMap<>();
         this.operations = 0;
-        this.clusterId = clusterId;
+        this.id = id;
     }
 
     public Map<String, MyClass> getClasses() {
@@ -28,8 +24,8 @@ public class Service {
         this.classes = classes;
     }
 
-    public int getClusterId() {
-        return clusterId;
+    public int getId() {
+        return id;
     }
 
     public int getOperations() {
@@ -45,7 +41,7 @@ public class Service {
         return "Service{" +
                 "classes=" + classes +
                 ", operations=" + operations +
-                ", clusterId=" + clusterId +
+                ", id=" + id +
                 '}';
     }
 }

@@ -5,6 +5,7 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import graph.entities.MyClass;
 import graph.entities.Service;
 import parser.ParseResult;
+
 import java.util.Map;
 
 public class ExtractOperations {
@@ -29,7 +30,8 @@ public class ExtractOperations {
                             String targetName = resolvedType.asReferenceType().getQualifiedName();
                             MyClass target = classes.get(targetName);
 
-                            if (target != null) {
+                            // Target and source must exist in different services to be considered an operation
+                            if (target != null && source.getService().getId() != target.getService().getId()) {
                                 target.getOperations().add(methodCall.getName().toString());
                             }
                         } catch (Exception e) {
@@ -39,22 +41,6 @@ public class ExtractOperations {
                 }
             }
 
-
-            int totalOperationsPerService = 0;
-            for (MyClass source : service.getValue().getClasses().values()) {
-                System.out.println(source.getQualifiedName() + ": " + source.getOperations());
-                totalOperationsPerService += source.getOperations().size();
-            }
-
-            service.getValue().setOperations(totalOperationsPerService);
-            System.out.println("OPN per Service: " + totalOperationsPerService);
         }
-
-        int totalOperationsAllServices = 0;
-        for (Service service : services.values()) {
-            totalOperationsAllServices += service.getOperations();
-        }
-
-        System.out.println("OPN for all services:" + totalOperationsAllServices);
     }
 }

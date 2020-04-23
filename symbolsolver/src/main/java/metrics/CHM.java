@@ -24,24 +24,6 @@ public class CHM implements Metric {
     }
 
 
-    @Override
-    public double calculate() {
-        Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
-
-        int pairAmount = 0;
-        double totalSimilarity = 0;
-
-        for (DependencyEdge edge : graph.edgeSet()) {
-            MyClass source = graph.getEdgeSource(edge);
-            MyClass target = graph.getEdgeTarget(edge);
-
-            totalSimilarity += calculateJaccardCoefficient(source, target);
-            pairAmount++;
-        }
-
-        return (1 - totalSimilarity) / pairAmount;
-    }
-
     private double calculateJaccardCoefficient(MyClass source, MyClass target) {
         // Calculate jaccard coefficient for parameters data types
         Set<String> sourceParameters = new HashSet<>();
@@ -85,7 +67,7 @@ public class CHM implements Metric {
     }
 
     @Override
-    public double calculateCluster() {
+    public double calculateService() {
         // TODO: atualizar para receber um ParseResult
         Map<String, Integer> clusters = new HashMap<>();
 

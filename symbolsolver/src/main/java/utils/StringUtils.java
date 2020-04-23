@@ -2,12 +2,10 @@ package utils;
 
 import graph.entities.MyClass;
 import graph.entities.Service;
-import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class StringUtils {
 
@@ -44,7 +42,7 @@ public class StringUtils {
             } else {
                 Service service = new Service(entry.getValue());
                 service.getClasses().put(entry.getKey(), new MyClass(entry.getKey(), service));
-                clusters.put(service.getClusterId(), service);
+                clusters.put(service.getId(), service);
             }
 
         }

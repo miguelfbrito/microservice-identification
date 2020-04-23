@@ -1,16 +1,11 @@
 package metrics;
 
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.resolution.types.ResolvedType;
 import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
 import graph.entities.Service;
 import org.jgrapht.Graph;
 import parser.ParseResult;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Coupling Metric
@@ -26,22 +21,8 @@ public class IRN implements Metric {
         this.parseResult = parseResult;
     }
 
-
     @Override
-    public double calculate() {
-        Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
-
-        Set<DependencyEdge> dependencyEdges = graph.edgeSet();
-        double totalIRN = 0;
-        for (DependencyEdge edge : dependencyEdges) {
-            totalIRN += edge.getValue();
-        }
-
-        return totalIRN;
-    }
-
-    @Override
-    public double calculateCluster() {
+    public double calculateService() {
 
         // For each edge, check if the source and target belong to the same cluster or not
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
@@ -62,7 +43,7 @@ public class IRN implements Metric {
             Service serviceOfTarget = parseResult.getClasses().get(target.getQualifiedName()).getService();
 
             if (serviceOfSource != null && serviceOfTarget != null &&
-                    serviceOfSource.getClusterId() != serviceOfTarget.getClusterId()) {
+                    serviceOfSource.getId() != serviceOfTarget.getId()) {
                 totalIrn += edge.getValue();
             }
 

@@ -3,11 +3,7 @@ package metrics;
 import com.github.javaparser.ast.CompilationUnit;
 import graph.MyGraph;
 import graph.creation.ByMethodCallInvocation;
-import graph.entities.Service;
-import metrics.IRN;
-import metrics.Metric;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,15 +11,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import parser.Parse;
 import parser.ParseResult;
 import parser.Parser;
-import utils.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 
-public class IRNTest {
+public class IRNProjectsTest {
 
     private static String PROJECTS_ROOT;
 
@@ -47,7 +41,7 @@ public class IRNTest {
 
         MyGraph graphReference = new ByMethodCallInvocation(parseResult);
         Metric IRN = new IRN(graphReference, parseResult);
-        double irn = IRN.calculateCluster();
+        double irn = IRN.calculateService();
         System.out.println("IRN Project: " + irn);
         return irn;
     }
