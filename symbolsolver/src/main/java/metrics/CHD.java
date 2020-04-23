@@ -25,11 +25,6 @@ public class CHD implements Metric {
         this.myGraph = myGraph;
     }
 
-    @Override
-    public double calculate() {
-        return 0.0;
-    }
-
     private double calculateJaccardCoefficient(MyClass source, MyClass target) {
         Set<String> sourceParameters = new HashSet<>();
         Set<String> targetParameters = new HashSet<>();
@@ -42,7 +37,7 @@ public class CHD implements Metric {
 
 
     @Override
-    public double calculateCluster() {
+    public double calculateService() {
         // TODO : atualizar para receber um ParseResult
         Map<String, Integer> clusters = new HashMap<>();
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();

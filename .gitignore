@@ -329,4 +329,14 @@ symbolsolver/.idea/
 
 symbolsolver/target/classes/META-INF/
 
+.vscode/
+
+*.kotlin_module
+
+symbolsolver/target/maven-status/maven-compiler-plugin/compile/default-compile/
+
 symbolsolver/target/surefire-reports/
+
+symbolsolver/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/
+
+app/file
