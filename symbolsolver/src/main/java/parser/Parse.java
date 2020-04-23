@@ -83,7 +83,7 @@ public class Parse {
                         method.setParametersDataType(parametersDataType);
                         method.setReturnDataType(StringUtils.extractVariableType(methodDeclaration.getTypeAsString()));
 
-                        myClass.getMethods().add(method);
+                        myClass.getMethods().put(methodDeclaration.getName().toString(), method);
                     }
             );
         }

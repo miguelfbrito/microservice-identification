@@ -6,6 +6,7 @@ import graph.entities.MyClass;
 import graph.entities.Service;
 import parser.ParseResult;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ExtractOperations {
@@ -41,6 +42,20 @@ public class ExtractOperations {
                 }
             }
 
+        }
+    }
+
+
+
+    public static void extractAllClassOperationsToServiceLevel(Map<Integer, Service> services) {
+        for (Service service : services.values()) {
+            Map<String, String> operations = new HashMap<>();
+            for (MyClass source : service.getClasses().values()) {
+                for (String op : source.getOperations()) {
+                    operations.put(op, source.getQualifiedName());
+                }
+            }
+            service.setOperations(operations);
         }
     }
 }

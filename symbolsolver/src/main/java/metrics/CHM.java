@@ -1,8 +1,11 @@
 package metrics;
 
+import extraction.ExtractOperations;
 import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
+import graph.entities.MyMethod;
+import graph.entities.Service;
 import org.jgrapht.Graph;
 import parser.ParseResult;
 
@@ -15,119 +18,94 @@ import java.util.*;
  */
 public class CHM implements Metric {
 
-    private MyGraph myGraph;
     private ParseResult parseResult;
 
-    public CHM(MyGraph myGraph, ParseResult parseResult) {
-        this.myGraph = myGraph;
+    public CHM(ParseResult parseResult) {
         this.parseResult = parseResult;
     }
 
-
-    private double calculateJaccardCoefficient(MyClass source, MyClass target) {
+    private double calculateJaccardCoefficient(MyMethod source, MyMethod target) {
         // Calculate jaccard coefficient for parameters data types
-        Set<String> sourceParameters = new HashSet<>();
-        Set<String> targetParameters = new HashSet<>();
+        Set<String> sourceParameters = new HashSet<>(source.getParametersDataType());
+        Set<String> targetParameters = new HashSet<>(target.getParametersDataType());
 
-        source.getMethods().forEach(m -> sourceParameters.addAll(m.getParametersDataType()));
-        target.getMethods().forEach(m -> targetParameters.addAll(m.getParametersDataType()));
         double coefficientParameters = JaccardCoefficient.calculate(sourceParameters, targetParameters);
 
         // Calculate jaccard coefficient for return data types
-        Set<String> sourceReturn = new HashSet<>();
-        Set<String> targetReturn = new HashSet<>();
+        Set<String> sourceReturn = new HashSet<>(source.getReturnDataType());
+        Set<String> targetReturn = new HashSet<>(target.getReturnDataType());
 
-        source.getMethods().forEach(m -> sourceReturn.addAll(m.getReturnDataType()));
-        target.getMethods().forEach(m -> targetReturn.addAll(m.getReturnDataType()));
         double coefficientReturn = JaccardCoefficient.calculate(sourceReturn, targetReturn);
 
         return (coefficientParameters + coefficientReturn) / 2;
     }
 
-    public Map<Integer, Integer> totalOperationsPerCluster(Map<String, Integer> clusters) {
-        Map<String, MyClass> classes = parseResult.getClasses();
-        Map<Integer, Integer> clusterIdMethodSum = new HashMap<>();
-
-        for (Map.Entry<String, Integer> entry : clusters.entrySet()) {
-
-            if (!classes.containsKey(entry.getKey())) {
-                continue;
-            }
-
-            int totalMethods = classes.get(entry.getKey()).getMethods().size();
-
-            if (!clusterIdMethodSum.containsKey(entry.getValue())) {
-                clusterIdMethodSum.put(entry.getValue(), totalMethods);
-            } else {
-                clusterIdMethodSum.put(entry.getValue(), clusterIdMethodSum.get(entry.getValue()) + totalMethods);
-            }
-        }
-
-        return clusterIdMethodSum;
-    }
 
     @Override
     public double calculateService() {
-        // TODO: atualizar para receber um ParseResult
-        Map<String, Integer> clusters = new HashMap<>();
+        /*
+            TODO:
+             - Source para destino sempre
+             - Fazer bilateralmente
 
-        Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
-        Map<Integer, ClusterLOCInfo> clusterResults = new HashMap<>();
-
-
-        Map<Integer, Integer> totalOperationsPerCluster = totalOperationsPerCluster(clusters);
-        System.out.println("Number of clusters: " + totalOperationsPerCluster.size());
-
-        /**
-         *
-         TODO: avaliar se o cálculo deve ser feito apartir dos pares? Não estamos a ignorar assim as classes que não têm
-         métodos e portanto um jaccard de 1?
          */
-        for (DependencyEdge edge : graph.edgeSet()) {
-            MyClass source = graph.getEdgeSource(edge);
-            MyClass target = graph.getEdgeTarget(edge);
+        ExtractOperations.extractAtServiceLevel(parseResult);
+        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResult.getServices());
+        Map<Integer, Service> services = parseResult.getServices();
 
-            // Belong to the same cluster
-            if (clusters.get(source.getQualifiedName()) != null &&
-                    clusters.get(source.getQualifiedName()).equals(clusters.get(target.getQualifiedName()))) {
-                int clusterId = clusters.get(source.getQualifiedName());
+        double chm = 0.0;
+        for (Service service : services.values()) {
+            double serviceJaccard = 0.0;
+            for (String sourceOperation : service.getOperations().keySet()) {
+                for (String targetOperation : service.getOperations().keySet()) {
+                    if (sourceOperation.equals(targetOperation)) {
+                        continue;
+                    }
 
-                double jaccard = (calculateJaccardCoefficient(source, target));
+                    String sourceClassName = service.getOperations().get(sourceOperation);
+                    String targetClassName = service.getOperations().get(targetOperation);
 
-                if(totalOperationsPerCluster.get(clusterId) == 0){
-                    System.out.println("Este cluster tem 0 operações!");
-                }
+                    MyMethod sourceMethod = parseResult.getClasses().get(sourceClassName).getMethods().get(sourceOperation);
+                    MyMethod targetMethod = parseResult.getClasses().get(targetClassName).getMethods().get(targetOperation);
 
+
+                    if (sourceMethod == null || targetMethod == null) {
+                        /*
+                            The only case I saw this happen, is when the parser operates on
+                            codebases with method invocations to methods without declaration
+                         */
+
+                        System.out.println("[CHM Source or Target method not found] " + sourceOperation + ", " + targetOperation);
+                        continue;
+                    }
+
+                    double jaccard = calculateJaccardCoefficient(sourceMethod, targetMethod);
+                    serviceJaccard += jaccard;
 
 /*
-                int currTotal = totalOperationsPerCluster.get(clusterId);
-                if (currTotal == 0) {
-                    jaccard = 1;
-                }
+                    System.out.println("Pair: " + sourceOperation + " - " + targetOperation + " : " + jaccard);
+                    System.out.println("\t -- " + sourceClassName + " - " + targetClassName);
 */
-/*
-                // TODO : Reconsiderar se esta parte é necessária à equação
-                else {
-                    jaccard = jaccard / ((double) currTotal * (currTotal - 1) / 2);
-                }
-*/
-
-                if (clusterResults.containsKey(clusterId)) {
-                    clusterResults.get(clusterId).pairAmount++;
-                    clusterResults.get(clusterId).totalSimilarity += jaccard;
-                } else {
-                    clusterResults.put(clusterId, new ClusterLOCInfo(1, jaccard));
                 }
             }
+
+            // TODO: Originally stated as != 1, but how do we handle when the method has no operations?
+            if (service.getOperations().size() <= 1) {
+                serviceJaccard = 1;
+            } else {
+                int opSize = service.getOperations().size();
+                serviceJaccard = opSize != 0 ? serviceJaccard / (double) (opSize * (opSize - 1) / 2) : 0;
+            }
+
+            chm += serviceJaccard;
+
         }
 
-        double totalDiff = 0;
-        for (ClusterLOCInfo cluster : clusterResults.values()) {
-            totalDiff += (cluster.totalSimilarity / cluster.pairAmount);
-        }
 
-        return clusterResults.isEmpty() ? 1 : totalDiff / (double) clusterResults.size();
+
+        return chm / services.size();
     }
+
 
 }
 

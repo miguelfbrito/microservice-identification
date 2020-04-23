@@ -9,7 +9,7 @@ public class MyClass {
     private String qualifiedName;
     private ClassOrInterfaceDeclaration visitor;
     // TODO: consider changint to set
-    private List<MyMethod> methods;
+    private Map<String, MyMethod> methods;
     private Set<String> operations; // List of methods called from another service
     private Service service;
 
@@ -20,14 +20,14 @@ public class MyClass {
      */
     public MyClass(String qualifiedName) {
         this.qualifiedName = qualifiedName;
-        this.methods = new ArrayList<>();
+        this.methods = new HashMap<>();
         this.operations = new HashSet<>();
         this.service = null;
     }
 
     public MyClass(String qualifiedName, Service service) {
         this.qualifiedName = qualifiedName;
-        this.methods = new ArrayList<>();
+        this.methods = new HashMap<>();
         this.operations = new HashSet<>();
         this.service = service;
     }
@@ -36,7 +36,7 @@ public class MyClass {
         this.visitor = visitor;
         visitor.getFullyQualifiedName().ifPresent(qualifiedName -> this.qualifiedName = qualifiedName);
         this.simpleName = visitor.getName().toString();
-        this.methods = new ArrayList<>();
+        this.methods = new HashMap<>();
         this.operations = new HashSet<>();
         this.service = null;
     }
@@ -53,11 +53,11 @@ public class MyClass {
         return visitor;
     }
 
-    public List<MyMethod> getMethods() {
+    public Map<String, MyMethod> getMethods() {
         return methods;
     }
 
-    public void setMethods(List<MyMethod> methods) {
+    public void setMethods(Map<String, MyMethod> methods) {
         this.methods = methods;
     }
 

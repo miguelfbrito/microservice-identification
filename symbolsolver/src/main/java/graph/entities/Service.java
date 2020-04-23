@@ -2,17 +2,17 @@ package graph.entities;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Service {
 
     private Map<String, MyClass> classes;
-    // TODO: Consider changing to a set of Strings. Could be useful to display service operations
-    private int operations;
+    private Map<String, String> operations; // <name, correspondingClass>
     private int id;
 
     public Service(int id) {
         this.classes = new HashMap<>();
-        this.operations = 0;
+        this.operations = new HashMap<>();
         this.id = id;
     }
 
@@ -28,12 +28,12 @@ public class Service {
         return id;
     }
 
-    public int getOperations() {
-        return operations;
+    public void setOperations(Map<String, String> operations) {
+        this.operations = operations;
     }
 
-    public void setOperations(int operations) {
-        this.operations = operations;
+    public Map<String, String> getOperations() {
+        return operations;
     }
 
     @Override

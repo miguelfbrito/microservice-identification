@@ -8,6 +8,8 @@ import graph.entities.Service;
 import org.jgrapht.Graph;
 import parser.ParseResult;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,23 +27,13 @@ public class OPN implements Metric {
     @Override
     public double calculateService() {
         ExtractOperations.extractAtServiceLevel(parseResult);
-        calculateOPNEachService();
+        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResult.getServices());
 
         int totalOPN = 0;
         for (Service service : parseResult.getServices().values()) {
-            totalOPN += service.getOperations();
+            totalOPN += service.getOperations().size();
         }
 
         return totalOPN;
-    }
-
-    private void calculateOPNEachService() {
-        for (Service service : parseResult.getServices().values()) {
-            int totalOperationsPerService = 0;
-            for (MyClass source : service.getClasses().values()) {
-                totalOperationsPerService += source.getOperations().size();
-            }
-            service.setOperations(totalOperationsPerService);
-        }
     }
 }

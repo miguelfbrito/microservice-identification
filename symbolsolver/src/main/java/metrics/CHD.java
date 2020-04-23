@@ -29,9 +29,11 @@ public class CHD implements Metric {
         Set<String> sourceParameters = new HashSet<>();
         Set<String> targetParameters = new HashSet<>();
 
+/*
         source.getMethods().forEach(m -> sourceParameters.addAll(StringUtils.extractCamelCaseLower(m.getName())));
         target.getMethods().forEach(m -> targetParameters.addAll(StringUtils.extractCamelCaseLower(m.getName())));
 
+*/
         return JaccardCoefficient.calculate(sourceParameters, targetParameters);
     }
 
