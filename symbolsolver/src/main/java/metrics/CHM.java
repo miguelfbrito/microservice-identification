@@ -4,6 +4,7 @@ import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
 import org.jgrapht.Graph;
+import parser.ParseResult;
 
 import java.util.*;
 
@@ -15,9 +16,11 @@ import java.util.*;
 public class CHM implements Metric {
 
     private MyGraph myGraph;
+    private ParseResult parseResult;
 
-    public CHM(MyGraph myGraph) {
+    public CHM(MyGraph myGraph, ParseResult parseResult) {
         this.myGraph = myGraph;
+        this.parseResult = parseResult;
     }
 
 
@@ -52,15 +55,15 @@ public class CHM implements Metric {
         Set<String> sourceReturn = new HashSet<>();
         Set<String> targetReturn = new HashSet<>();
 
-        source.getMethods().forEach(m -> sourceReturn.add(m.getReturnDataType()));
-        target.getMethods().forEach(m -> targetReturn.add(m.getReturnDataType()));
+        source.getMethods().forEach(m -> sourceReturn.addAll(m.getReturnDataType()));
+        target.getMethods().forEach(m -> targetReturn.addAll(m.getReturnDataType()));
         double coefficientReturn = JaccardCoefficient.calculate(sourceReturn, targetReturn);
 
         return (coefficientParameters + coefficientReturn) / 2;
     }
 
     public Map<Integer, Integer> totalOperationsPerCluster(Map<String, Integer> clusters) {
-        Map<String, MyClass> classes = this.myGraph.getClasses();
+        Map<String, MyClass> classes = parseResult.getClasses();
         Map<Integer, Integer> clusterIdMethodSum = new HashMap<>();
 
         for (Map.Entry<String, Integer> entry : clusters.entrySet()) {
@@ -82,15 +85,15 @@ public class CHM implements Metric {
     }
 
     @Override
-    public double calculateCluster(Map<String, Integer> clusters) {
+    public double calculateCluster() {
+        // TODO: atualizar para receber um ParseResult
+        Map<String, Integer> clusters = new HashMap<>();
+
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
         Map<Integer, ClusterLOCInfo> clusterResults = new HashMap<>();
 
 
         Map<Integer, Integer> totalOperationsPerCluster = totalOperationsPerCluster(clusters);
-        for (Map.Entry<Integer, Integer> entry : totalOperationsPerCluster.entrySet()) {
-            System.out.println("ClusterId: " + entry.getKey() + " - " + entry.getValue());
-        }
         System.out.println("Number of clusters: " + totalOperationsPerCluster.size());
 
         /**
@@ -104,15 +107,22 @@ public class CHM implements Metric {
 
             // Belong to the same cluster
             if (clusters.get(source.getQualifiedName()) != null &&
-                    clusters.get(source.getQualifiedName()) == clusters.get(target.getQualifiedName())) {
+                    clusters.get(source.getQualifiedName()).equals(clusters.get(target.getQualifiedName()))) {
                 int clusterId = clusters.get(source.getQualifiedName());
 
                 double jaccard = (calculateJaccardCoefficient(source, target));
 
+                if(totalOperationsPerCluster.get(clusterId) == 0){
+                    System.out.println("Este cluster tem 0 operações!");
+                }
+
+
+/*
                 int currTotal = totalOperationsPerCluster.get(clusterId);
                 if (currTotal == 0) {
                     jaccard = 1;
                 }
+*/
 /*
                 // TODO : Reconsiderar se esta parte é necessária à equação
                 else {

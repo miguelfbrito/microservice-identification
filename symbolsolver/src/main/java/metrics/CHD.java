@@ -42,7 +42,9 @@ public class CHD implements Metric {
 
 
     @Override
-    public double calculateCluster(Map<String, Integer> clusters) {
+    public double calculateCluster() {
+        // TODO : atualizar para receber um ParseResult
+        Map<String, Integer> clusters = new HashMap<>();
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
         Map<Integer, ClusterLOCInfo> clusterResults = new HashMap<>();
 

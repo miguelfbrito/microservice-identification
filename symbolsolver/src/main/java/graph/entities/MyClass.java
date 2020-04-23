@@ -2,23 +2,34 @@ package graph.entities;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class MyClass {
     private String simpleName;
     private String qualifiedName;
     private ClassOrInterfaceDeclaration visitor;
+    // TODO: consider changint to set
     private List<MyMethod> methods;
+    private Set<String> operations; // List of methods called from another service
+    private Service service;
 
     /**
      * Should only be used as a mean to find a match in the graph through hashing
+     *
      * @param qualifiedName
      */
-    public MyClass(String qualifiedName){
+    public MyClass(String qualifiedName) {
         this.qualifiedName = qualifiedName;
         this.methods = new ArrayList<>();
+        this.operations = new HashSet<>();
+        this.service = null;
+    }
+
+    public MyClass(String qualifiedName, Service service) {
+        this.qualifiedName = qualifiedName;
+        this.methods = new ArrayList<>();
+        this.operations = new HashSet<>();
+        this.service = service;
     }
 
     public MyClass(ClassOrInterfaceDeclaration visitor) {
@@ -26,6 +37,8 @@ public class MyClass {
         visitor.getFullyQualifiedName().ifPresent(qualifiedName -> this.qualifiedName = qualifiedName);
         this.simpleName = visitor.getName().toString();
         this.methods = new ArrayList<>();
+        this.operations = new HashSet<>();
+        this.service = null;
     }
 
     public String getSimpleName() {
@@ -46,6 +59,32 @@ public class MyClass {
 
     public void setMethods(List<MyMethod> methods) {
         this.methods = methods;
+    }
+
+    public Set<String> getOperations() {
+        return operations;
+    }
+
+    public void setOperations(Set<String> operations) {
+        this.operations = operations;
+    }
+
+    public void setVisitor(ClassOrInterfaceDeclaration visitor) {
+        this.visitor = visitor;
+    }
+
+    public boolean isServiceInterface() {
+        return !operations.isEmpty();
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        if (service.getClasses().containsKey(qualifiedName)) {
+            this.service = service;
+        }
     }
 
     @Override
