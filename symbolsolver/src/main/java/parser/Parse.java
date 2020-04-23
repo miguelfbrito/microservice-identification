@@ -39,7 +39,7 @@ public class Parse {
             }
 
             if (service == null) {
-                service = new Service();
+                service = new Service(clusterId);
                 service.getClasses().put(className, myClasses.get(className));
                 myClass.setService(service);
                 clusters.put(service.getClusterId(), service);

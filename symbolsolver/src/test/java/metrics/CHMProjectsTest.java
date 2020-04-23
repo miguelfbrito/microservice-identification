@@ -1,9 +1,7 @@
 package metrics;
 
 import com.github.javaparser.ast.CompilationUnit;
-import graph.MyGraph;
 
-import graph.creation.ByMethodCallInvocationClusters;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-//@Disabled("Metric assertion should be updated later")
+@Disabled("Metric assertion should be updated later")
 public class CHMProjectsTest {
 
     private static String PROJECTS_ROOT;

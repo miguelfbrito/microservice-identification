@@ -6,13 +6,18 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import graph.DependencyEdge;
 import graph.MyGraph;
 import graph.entities.MyClass;
+import parser.ParseResult;
 
 import java.util.List;
+import java.util.Map;
 
 public class ByMethodCallInvocation extends MyGraph {
 
-    public ByMethodCallInvocation(List<CompilationUnit> compilationUnits) {
-        super(compilationUnits);
+    private ParseResult parseResult;
+
+    public ByMethodCallInvocation(ParseResult parseResult) {
+        super(parseResult);
+        this.parseResult = parseResult;
         this.addEdges();
     }
 
@@ -21,12 +26,14 @@ public class ByMethodCallInvocation extends MyGraph {
      */
     @Override
     public void addEdges() {
-        for (MyClass source : getClasses().values()) {
+        Map<String, MyClass> classes = parseResult.getClasses();
+
+        for (MyClass source : classes.values()) {
             for (MethodCallExpr methodCall : source.getVisitor().findAll(MethodCallExpr.class)) {
                 methodCall.getScope().ifPresent(rs -> {
                     try {
                         ResolvedType resolvedType = rs.calculateResolvedType();
-                        MyClass target = getClasses().get(resolvedType.asReferenceType().getQualifiedName());
+                        MyClass target = classes.get(resolvedType.asReferenceType().getQualifiedName());
 
                         DependencyEdge edge = getGraph().getEdge(source, target);
                         if (edge == null) {
@@ -41,5 +48,6 @@ public class ByMethodCallInvocation extends MyGraph {
                 });
             }
         }
+
     }
 }

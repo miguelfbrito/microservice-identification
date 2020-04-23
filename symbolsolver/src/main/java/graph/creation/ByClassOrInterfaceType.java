@@ -9,9 +9,11 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
+import parser.ParseResult;
 
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Creates a dependency graph based on all the possible reference types between classes.
@@ -19,20 +21,23 @@ import java.util.List;
  */
 public class ByClassOrInterfaceType extends MyGraph {
 
-    public ByClassOrInterfaceType(List<CompilationUnit> compilationUnits) {
-        super(compilationUnits);
+    private ParseResult parseResult;
+
+    public ByClassOrInterfaceType(ParseResult parseResult) {
+        super(parseResult);
+        this.parseResult = parseResult;
         this.addEdges();
     }
 
     @Override
     public void addEdges() {
-
-        for (MyClass source : getClasses().values()) {
+        Map<String, MyClass> classes = parseResult.getClasses();
+        for (MyClass source : classes.values()) {
             for (ClassOrInterfaceType classOrInterfaceType : source.getVisitor().findAll(ClassOrInterfaceType.class)) {
                 try {
                     String qualifiedName = classOrInterfaceType.resolve().getQualifiedName();
+                    MyClass target = classes.get(qualifiedName);
 
-                    MyClass target = getClasses().get(qualifiedName);
                     DependencyEdge edge = getGraph().getEdge(source, target);
                     if (target != null && !source.getQualifiedName().equals(target.getQualifiedName())) {
                         if (edge == null) {
@@ -41,7 +46,7 @@ public class ByClassOrInterfaceType extends MyGraph {
                             edge.setValue(edge.getValue() + 1);
                         }
                     }
-                } catch(UnsupportedOperationException e){
+                } catch (UnsupportedOperationException e) {
                     /*
                         TODO: Find why this happens and how to do a pre-check for ClassOrInterfaceType that can't be resolved
                      */

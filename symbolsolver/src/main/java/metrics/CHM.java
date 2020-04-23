@@ -4,6 +4,7 @@ import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
 import org.jgrapht.Graph;
+import parser.ParseResult;
 
 import java.util.*;
 
@@ -15,9 +16,11 @@ import java.util.*;
 public class CHM implements Metric {
 
     private MyGraph myGraph;
+    private ParseResult parseResult;
 
-    public CHM(MyGraph myGraph) {
+    public CHM(MyGraph myGraph, ParseResult parseResult) {
         this.myGraph = myGraph;
+        this.parseResult = parseResult;
     }
 
 
@@ -60,7 +63,7 @@ public class CHM implements Metric {
     }
 
     public Map<Integer, Integer> totalOperationsPerCluster(Map<String, Integer> clusters) {
-        Map<String, MyClass> classes = this.myGraph.getClasses();
+        Map<String, MyClass> classes = parseResult.getClasses();
         Map<Integer, Integer> clusterIdMethodSum = new HashMap<>();
 
         for (Map.Entry<String, Integer> entry : clusters.entrySet()) {
@@ -82,7 +85,10 @@ public class CHM implements Metric {
     }
 
     @Override
-    public double calculateCluster(Map<String, Integer> clusters) {
+    public double calculateCluster() {
+        // TODO: atualizar para receber um ParseResult
+        Map<String, Integer> clusters = new HashMap<>();
+
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
         Map<Integer, ClusterLOCInfo> clusterResults = new HashMap<>();
 

@@ -5,7 +5,9 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
+import graph.entities.Service;
 import org.jgrapht.Graph;
+import parser.ParseResult;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,9 +19,11 @@ import java.util.Set;
 public class IRN implements Metric {
 
     private MyGraph myGraph;
+    private ParseResult parseResult;
 
-    public IRN(MyGraph myGraph) {
+    public IRN(MyGraph myGraph, ParseResult parseResult) {
         this.myGraph = myGraph;
+        this.parseResult = parseResult;
     }
 
 
@@ -37,30 +41,31 @@ public class IRN implements Metric {
     }
 
     @Override
-    public double calculateCluster(Map<String, Integer> clusters) {
+    public double calculateCluster() {
 
         // For each edge, check if the source and target belong to the same cluster or not
         Graph<MyClass, DependencyEdge> graph = this.myGraph.getGraph();
 
+        System.out.println("\nGraph total nodes: " + graph.vertexSet().size());
+        System.out.println("Graph total edges: " + graph.edgeSet().size());
+        System.out.println("Total services size: "  + parseResult.getServices().size());
+        System.out.println("Total classes size: "  + parseResult.getClasses().size());
+
         double totalIrn = 0;
+
         for (DependencyEdge edge : graph.edgeSet()) {
             MyClass source = graph.getEdgeSource(edge);
             MyClass target = graph.getEdgeTarget(edge);
 
-            if (!clusters.containsKey(source.getQualifiedName()) || !clusters.containsKey(target.getQualifiedName())) {
-                // System.out.println("\t[Node not found source] " + source.getSimpleName());
-                continue;
+            // TODO: Handle null pointer
+            Service serviceOfSource = parseResult.getClasses().get(source.getQualifiedName()).getService();
+            Service serviceOfTarget = parseResult.getClasses().get(target.getQualifiedName()).getService();
+
+            if (serviceOfSource != null && serviceOfTarget != null &&
+                    serviceOfSource.getClusterId() != serviceOfTarget.getClusterId()) {
+                totalIrn += edge.getValue();
             }
 
-            try {
-                if (!clusters.get(source.getQualifiedName()).equals(clusters.get(target.getQualifiedName()))) {
-                    totalIrn += edge.getValue();
-                }
-            } catch (NullPointerException e) {
-                // TODO : Investigate why are there some occasions throwing a NullPointer
-                // Probably because of a mismatch between identified classes from JavaParser and JavaLang
-                // e.printStackTrace();
-            }
         }
         return totalIrn;
     }

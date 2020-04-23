@@ -22,14 +22,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Disabled.*;
 
 public class CHMTest {
+/*
 
 
     public MyClass createClassOnGraph(MyGraph myGraph, String className, List<MyMethod> methods, Map<String, Integer> clusters, int clusterId) {
         MyClass classA = new MyClass(className);
-        classA.getMethods().addAll(methods);
+      */
+/*  classA.getMethods().addAll(methods);
         myGraph.getGraph().addVertex(classA);
         myGraph.getClasses().put(classA.getQualifiedName(), classA);
-        clusters.put(classA.getQualifiedName(), clusterId);
+        clusters.put(classA.getQualifiedName(), clusterId);*//*
+
         return classA;
     }
 
@@ -49,9 +52,13 @@ public class CHMTest {
         // Add edges
         graph.getGraph().addEdge(classA, classB, new DependencyEdge(""));
 
+*/
+/*
         Metric CHM = new CHM(graph);
         double chm = CHM.calculateCluster(clusters);
         assertEquals(1, chm, 0.01);
+*//*
+
     }
 
     @Test
@@ -197,6 +204,7 @@ public class CHMTest {
         double chm = CHM.calculateCluster(clusters);
         assertEquals(1, chm, 0.01);
     }
+*/
 
 
 }

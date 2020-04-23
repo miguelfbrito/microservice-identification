@@ -10,6 +10,8 @@ import metrics.Metric;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import parser.Parse;
+import parser.ParseResult;
 import parser.Parser;
 import utils.StringUtils;
 
@@ -40,13 +42,19 @@ public class CHDTest {
 
     public double CHDProjectTest(String clusters, String path) throws IOException {
         List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(path));
-        Map<String, Integer> mapClusters = StringUtils.readClustersFromString(clusters);
+/*
+        ParseResult parseResult = new Parse().completeParseClusters(compilationUnits, clusters);
 
-        MyGraph graphReference = new ByClassOrInterfaceType(compilationUnits);
+        MyGraph graphReference = new ByClassOrInterfaceType(parseResult);
+*/
+/*
         Metric CHD = new CHD(graphReference);
         double chd = CHD.calculateCluster(mapClusters);
         System.out.println("CHD Project: " + chd);
         return chd;
+*/
+
+        return 0.0;
     }
 
 

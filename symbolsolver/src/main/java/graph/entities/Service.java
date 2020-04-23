@@ -8,17 +8,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Service {
 
-    private static AtomicInteger clusterIdCounter = new AtomicInteger(0);
 
     private Map<String, MyClass> classes;
     // TODO: Consider change to a set of Strings. Could be useful to display service operations
     private int operations;
     private int clusterId;
 
-    public Service() {
+    public Service(int clusterId) {
         this.classes = new HashMap<>();
         this.operations = 0;
-        this.clusterId = clusterIdCounter.getAndIncrement();
+        this.clusterId = clusterId;
     }
 
     public Map<String, MyClass> getClasses() {

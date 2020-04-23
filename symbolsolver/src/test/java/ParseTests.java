@@ -1,4 +1,5 @@
 import com.github.javaparser.ast.CompilationUnit;
+import extraction.ExtractOperations;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import parser.Parse;
@@ -34,7 +35,10 @@ public class ParseTests {
         String clusters = "[['com.test.Main', 'com.test.OtherClass']]";
         String path = PROJECTS_ROOT + "/test";
 
-        System.out.println(shouldParseProjectWithClusters(clusters, path));
+        ParseResult parseResult = shouldParseProjectWithClusters(clusters, path);
+        System.out.println(parseResult);
+
+        ExtractOperations.extractAtServiceLevel(parseResult);
     }
 
     @Test
@@ -44,6 +48,8 @@ public class ParseTests {
 
         ParseResult parseResult = shouldParseProjectWithClusters(clusters, path);
         System.out.println(parseResult);
+
+        ExtractOperations.extractAtServiceLevel(parseResult);
 
         System.out.println("Services: " + parseResult.getServices());
         System.out.println("Services: " + parseResult.getServices().size());

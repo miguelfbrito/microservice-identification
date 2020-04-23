@@ -42,7 +42,7 @@ public class StringUtils {
                 clusters.get(entry.getValue()).getClasses().put(entry.getKey(),
                         new MyClass(entry.getKey(), clusters.get(entry.getValue())));
             } else {
-                Service service = new Service();
+                Service service = new Service(entry.getValue());
                 service.getClasses().put(entry.getKey(), new MyClass(entry.getKey(), service));
                 clusters.put(service.getClusterId(), service);
             }
