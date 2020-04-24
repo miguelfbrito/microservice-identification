@@ -35,7 +35,6 @@ public class OPNProjectsTest {
         Parse parse = new Parse();
         ParseResult parseResult = parse.completeParseClusters(compilationUnits, clusters);
 
-        MyGraph graphReference = new ByMethodCallInvocation(parseResult);
         Metric OPN = new OPN(parseResult);
         double opn = OPN.calculateService();
         System.out.println("OPN Project: " + opn);

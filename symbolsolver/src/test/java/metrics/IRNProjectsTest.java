@@ -30,9 +30,6 @@ public class IRNProjectsTest {
         } else {
             PROJECTS_ROOT = System.getenv("GITHUB_WORKSPACE") + "/thesis-web-applications/monoliths";
         }
-
-
-
     }
 
     public double IRNProjectTest(String clusters, String path) throws IOException {
