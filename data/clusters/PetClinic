@@ -1,0 +1,71 @@
+Total service operations: 0
+org.springframework.samples.petclinic.vet.VetController
+org.springframework.samples.petclinic.PetclinicIntegrationTests
+org.springframework.samples.petclinic.vet.Vets
+org.springframework.samples.petclinic.vet.VetRepository
+org.springframework.samples.petclinic.vet.VetControllerTests
+org.springframework.samples.petclinic.vet.Specialty
+org.springframework.samples.petclinic.vet.Vet
+org.springframework.samples.petclinic.vet.VetTests
+--------------------------------------------
+
+Total service operations: 1
+org.springframework.samples.petclinic.model.ValidatorTests
+org.springframework.samples.petclinic.model.BaseEntity
+org.springframework.samples.petclinic.model.Person
+org.springframework.samples.petclinic.service.EntityUtils
+	getById
+org.springframework.samples.petclinic.model.NamedEntity
+--------------------------------------------
+
+Total service operations: 0
+org.springframework.samples.petclinic.system.CrashControllerTests
+org.springframework.samples.petclinic.system.CrashController
+--------------------------------------------
+
+Total service operations: 0
+org.springframework.samples.petclinic.system.WelcomeController
+--------------------------------------------
+
+Total service operations: 0
+org.springframework.samples.petclinic.system.CacheConfiguration
+--------------------------------------------
+
+Total service operations: 2
+org.springframework.samples.petclinic.owner.VisitController
+org.springframework.samples.petclinic.visit.Visit
+	setPetId
+org.springframework.samples.petclinic.visit.VisitRepository
+	findByPetId
+org.springframework.samples.petclinic.owner.VisitControllerTests
+org.springframework.samples.petclinic.service.ClinicServiceTests
+--------------------------------------------
+
+Total service operations: 3
+org.springframework.samples.petclinic.owner.Owner
+	getPet
+	addPet
+org.springframework.samples.petclinic.owner.OwnerControllerTests
+org.springframework.samples.petclinic.owner.OwnerController
+org.springframework.samples.petclinic.owner.OwnerRepository
+	findById
+--------------------------------------------
+
+Total service operations: 7
+org.springframework.samples.petclinic.owner.Pet
+	getName
+	setVisitsInternal
+	addVisit
+	getId
+	isNew
+	setOwner
+org.springframework.samples.petclinic.owner.PetType
+org.springframework.samples.petclinic.owner.PetTypeFormatterTests
+org.springframework.samples.petclinic.owner.PetTypeFormatter
+org.springframework.samples.petclinic.owner.PetController
+org.springframework.samples.petclinic.owner.PetValidator
+org.springframework.samples.petclinic.owner.PetControllerTests
+org.springframework.samples.petclinic.owner.PetRepository
+	findById
+--------------------------------------------
+

@@ -9,9 +9,9 @@ import java.util.List;
 public class GenerateMetricsTest {
 
     @Test
-    public void generateMetrics(){
+    public void generateMetrics() {
         GenerateMetrics generateMetrics = new GenerateMetrics();
-        List<ProjectMetrics> generate = generateMetrics.generate();
+        List<ProjectMetrics> generate = generateMetrics.generate("chm & chd divided by counted services");
 
     }
 

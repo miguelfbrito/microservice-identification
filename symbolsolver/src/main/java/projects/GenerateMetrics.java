@@ -5,6 +5,8 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import graph.MyGraph;
 import graph.creation.ByMethodCallInvocation;
+import graph.entities.MyClass;
+import graph.entities.Service;
 import metrics.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class GenerateMetrics {
 
@@ -34,7 +37,35 @@ public class GenerateMetrics {
         }
     }
 
-    public List<ProjectMetrics> generate() {
+    public static void extractClustersToFile(Map<Integer, Service> services, Project project) throws IOException {
+
+        // WRITE TO GENERIC FILE
+        String path = "../data/clusters/" + project.getName();
+        BufferedWriter writer = new BufferedWriter(
+                new FileWriter(path)  //Set true for append mode
+        );
+
+        for (Service service : services.values()) {
+            writer.write("Total service operations: " + service.getOperations().size());
+            writer.newLine();
+            for (MyClass myClass : service.getClasses().values()) {
+                writer.write(myClass.getQualifiedName());
+                writer.newLine();
+                for (String operation : myClass.getOperations()) {
+                    writer.write("\t" + operation);
+                    writer.newLine();
+                }
+            }
+            writer.write("--------------------------------------------");
+            writer.newLine();
+            writer.newLine();
+        }
+
+        writer.close();
+
+    }
+
+    public List<ProjectMetrics> generate(String description) {
 
         // When running from another test method
         checkEnv();
@@ -47,7 +78,7 @@ public class GenerateMetrics {
             }.getType();
 
             List<Project> projects = gson.fromJson(reader, projectType);
-            projectMetrics = saveMetricsResults(projects);
+            projectMetrics = saveMetricsResults(projects, description);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -58,7 +89,7 @@ public class GenerateMetrics {
         return projectMetrics;
     }
 
-    public List<ProjectMetrics> saveMetricsResults(List<Project> projects) throws IOException {
+    public List<ProjectMetrics> saveMetricsResults(List<Project> projects, String description) throws IOException {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
 
@@ -75,7 +106,8 @@ public class GenerateMetrics {
             pm.setChd(calculateCHD(parseResult));
 
             projectMetrics.add(pm);
-            writeToFile(pm);
+            extractClustersToFile(parseResult.getServices(), proj);
+            writeToFile(pm, description);
         }
 
         return projectMetrics;
@@ -110,7 +142,7 @@ public class GenerateMetrics {
         return chd;
     }
 
-    public void writeToFile(ProjectMetrics metrics) throws IOException {
+    public void writeToFile(ProjectMetrics metrics, String description) throws IOException {
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String date = formatter.format(new Date());
@@ -125,11 +157,14 @@ public class GenerateMetrics {
                 new FileWriter(path, true)  //Set true for append mode
         );
 
+        final String header = "IRN; OPN; CHM; CHD; Description ;Date;";
+
         if (writeHeader) {
-            writer.write("ProjectName; IRN; OPN; CHM; CHD; ;Date;");
+            writer.write("ProjectName; " + header);
         }
-        String line = metrics.getProject().getName() + ";" + metrics.getIrn() + ";" + metrics.getOpn() +
-                ";" + String.format("%.3f", metrics.getChm()) + ";" + String.format("%.3f", metrics.getChd()) + "; ;" + date + ";";
+        String line = metrics.getProject().getName() + ";" + metrics.getIrn() + ";" + metrics.getOpn() + ";" +
+                String.format("%.3f", metrics.getChm()) + ";" +
+                String.format("%.3f", metrics.getChd()) + ";" + description + " ;" + date + ";";
 
         writer.newLine();
         writer.write(line);
@@ -140,18 +175,17 @@ public class GenerateMetrics {
         path = "../data/results_" + metrics.getProject().getName() + ".csv";
         file = new File(path);
         writeHeader = !file.exists();
-        BufferedWriter projectWriter = new BufferedWriter(
-                new FileWriter(path, true)  //Set true for append mode
-        );
+        BufferedWriter projectWriter = new BufferedWriter(new FileWriter(path, true));
 
         if (writeHeader) {
             projectWriter.write(metrics.getProject().getName());
             projectWriter.newLine();
-            projectWriter.write("IRN; OPN; CHM; CHD; ;Date;");
+            projectWriter.write(header);
         }
 
-        String projectLine = metrics.getIrn() + ";" + metrics.getOpn() +
-                ";" + String.format("%.3f", metrics.getChm()) + ";" + String.format("%.3f", metrics.getChd()) + "; ;" + date + ";";
+        String projectLine = metrics.getIrn() + ";" + metrics.getOpn() + ";" +
+                String.format("%.3f", metrics.getChm()) + ";" +
+                String.format("%.3f", metrics.getChd()) + ";" + description + " ;" + date + ";";
 
         projectWriter.newLine();
         projectWriter.write(projectLine);

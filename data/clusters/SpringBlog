@@ -1,0 +1,143 @@
+Total service operations: 0
+com.raysmond.blog.JpaConfig
+com.raysmond.blog.Application
+--------------------------------------------
+
+Total service operations: 0
+com.raysmond.blog.Constants
+--------------------------------------------
+
+Total service operations: 4
+com.raysmond.blog.WebConfig
+com.raysmond.blog.admin.controllers.AdminController
+com.raysmond.blog.services.CacheSettingService
+com.raysmond.blog.services.AppSetting
+	getPageSize
+	getMainUri
+	getStoragePath
+	getMainUriStripped
+com.raysmond.blog.models.Setting
+com.raysmond.blog.forms.SettingsForm
+com.raysmond.blog.services.RequestProcessorService
+com.raysmond.blog.forms.LikeForm
+com.raysmond.blog.services.TelegramBotSettings
+com.raysmond.blog.models.support.WebError
+com.raysmond.blog.repositories.SettingRepository
+com.raysmond.blog.support.web.ViewHelper
+com.raysmond.blog.services.SettingService
+--------------------------------------------
+
+Total service operations: 6
+com.raysmond.blog.admin.controllers.UserController
+com.raysmond.blog.repositories.LikeRepository
+com.raysmond.blog.services.UserService
+	currentUser
+	getSuperUser
+	isCurrentUserAdmin
+com.raysmond.blog.repositories.UserRepository
+	findByEmail
+com.raysmond.blog.services.LikeService
+	getTotalLikesByPost
+com.raysmond.blog.models.User
+	isAdmin
+com.raysmond.blog.models.Like
+com.raysmond.blog.SecurityConfig
+com.raysmond.blog.models.BaseModel
+com.raysmond.blog.forms.UserForm
+--------------------------------------------
+
+Total service operations: 1
+com.raysmond.blog.utils.PaginatorUtil
+	createPagesList
+--------------------------------------------
+
+Total service operations: 2
+com.raysmond.blog.utils.DTOUtil
+	mapTo
+	map
+--------------------------------------------
+
+Total service operations: 0
+com.raysmond.blog.utils.CommonHelper
+--------------------------------------------
+
+Total service operations: 6
+com.raysmond.blog.services.TagService
+com.raysmond.blog.models.dto.PostPreviewDTO
+com.raysmond.blog.services.PostService
+	createAboutPage
+	getAllPublishedPostsByPage
+	getPublishedPostByPermalink
+	getPostsIdTitleList
+com.raysmond.blog.models.Tag
+com.raysmond.blog.repositories.SeoPostDataRepository
+com.raysmond.blog.models.dto.AjaxAnswerDTO
+com.raysmond.blog.services.SeoService
+com.raysmond.blog.support.web.SyntaxHighlightService
+com.raysmond.blog.controllers.TagController
+com.raysmond.blog.models.dto.PostIdTitleDTO
+com.raysmond.blog.repositories.TagRepository
+com.raysmond.blog.admin.controllers.NotificatorController
+com.raysmond.blog.seo.controllers.SitemapController
+com.raysmond.blog.support.web.FlexmarkMarkdownService
+com.raysmond.blog.admin.controllers.PostController
+com.raysmond.blog.notificators.Notificator
+com.raysmond.blog.forms.PostPreviewForm
+com.raysmond.blog.forms.PostForm
+com.raysmond.blog.repositories.PostRepository
+com.raysmond.blog.support.web.MarkdownService
+com.raysmond.blog.models.dto.PostAnnouncementDTO
+com.raysmond.blog.models.SeoPostData
+com.raysmond.blog.models.Post
+	getPermalink
+	getId
+--------------------------------------------
+
+Total service operations: 1
+com.raysmond.blog.support.web.HttpContentTypeSerializer
+	getContentType
+--------------------------------------------
+
+Total service operations: 2
+com.raysmond.blog.support.web.Message
+com.raysmond.blog.support.web.MessageHelper
+	addErrorAttribute
+	addSuccessAttribute
+--------------------------------------------
+
+Total service operations: 1
+com.raysmond.blog.models.SeoRobotAgent
+com.raysmond.blog.services.VisitService
+	getUniqueVisitsCount
+com.raysmond.blog.admin.controllers.SeoRobotAgentController
+com.raysmond.blog.models.Visit
+com.raysmond.blog.forms.SeoRobotAgentForm
+com.raysmond.blog.repositories.SeoRobotAgentRepository
+com.raysmond.blog.repositories.VisitRepository
+--------------------------------------------
+
+Total service operations: 0
+com.raysmond.blog.forms.StoredFileForm
+com.raysmond.blog.error.ExceptionHandlerController
+com.raysmond.blog.controllers.HomeController
+com.raysmond.blog.repositories.StoredFileRepository
+com.raysmond.blog.services.FileStorageService
+com.raysmond.blog.admin.controllers.StoredFileController
+com.raysmond.blog.models.StoredFile
+com.raysmond.blog.error.NotFoundException
+--------------------------------------------
+
+Total service operations: 0
+com.raysmond.blog.models.dto.VisitStatDTO
+--------------------------------------------
+
+Total service operations: 0
+com.raysmond.blog.services.StatisticsService
+com.raysmond.blog.admin.controllers.StatisticsController
+com.raysmond.blog.models.dto.PostsIdListDTO
+--------------------------------------------
+
+Total service operations: 0
+com.raysmond.blog.services.SeoRobotAgentService
+--------------------------------------------
+
