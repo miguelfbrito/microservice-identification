@@ -1,20 +1,14 @@
 package metrics;
 
 import extraction.ExtractOperations;
-import graph.DependencyEdge;
-import graph.MyGraph;
-import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
-import org.jgrapht.Graph;
 import parser.ParseResult;
 import utils.StringUtils;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Calculate the CoHesion at Message level (chd)
@@ -32,41 +26,58 @@ public class CHD implements Metric {
     }
 
     private double calculateJaccardCoefficient(MyMethod source, MyMethod target) {
+        // TODO : Consider the commented approach on RS17 (tosc-interf-dom-cohesion) on handling empty sets?
         Set<String> sourceOperationTerms = new HashSet<>(StringUtils.extractCamelCaseLower(source.getName()));
         Set<String> targetOperationTerms = new HashSet<>(StringUtils.extractCamelCaseLower(target.getName()));
 
-        if(includeParameters){
-            for(String s : source.getParametersDataType()){
+        if (includeParameters) {
+            for (String s : source.getParametersDataType()) {
                 sourceOperationTerms.addAll(StringUtils.extractVariableType(s));
             }
-            for(String s : source.getParametersDataType()){
+            for (String s : source.getParametersDataType()) {
                 targetOperationTerms.addAll(StringUtils.extractVariableType(s));
             }
         }
 
-        return JaccardCoefficient.calculate(sourceOperationTerms, targetOperationTerms);
+        Set<String> union = Jaccard.getUnion(sourceOperationTerms, targetOperationTerms);
+        Set<String> intersection = Jaccard.getIntersection(sourceOperationTerms, targetOperationTerms);
+
+        return union.isEmpty() ? 0 : intersection.size() / (double) union.size();
     }
 
 
     @Override
     public double calculateService() {
-        /*
-            TODO:
-             - Source para destino sempre
-             - Fazer bilateralmente
-         */
-
         ExtractOperations.extractAtServiceLevel(parseResult);
         ExtractOperations.extractAllClassOperationsToServiceLevel(parseResult.getServices());
         Map<Integer, Service> services = parseResult.getServices();
 
         double chd = 0.0;
+        int countedServices = 0;
         for (Service service : services.values()) {
-
+            int sourceIndex = -1;
             double serviceJaccard = 0.0;
-            for (String sourceOperation : service.getOperations().keySet()) {
-                for (String targetOperation : service.getOperations().keySet()) {
-                    if (sourceOperation.equals(targetOperation))
+
+            Map<String, String> operationsInOrder = service.getOperations();
+
+            if (operationsInOrder.isEmpty()) {
+                System.out.println("SKIPPING SERVICE");
+                continue;
+            }
+
+            countedServices++;
+
+            for (String sourceOperation : operationsInOrder.keySet()) {
+                sourceIndex++;
+
+                if (sourceIndex >= operationsInOrder.size() - 1)
+                    break;
+
+                int targetIndex = -1;
+                for (String targetOperation : operationsInOrder.keySet()) {
+                    targetIndex++;
+
+                    if (targetIndex <= sourceIndex || sourceOperation.equals(targetOperation))
                         continue;
 
                     String sourceClassName = service.getOperations().get(sourceOperation);
@@ -75,29 +86,24 @@ public class CHD implements Metric {
                     MyMethod sourceMethod = parseResult.getClasses().get(sourceClassName).getMethods().get(sourceOperation);
                     MyMethod targetMethod = parseResult.getClasses().get(targetClassName).getMethods().get(targetOperation);
 
-
                     if (sourceMethod == null || targetMethod == null) {
-                         /*
+                        /*
                             The only case I saw this happen, is when the parser operates on
                             codebases with method invocations to methods without declaration
                          */
-
-                        System.out.println("[chd Source or Target method not found] " + sourceOperation + ", " + targetOperation);
+                        System.out.println("[CHM Source or Target method not found] " + sourceOperation + ", " + targetOperation);
                         continue;
                     }
-
                     double jaccard = calculateJaccardCoefficient(sourceMethod, targetMethod);
                     serviceJaccard += jaccard;
 
-/*
                     System.out.println("Pair: " + sourceOperation + " - " + targetOperation + " : " + jaccard);
                     System.out.println("\t -- " + sourceClassName + " - " + targetClassName);
-*/
                 }
             }
 
-            // TODO: Originally stated as != 1, but how do we handle when the method has no operations?
-            if (service.getOperations().size() <= 1) {
+            // TODO: Originally stated as == 1, but how do we handle when the service has no operations?
+            if (service.getOperations().size() == 1) {
                 serviceJaccard = 1;
             } else {
                 int opSize = service.getOperations().size();
@@ -105,11 +111,11 @@ public class CHD implements Metric {
             }
 
             chd += serviceJaccard;
-
         }
 
 
-        return chd / services.size();
+        // TODO : chm / countedServices or services.size();
+        return chd / countedServices;
     }
 
     public boolean isIncludeParameters() {
