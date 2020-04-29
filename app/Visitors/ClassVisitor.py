@@ -50,6 +50,12 @@ class ClassVisitor:
             logging.info("Visiting reference type: " + str(type.name))
             logging.info(str(type))
 
+    @dispatch(javalang.tree.MemberReference)
+    def visit(self, type):
+        if type.qualifier != None or len(str(type.qualifier)) > 0:
+            self.dependencies.append((str(type.qualifier), 'STATIC'))
+            logging.info("Visiting member reference: " + str(type))
+
     @dispatch(javalang.tree.ClassDeclaration)
     def visit(self, type):
         self.class_name = type.name
@@ -105,6 +111,7 @@ class ClassVisitor:
 
     def get_merge_of_strings(self):
 
+        logging.info(f"Dependencies: {self.dependencies}")
         dependencies = [dep[0] for dep in self.dependencies]
         len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
             self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1

@@ -47,7 +47,6 @@ def parse_files_to_ast(read_files):
     class_visitors = {}
 
     for file_name, values in read_files.items():
-
         logging.info(f"Parsing file {values['fullpath']}")
         try:
             tree = javalang.parse.parse(values["text"])
@@ -58,16 +57,10 @@ def parse_files_to_ast(read_files):
         visitor = ClassVisitor()
         visitor.extract_comments(values["text"])
 
-        print("\n--- Class " + file_name)
-
-        prev = 999999
-
-        for before, node in tree:
+        for _, node in tree:
             visitor.visit(node)
 
-            prev = len(before)
 
-        qualified_name = f"{visitor.get_package_name()}.{visitor.get_class_name()}"
         class_visitors[visitor.get_class_name()] = visitor
 
     return class_visitors
