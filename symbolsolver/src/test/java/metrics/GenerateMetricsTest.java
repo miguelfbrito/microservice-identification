@@ -11,7 +11,7 @@ public class GenerateMetricsTest {
     @Test
     public void generateMetrics() {
         GenerateMetrics generateMetrics = new GenerateMetrics();
-        List<ProjectMetrics> generate = generateMetrics.generate("chm & chd divided by counted services");
+        List<ProjectMetrics> generate = generateMetrics.generate();
 
     }
 

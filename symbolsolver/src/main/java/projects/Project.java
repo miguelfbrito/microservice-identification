@@ -4,8 +4,9 @@ public class Project {
 
     private String name;
     private String rootPath;
-    private String path;
+    private String relativePath;
     private String clusterString;
+    private String commitHash;
 
     public String getName() {
         return name;
@@ -15,12 +16,12 @@ public class Project {
         this.name = name;
     }
 
-    public String getPath() {
-        return path;
+    public String getRelativePath() {
+        return relativePath;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
     }
 
     public String getClusterString() {
@@ -39,13 +40,22 @@ public class Project {
         this.rootPath = rootPath;
     }
 
+    public String getCommitHash() {
+        return commitHash;
+    }
+
+    public void setCommitHash(String commitHash) {
+        this.commitHash = commitHash;
+    }
+
     @Override
     public String toString() {
         return "Project{" +
                 "name='" + name + '\'' +
                 ", rootPath='" + rootPath + '\'' +
-                ", path='" + path + '\'' +
+                ", relativePath='" + relativePath + '\'' +
                 ", clusterString='" + clusterString + '\'' +
+                ", commitHash='" + commitHash + '\'' +
                 '}';
     }
 }

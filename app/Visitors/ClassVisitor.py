@@ -3,7 +3,7 @@ import math
 import logging
 import javalang
 
-from FileUtils import FileUtils
+from StringUtils import StringUtils
 
 
 class ClassVisitor:
@@ -22,7 +22,7 @@ class ClassVisitor:
         self.lda = None
 
     def extract_comments(self, string):
-        self.comments = FileUtils.extract_comments_from_string(string)
+        self.comments = StringUtils.extract_comments_from_string(string)
 
     @dispatch(javalang.tree.Annotation)
     def visit(self, type):
@@ -92,8 +92,6 @@ class ClassVisitor:
     # Difference to VariableDeclarator?
     @dispatch(javalang.tree.FieldDeclaration)
     def visit(self, type):
-        # self.variables.append(type)
-        # print("Visiting field declaration: " + str(type.name))
         pass
 
     @dispatch(javalang.tree.VariableDeclarator)

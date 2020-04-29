@@ -54,7 +54,6 @@ class Graph:
     @staticmethod
     def clean_irrelevant_dependencies(visitors, graph):
         classes = list(visitors.keys())
-        print(classes)
         nodes = list(graph.nodes)
 
         # Iterate over nodes and remove the ones not present in classes

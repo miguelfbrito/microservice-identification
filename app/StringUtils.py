@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 
-class FileUtils:
+class StringUtils:
 
     @staticmethod
     def search_java_files(directory):
@@ -29,12 +29,12 @@ class FileUtils:
             comment = re.sub(r"[/*\n\s]", " ", comment)
             comment = re.sub(r"\s{1,}", " ", comment).strip()
 
-            if not FileUtils.remove_comment(comment):
+            if not StringUtils.remove_comment(comment):
                 comments.append(comment)
 
         slash_comments = re.findall(slash_comment_pattern, string)
         for comment in slash_comments:
-            if not FileUtils.remove_comment(comment):
+            if not StringUtils.remove_comment(comment):
                 comments.append(comment)
 
         return comments

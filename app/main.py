@@ -1,10 +1,11 @@
-from FileUtils import FileUtils
+from StringUtils import StringUtils
 from Graph import Graph
 from operator import itemgetter
 from TfIdf import TfIdf
 from WeightType import WeightType
 from Clustering import Clustering
 from Visitors.ClassVisitor import ClassVisitor
+from ProcessResultsOutput import ProcessResultsOutput
 
 import re
 import math
@@ -23,9 +24,6 @@ from random import randint
 from itertools import cycle
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import DBSCAN, FeatureAgglomeration, AffinityPropagation
-
-
-parsed_files = {}
 
 
 def read_files(files):
@@ -50,7 +48,6 @@ def parse_files_to_ast(read_files):
         logging.info(f"Parsing file {values['fullpath']}")
         try:
             tree = javalang.parse.parse(values["text"])
-            parsed_files[file_name] = tree
         except javalang.parser.JavaSyntaxError:
             logging.error(f"Failed to parse file: {values['fullpath']}")
 
@@ -59,7 +56,6 @@ def parse_files_to_ast(read_files):
 
         for _, node in tree:
             visitor.visit(node)
-
 
         class_visitors[visitor.get_class_name()] = visitor
 
@@ -72,9 +68,9 @@ def calculate_absolute_weights(graph):
     for src, dst in graph.edges():
         edge_data = graph[src][dst]
 
-        # If the dependency is of type EXTENDS or IMPLEMENTS (less common than NORMAL)
+        # If the dependency is of type EXTENDS, IMPLEMENTS or STATIC (less common than NORMAL)
         if edge_data["dependency_type"] != "NORMAL":
-            edge_data[WeightType.ABSOLUTE] = 1
+            edge_data[WeightType.ABSOLUTE] = .8
         else:
             edge_data[WeightType.ABSOLUTE] = edge_data[WeightType.TF_IDF]
 
@@ -249,18 +245,14 @@ def community_detection_by_affinity(graph):
     plt.show()
 
 
-def community_detection_louvain(g):
+def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
     g = g.to_undirected()
-    partition = community.best_partition(g, weight='weight')
+    partition = community.best_partition(g, weight=str(WeightType.ABSOLUTE))
     values = [partition.get(node) for node in g.nodes()]
-    print(f"Values: {values} {len(values)}")
-    print("Graph")
-    print(g.nodes)
 
     for node in g.nodes:
         node
     counter = collections.Counter(values)
-    print(counter)
 
     nodes = list(g.nodes)
     clusters = {}
@@ -270,18 +262,32 @@ def community_detection_louvain(g):
 
         clusters[val].append(nodes[index])
 
-    print(f"Clusters: {clusters}")
     print(f"Total Clusters: {len(clusters)}")
     print(
         f"Total Clusters len>2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
 
-    sp = nx.spring_layout(g)
-    nx.draw_networkx(g, pos=sp, with_labels=True,
-                     node_size=250, font_size=8, node_color=values)
-    plt.show()
+    # Relabel nodes from qualified name (package+classname) for better visibility
+    h = g.copy()
+    mappings = {}
+    for node in h.nodes():
+        mappings[node] = re.search(r'\.(\w*)$', node)[1]
+    h = nx.relabel_nodes(h, mappings)
+
+    # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
+
+    sp = nx.spring_layout(h, weight=weight_type)
+    nx.draw_networkx(h, pos=sp, with_labels=True,
+                     node_size=250, font_size=6, node_color=values, label_color="red")
+
+    # Label weight drawing
+    # new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
+    #     x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+    # nx.draw_networkx_edge_labels(
+    #     h, sp, edge_labels=new_labels, font_size=7, alpha=0.9)
+    # plt.show()
 
     cluster_distribution = [len(cluster) for cluster in clusters.values()]
-    print(cluster_distribution)
+    print(f"Cluster distribution: {cluster_distribution}")
 
     return clusters
 
@@ -301,8 +307,33 @@ def visitors_to_qualified_name(visitors):
     return qualified_visitors
 
 
-def main():
+def identify_clusters_in_project(project_name):
+    directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
 
+    files = StringUtils.search_java_files(directory)
+    files = read_files(files)
+
+    graph = nx.DiGraph()
+    class_visitors = parse_files_to_ast(files)
+    graph = Graph.create_dependencies(class_visitors, graph)
+
+    qualified_visitors = visitors_to_qualified_name(class_visitors)
+    # Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
+
+    # Method 1. TF-IDF
+    apply_tfidf_to_connections(graph, qualified_visitors)
+
+    # Method 2. LDA
+    # apply_lda_to_classes(class_visitors)
+    # set_edge_weight_by_identified_topics(graph, class_visitors)
+
+    calculate_absolute_weights(graph)
+    return community_detection_louvain(graph)
+
+    # test_clustering_algorithms(graph.to_undirected())
+
+
+def main():
     logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
                         format="%(asctime)s:%(levelname)s: %(message)s")
     # Enables printing of logs to stdout as well
@@ -315,39 +346,20 @@ def main():
     # project_name = 'spring-boot-admin/spring-boot-admin-server'
     # project_name = 'broadleaf-commerce/core/broadleaf-framework'  # 727 classes
     # project_name = 'monomusiccorp'
-    project_name = 'jpetstore'
-    directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
-    # directory_test = '/home/mbrito/git/thesis/app/'
-    files = FileUtils.search_java_files(directory)
-    files = read_files(files)
+    # project_name = 'jpetstore'
 
-    graph = nx.DiGraph()
-    class_visitors = parse_files_to_ast(files)
-    print(f"Class visitors: {class_visitors}")
+    projects = ['spring-blog', 'jpetstore',
+                'monomusiccorp', 'spring-petclinic']
 
-    graph = Graph.create_dependencies(class_visitors, graph)
-    print(f"Graph after dependencies: {graph.nodes}")
+    results = ProcessResultsOutput()
+    for project in projects:
+        print(f"\n\nStarting project {project}")
+        clusters = identify_clusters_in_project(project)
+        clusters = [cluster for cluster in clusters.values()]
+        results.add_project(project, str(clusters))
 
-    qualified_visitors = visitors_to_qualified_name(class_visitors)
-    Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
-
-    # Method 1. TF-IDF
-    apply_tfidf_to_connections(graph, qualified_visitors)
-
-    # Method 2. LDA
-    # apply_lda_to_classes(class_visitors)
-    # set_edge_weight_by_identified_topics(graph, class_visitors)
-
-    calculate_absolute_weights(graph)
-
-    draw_graph(graph)
-
-    # print(f"Graph before clustering: {graph.nodes}")
-
-    clusters = community_detection_louvain(graph)
-
-    print(
-        f"\n\nClusters : {[clusters[key] for key in clusters if len(clusters[key]) > 2]}")
+    results.dump_to_json_file()
+    results.run_java_metrics()
 
     # Has an high impact on Girvan Newman clustering
     # graph = nx.algorithms.tree.mst.maximum_spanning_tree(

@@ -2,7 +2,7 @@
 import nltk
 import string
 from sklearn.feature_extraction.text import TfidfVectorizer
-from FileUtils import FileUtils
+from StringUtils import StringUtils
 
 
 class TfIdf:
@@ -24,7 +24,7 @@ class TfIdf:
         return ((tfidf * tfidf.T).A)[0, 1]
 
     def apply_tfidf_to_pair(self, source, target):
-        source = FileUtils.clear_java_words(source)
-        target = FileUtils.clear_java_words(target)
+        source = StringUtils.clear_java_words(source)
+        target = StringUtils.clear_java_words(target)
 
         return self.cosine_sim(source, target)

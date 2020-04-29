@@ -2,7 +2,7 @@ from nltk.tokenize import RegexpTokenizer
 from stop_words import get_stop_words
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
-from FileUtils import FileUtils
+from StringUtils import StringUtils
 import re
 import gensim
 import logging
@@ -39,7 +39,7 @@ def apply_lda_to_text(docs):
     p_stemmer = PorterStemmer()
 
     # Clean text based on java stop words
-    docs = [FileUtils.clear_java_words(doc) for doc in docs]
+    docs = [StringUtils.clear_java_words(doc) for doc in docs]
 
     print(len(docs))
 

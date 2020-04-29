@@ -8,8 +8,6 @@ import graph.creation.ByMethodCallInvocation;
 import graph.entities.MyClass;
 import graph.entities.Service;
 import metrics.*;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import parser.Parse;
 import parser.ParseResult;
 import parser.Parser;
@@ -65,7 +63,7 @@ public class GenerateMetrics {
 
     }
 
-    public List<ProjectMetrics> generate(String description) {
+    public List<ProjectMetrics> generate() {
 
         // When running from another test method
         checkEnv();
@@ -78,7 +76,7 @@ public class GenerateMetrics {
             }.getType();
 
             List<Project> projects = gson.fromJson(reader, projectType);
-            projectMetrics = saveMetricsResults(projects, description);
+            projectMetrics = saveMetricsResults(projects);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -89,12 +87,12 @@ public class GenerateMetrics {
         return projectMetrics;
     }
 
-    public List<ProjectMetrics> saveMetricsResults(List<Project> projects, String description) throws IOException {
+    public List<ProjectMetrics> saveMetricsResults(List<Project> projects) throws IOException {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
 
         for (Project proj : projects) {
-            String completePath = PROJECTS_ROOT + "/" + proj.getPath();
+            String completePath = PROJECTS_ROOT + "/" + proj.getRelativePath();
             List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(completePath));
             Parse parse = new Parse();
             ParseResult parseResult = parse.completeParseClusters(compilationUnits, proj.getClusterString());
@@ -107,7 +105,7 @@ public class GenerateMetrics {
 
             projectMetrics.add(pm);
             extractClustersToFile(parseResult.getServices(), proj);
-            writeToFile(pm, description);
+            writeToFile(pm);
         }
 
         return projectMetrics;
@@ -142,7 +140,7 @@ public class GenerateMetrics {
         return chd;
     }
 
-    public void writeToFile(ProjectMetrics metrics, String description) throws IOException {
+    public void writeToFile(ProjectMetrics metrics) throws IOException {
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String date = formatter.format(new Date());
@@ -157,14 +155,14 @@ public class GenerateMetrics {
                 new FileWriter(path, true)  //Set true for append mode
         );
 
-        final String header = "IRN; OPN; CHM; CHD; Description ;Date;";
+        final String header = "IRN; OPN; CHM; CHD; Commit hash ;Date;";
 
         if (writeHeader) {
             writer.write("ProjectName; " + header);
         }
         String line = metrics.getProject().getName() + ";" + metrics.getIrn() + ";" + metrics.getOpn() + ";" +
                 String.format("%.3f", metrics.getChm()) + ";" +
-                String.format("%.3f", metrics.getChd()) + ";" + description + " ;" + date + ";";
+                String.format("%.3f", metrics.getChd()) + ";" + metrics.getProject().getCommitHash() + " ;" + date + ";";
 
         writer.newLine();
         writer.write(line);
@@ -185,7 +183,7 @@ public class GenerateMetrics {
 
         String projectLine = metrics.getIrn() + ";" + metrics.getOpn() + ";" +
                 String.format("%.3f", metrics.getChm()) + ";" +
-                String.format("%.3f", metrics.getChd()) + ";" + description + " ;" + date + ";";
+                String.format("%.3f", metrics.getChd()) + ";" + metrics.getProject().getCommitHash() + " ;" + date + ";";
 
         projectWriter.newLine();
         projectWriter.write(projectLine);
