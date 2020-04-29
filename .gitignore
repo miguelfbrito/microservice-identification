@@ -340,3 +340,5 @@ symbolsolver/target/surefire-reports/
 symbolsolver/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/
 
 app/file
+
+data/
