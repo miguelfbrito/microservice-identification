@@ -70,7 +70,7 @@ def calculate_absolute_weights(graph):
 
         # If the dependency is of type EXTENDS, IMPLEMENTS or STATIC (less common than NORMAL)
         if edge_data["dependency_type"] != "NORMAL":
-            edge_data[WeightType.ABSOLUTE] = .8
+            edge_data[WeightType.ABSOLUTE] = 1
         else:
             edge_data[WeightType.ABSOLUTE] = edge_data[WeightType.TF_IDF]
 
@@ -193,7 +193,7 @@ def test_clustering_algorithms(graph):
     Clustering.label_propagation_communities(graph)
 
 
-def prepare_matrix(graph):
+def prepare_matrix(graph, weight_type=WeightType.ABSOLUTE):
     # https://stackoverflow.com/questions/49064611/how-to-find-different-groups-in-networkx-using-python
     # X = nx.to_numpy_matrix(graph, weight=WEIGHT)
 
@@ -207,7 +207,7 @@ def prepare_matrix(graph):
     node_to_int = {node: index for index, node in enumerate(g.nodes)}
 
     for u, v in g.edges:
-        weight = (g.get_edge_data(u, v)['weight'])
+        weight = (g.get_edge_data(u, v)[weight_type])
         u = node_to_int[u]
         v = node_to_int[v]
 
@@ -220,7 +220,11 @@ def prepare_matrix(graph):
 
 # TODO : Investigate other methods of clustering
 # https://scikit-learn.org/stable/modules/classes.html#module-sklearn.cluster
-def community_detection_by_affinity(graph):
+def community_detection_by_affinity(graph, weight_type=WeightType.ABSOLUTE):
+
+    # Has an high impact on Girvan Newman clustering
+    graph = nx.algorithms.tree.mst.maximum_spanning_tree(
+        graph.to_undirected())
 
     mat, node_to_int = prepare_matrix(graph)
 
@@ -244,15 +248,13 @@ def community_detection_by_affinity(graph):
                      node_size=250, font_size=8)
     plt.show()
 
+    return clusters
+
 
 def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
     g = g.to_undirected()
     partition = community.best_partition(g, weight=str(WeightType.ABSOLUTE))
     values = [partition.get(node) for node in g.nodes()]
-
-    for node in g.nodes:
-        node
-    counter = collections.Counter(values)
 
     nodes = list(g.nodes)
     clusters = {}
@@ -266,7 +268,7 @@ def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
     print(
         f"Total Clusters len>2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
 
-    # Relabel nodes from qualified name (package+classname) for better visibility
+    # Relabel nodes from qualified name (package+classname) for better graph visibility
     h = g.copy()
     mappings = {}
     for node in h.nodes():
@@ -275,16 +277,16 @@ def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
 
     # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
 
-    sp = nx.spring_layout(h, weight=weight_type)
+    sp = nx.spring_layout(h, weight=str(weight_type))
     nx.draw_networkx(h, pos=sp, with_labels=True,
                      node_size=250, font_size=6, node_color=values, label_color="red")
 
     # Label weight drawing
-    # new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-    #     x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
-    # nx.draw_networkx_edge_labels(
-    #     h, sp, edge_labels=new_labels, font_size=7, alpha=0.9)
-    # plt.show()
+    new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
+        x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+    nx.draw_networkx_edge_labels(
+        h, sp, edge_labels=new_labels, font_size=6, alpha=1)
+    plt.show()
 
     cluster_distribution = [len(cluster) for cluster in clusters.values()]
     print(f"Cluster distribution: {cluster_distribution}")
@@ -318,7 +320,7 @@ def identify_clusters_in_project(project_name):
     graph = Graph.create_dependencies(class_visitors, graph)
 
     qualified_visitors = visitors_to_qualified_name(class_visitors)
-    # Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
+    Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
 
     # Method 1. TF-IDF
     apply_tfidf_to_connections(graph, qualified_visitors)
@@ -328,9 +330,11 @@ def identify_clusters_in_project(project_name):
     # set_edge_weight_by_identified_topics(graph, class_visitors)
 
     calculate_absolute_weights(graph)
-    return community_detection_louvain(graph)
 
     # test_clustering_algorithms(graph.to_undirected())
+
+    # return community_detection_by_affinity(graph)
+    return community_detection_louvain(graph)
 
 
 def main():
@@ -352,17 +356,17 @@ def main():
                 'monomusiccorp', 'spring-petclinic']
 
     results = ProcessResultsOutput()
-    for project in projects:
-        print(f"\n\nStarting project {project}")
-        clusters = identify_clusters_in_project(project)
-        clusters = [cluster for cluster in clusters.values()]
-        results.add_project(project, str(clusters))
 
-    results.dump_to_json_file()
-    results.run_java_metrics()
+    # for project in projects:
+    #     print(f"\n\nStarting project {project}")
+    #     clusters = identify_clusters_in_project(project)
+    #     clusters = [cluster for cluster in clusters.values()]
+    #     results.add_project(project, str(clusters))
 
-    # Has an high impact on Girvan Newman clustering
-    # graph = nx.algorithms.tree.mst.maximum_spanning_tree(
-    #     graph.to_undirected(), weight=WeightType.ABSOLUTE)
-    # community_detection_by_affinity(graph)
+    # results.dump_to_json_file()
+    # results.run_java_metrics()
+
+    clusters = identify_clusters_in_project('spring-blog')
+
+
 main()
