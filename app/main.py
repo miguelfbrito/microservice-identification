@@ -71,7 +71,7 @@ def calculate_absolute_weights(graph):
 
         # If the dependency is of type EXTENDS, IMPLEMENTS or STATIC (less common than NORMAL)
         if edge_data["dependency_type"] != "NORMAL":
-            edge_data[WeightType.ABSOLUTE] = 1
+            edge_data[WeightType.ABSOLUTE] = .75
         else:
             edge_data[WeightType.ABSOLUTE] = edge_data[WeightType.TF_IDF]
 
@@ -250,55 +250,10 @@ def community_detection_by_affinity(graph, weight_type=WeightType.ABSOLUTE):
     plt.show()
 
     return clusters
-
-
-def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
-    g = g.to_undirected()
-    partition = community.best_partition(g, weight=str(WeightType.ABSOLUTE))
-    values = [partition.get(node) for node in g.nodes()]
-
-    nodes = list(g.nodes)
-    clusters = {}
-    for index, val in enumerate(values):
-        if val not in clusters:
-            clusters[val] = []
-
-        clusters[val].append(nodes[index])
-
-    print(f"Total Clusters: {len(clusters)}")
-    print(
-        f"Total Clusters len>2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
-
-    # Relabel nodes from qualified name (package+classname) for better graph visibility
-    h = g.copy()
-    mappings = {}
-    for node in h.nodes():
-        mappings[node] = re.search(r'\.(\w*)$', node)[1]
-    h = nx.relabel_nodes(h, mappings)
-
-    # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-
-    sp = nx.spring_layout(h, weight=str(weight_type))
-    nx.draw_networkx(h, pos=sp, with_labels=True,
-                     node_size=250, font_size=6, node_color=values, label_color="red")
-
-    # Label weight drawing
-    new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-        x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
-    nx.draw_networkx_edge_labels(
-        h, sp, edge_labels=new_labels, font_size=6, alpha=1)
-    plt.show()
-
-    cluster_distribution = [len(cluster) for cluster in clusters.values()]
-    print(f"Cluster distribution: {cluster_distribution}")
-
-    return clusters
-
     # y_pos = np.arange(len(clusters.items()))
     # plt.bar(y_pos, cluster_distribution)
     # plt.ylabel("Cluster Size")
     # plt.xlabel("Cluster Index")
-    # plt.show()
 
 
 def visitors_to_qualified_name(visitors):
@@ -308,6 +263,47 @@ def visitors_to_qualified_name(visitors):
         qualified_visitors[qualified_name] = visitor
 
     return qualified_visitors
+
+
+def pre_process(graph):
+    # TODO: could be optimized by caching already traversed nodes
+    graph = graph.to_undirected()
+
+
+    # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
+    edges_remove = []
+    for edge in graph.edges:
+        data = graph.get_edge_data(edge[0], edge[1])
+        if data and data[WeightType.ABSOLUTE] < 0.1:
+            edges_remove.append((edge[0], edge[1]))
+
+    for edge in edges_remove:
+        graph.remove_edge(edge[0], edge[1])
+        print("Removing edge")
+
+    # Remove nodes that belong to a disconnected section consisting of less than [node_depth] nodes
+    nodes_remove = []
+    for node in graph.nodes():
+        node_depth = 5
+        edges = nx.dfs_edges(graph, source=node, depth_limit=node_depth)
+        count = 0
+
+        for edge in edges:
+            if node == 'com.raysmond.blog.error.NotFoundException':
+                print(edge)
+
+            count += 1
+
+        print(f"Traversing node {node} {count}")
+
+        if count < node_depth:
+            nodes_remove.append(node)
+
+    for node in nodes_remove:
+        graph.remove_node(node)
+        print(f"Removing node (<{node_depth} dfs) {node}")
+
+    return graph
 
 
 def identify_clusters_in_project(project_name):
@@ -331,11 +327,9 @@ def identify_clusters_in_project(project_name):
     # set_edge_weight_by_identified_topics(graph, class_visitors)
 
     calculate_absolute_weights(graph)
+    graph = pre_process(graph)
 
-    # test_clustering_algorithms(graph.to_undirected())
-
-    # return community_detection_by_affinity(graph)
-    return community_detection_louvain(graph)
+    return Clustering.community_detection_louvain(graph)
 
 
 def main():
