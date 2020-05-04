@@ -1,6 +1,9 @@
-from WeightType import WeightType
-import networkx as nx
+import re
 import logging
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from WeightType import WeightType
 
 
 class Graph:
@@ -63,3 +66,26 @@ class Graph:
                     graph.remove_node(node)
             except nx.exception.NetworkXError:
                 print("Node not found while removing")
+
+    @staticmethod
+    def draw(graph, colors=[], weight_type=WeightType.ABSOLUTE):
+
+        # Truncate qualified name to simple name
+        h = graph.copy()
+        mappings = {}
+        for node in h.nodes():
+            mappings[node] = re.search(r'\.(\w*)$', node)[1]
+        h = nx.relabel_nodes(h, mappings)
+
+        sp = nx.spring_layout(h, weight=str(weight_type))
+        print(h.nodes())
+
+        # if(colors):
+        #     [cluster+1 for cluster in h.nodes()]
+
+        print(f"Values:  {colors}")
+
+        # node_color=values,
+        nx.draw_networkx(h, pos=sp, with_labels=True,
+                         node_size=250, node_color=colors, font_size=6, label_color="red")
+        plt.show()

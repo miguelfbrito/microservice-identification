@@ -11,7 +11,7 @@ class ProcessResultsOutput:
             ["git", "rev-parse", "--short", "HEAD"]))
 
     ROOT_PATH = "/home/mbrito/git/thesis-web-applications/monoliths/"
-    PROJECTS_PATH = "../projects.json"
+    PROJECTS_PATH = "/home/mbrito/git/thesis/projects.json"
 
     def write_to_file(self, path, content, type="w"):
         with open(path, type) as f:
@@ -29,11 +29,10 @@ class ProcessResultsOutput:
     def dump_to_json_file(self):
         print("Writing to json")
         print(self.projects)
-        with open(ProcessResultsOutput.PROJECTS_PATH, "w+") as f:
+        with open(str(ProcessResultsOutput.PROJECTS_PATH), "w") as f:
             f.write(json.dumps(self.projects, indent=4))
 
     def run_java_metrics(self):
-        pass
         # Runs java method responsible for calculating the metrics for the projects present in projects.json written above
         subprocess.call("mvn -Dtest=GenerateMetricsTest test",
                         cwd="/home/mbrito/git/thesis/symbolsolver/", shell=True)
