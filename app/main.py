@@ -9,6 +9,7 @@ from ProcessResultsOutput import ProcessResultsOutput
 
 import re
 import math
+import argparse
 import community
 import collections
 import LDA as lda
@@ -343,30 +344,36 @@ def main():
     # Enables printing of logs to stdout as well
     # logging.getLogger().addHandler(logging.StreamHandler())
 
-    # project_name = 'simple-blog'
-    # project_name = 'test'
-    # project_name = 'spring-blog'
-    # project_name = 'spring-petclinic'
-    # project_name = 'spring-boot-admin/spring-boot-admin-server'
-    # project_name = 'broadleaf-commerce/core/broadleaf-framework'  # 727 classes
-    # project_name = 'monomusiccorp'
-    # project_name = 'jpetstore'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--metrics-condensed", "-mc",
+                        help="Parse, cluster and execute metrics for a subset of projects", action="store_true")
+    parser.add_argument("--metrics-full", "-mf",
+                        help="Parse, cluster, and execute metrics for all defined projects", action="store_true")
+    args = parser.parse_args()
 
-    projects = ['spring-blog', 'jpetstore',
-                'monomusiccorp', 'spring-petclinic']
+    if args.metrics_condensed:
+        projects = ['spring-blog', 'jpetstore',
+                    'monomusiccorp', 'spring-petclinic']
+        results = ProcessResultsOutput()
+        for project in projects:
+            print(f"\n\nStarting project {project}")
+            clusters = identify_clusters_in_project(project)
+            clusters = [cluster for cluster in clusters.values()]
+            results.add_project(project, str(clusters))
+        results.dump_to_json_file()
+        results.run_java_metrics()
 
-    results = ProcessResultsOutput()
-
-    # for project in projects:
-    #     print(f"\n\nStarting project {project}")
-    #     clusters = identify_clusters_in_project(project)
-    #     clusters = [cluster for cluster in clusters.values()]
-    #     results.add_project(project, str(clusters))
-
-    # results.dump_to_json_file()
-    # results.run_java_metrics()
-
-    clusters = identify_clusters_in_project('spring-blog')
+    if args.metrics_full:
+        projects = ['spring-blog', 'jpetstore', 'monomusiccorp',
+                    'spring-petclinic', 'jforum', 'agilefant']
+        results = ProcessResultsOutput()
+        for project in projects:
+            print(f"\n\nStarting project {project}")
+            clusters = identify_clusters_in_project(project)
+            clusters = [cluster for cluster in clusters.values()]
+            results.add_project(project, str(clusters))
+        results.dump_to_json_file()
+        results.run_java_metrics()
 
 
 main()
