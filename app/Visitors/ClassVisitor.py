@@ -114,6 +114,9 @@ class ClassVisitor:
         len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
             self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1
 
+        # TODO : we could apply other heuristics to try to identify we're currently in an entity
+
+        # TODO: search for the qualified name for Entitities. Entity, DTO, DAO, domain, (common name conventions representing strong domain concepts)
         entity_types = ["Entity", "MappedSuperclass", "Repository"]
 
         is_entity = False
@@ -122,7 +125,7 @@ class ClassVisitor:
                 is_entity = True
 
         class_name_weight = math.ceil(
-            len_words * 1) if is_entity else 1
+            len_words * 1) if is_entity else math.ceil(len_words * 0.25)
         dependencies_weight = 1
         variables_weight = 1
         methods_weight = 1

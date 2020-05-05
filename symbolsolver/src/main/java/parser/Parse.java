@@ -11,6 +11,8 @@ import utils.StringUtils;
 import visitors.ClassOrInterfaceDeclarationVisitor;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Parse {
 
@@ -61,8 +63,16 @@ public class Parse {
             cu.accept(new ClassOrInterfaceDeclarationVisitor(), nodes);
 
             for (ClassOrInterfaceDeclaration node : nodes) {
-                MyClass myClass = new MyClass(node);
-                node.getFullyQualifiedName().ifPresent(name -> classes.put(name, myClass));
+
+                node.getFullyQualifiedName().ifPresent(name -> {
+                    // Ignore test files
+                    Pattern p = Pattern.compile("\\[Tt]ests?");
+                    Matcher m = p.matcher(name);
+                    if (!m.find()) {
+                        MyClass myClass = new MyClass(node);
+                        classes.put(name, myClass);
+                    }
+                });
             }
             nodes.clear();
         }

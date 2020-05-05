@@ -25,7 +25,6 @@ public class Parser {
         final List<CompilationUnit> compilationUnits = new ArrayList<>();
 
         for (SourceRoot sr : projectRoot.getSourceRoots()) {
-
             // The SymbolSolver has to receive a SourceRoot instead of a Project Root!
             CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
             combinedTypeSolver.add(new ReflectionTypeSolver());
@@ -36,21 +35,7 @@ public class Parser {
             List<ParseResult<CompilationUnit>> parseResults = sr.tryToParse();
 
             for (ParseResult<CompilationUnit> parseResult : parseResults) {
-                parseResult.getResult().ifPresent(compilationUnit -> {
-                    compilationUnits.add(compilationUnit);
-
-                    compilationUnit.findAll(MethodCallExpr.class).forEach(methodCall -> {
-                        // getScope() shouldn't be needed according to documentation and examples
-                        // However, took me a whole day to figure out it must be included in MethodCallExpr, works fine for simpler types.
-                        methodCall.getScope().ifPresent(rs -> {
-                            try {
-                                ResolvedType resolvedType = rs.calculateResolvedType();
-                            } catch (Exception e) {
-                                // System.out.println("[UnsolvedSymbolException] on " + rs.toString());
-                            }
-                        });
-                    });
-                });
+                parseResult.getResult().ifPresent(compilationUnits::add);
             }
         }
 

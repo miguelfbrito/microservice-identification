@@ -121,8 +121,6 @@ public class CHM implements Metric {
                     double jaccard = calculateJaccardCoefficient(sourceMethod, targetMethod);
                     serviceJaccard += jaccard;
 
-                    System.out.println("Pair: " + sourceOperation + " - " + targetOperation + " : " + jaccard);
-                    System.out.println("\t -- " + sourceClassName + " - " + targetClassName);
                 }
             }
 

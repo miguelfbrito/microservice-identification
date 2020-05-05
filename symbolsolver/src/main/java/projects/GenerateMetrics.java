@@ -76,7 +76,7 @@ public class GenerateMetrics {
             }.getType();
 
             List<Project> projects = gson.fromJson(reader, projectType);
-            projectMetrics = saveMetricsResults(projects);
+            projectMetrics = calculateMetrics(projects);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -87,7 +87,7 @@ public class GenerateMetrics {
         return projectMetrics;
     }
 
-    public List<ProjectMetrics> saveMetricsResults(List<Project> projects) throws IOException {
+    public List<ProjectMetrics> calculateMetrics(List<Project> projects) throws IOException {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
 

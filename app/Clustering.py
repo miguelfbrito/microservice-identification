@@ -10,6 +10,7 @@ from Graph import Graph
 from random import random
 from operator import itemgetter
 from WeightType import WeightType
+from networkx.drawing.nx_pydot import write_dot
 from networkx import edge_betweenness_centrality as betweenness
 from networkx.algorithms.community import label_propagation_communities, kernighan_lin_bisection, greedy_modularity_communities, asyn_fluidc, asyn_lpa_communities
 from networkx.algorithms.community.centrality import girvan_newman
@@ -30,6 +31,7 @@ class Clustering:
 
     @staticmethod
     def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
+        weight_type = str(weight_type)
         g = g.to_undirected()
         partition = community.best_partition(
             g, weight=str(WeightType.ABSOLUTE))
@@ -56,7 +58,7 @@ class Clustering:
         h = nx.relabel_nodes(h, mappings)
 
         # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-        sp = nx.spring_layout(h, weight=str(weight_type))
+        sp = nx.spring_layout(h, weight=weight_type)
         nx.draw_networkx(h, pos=sp, with_labels=True,
                          node_size=350, font_size=6, node_color=values)
 
@@ -64,7 +66,6 @@ class Clustering:
             x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
         nx.draw_networkx_edge_labels(
             h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
-        # plt.show()
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
@@ -103,7 +104,7 @@ class Clustering:
 
     # @staticmethod
     # def most_central_edge(graph, weight_type=WeightType.ABSOLUTE):
-    #     centrality = betweenness(graph, weight=str(weight_type))
+    #     centrality = betweenness(graph, weight=weight_type)
     #     return max(centrality, key=centrality.get)
 
     @staticmethod
@@ -120,12 +121,13 @@ class Clustering:
     @staticmethod
     def kernighan_lin_bisection(graph):
         clusters = kernighan_lin_bisection(
-            graph, weight='weight_absolute')
+            graph, weight=str(WeightType.ABSOLUTE))
         print(f"Len: {len(clusters)}")
 
     @staticmethod
     def greedy_modularity_communities(graph):
-        clusters = list(greedy_modularity_communities(graph, weight='weight'))
+        clusters = list(greedy_modularity_communities(
+            graph, weight=str(WeightType.ABSOLUTE)))
         colors = Clustering.create_colors(clusters)
         Graph.draw(graph, colors)
         print(f"Clusters: {clusters}")
@@ -141,7 +143,7 @@ class Clustering:
         return list(clusters)
 
     @staticmethod
-    def async_label_propagation_communities(graph, weight=str(WeightType.ABSOLUTE)):
+    def async_label_propagation_communities(graph, weight=WeightType.ABSOLUTE):
         clusters = asyn_lpa_communities(graph)
         clusters = list(clusters)
         colors = Clustering.create_colors(clusters)

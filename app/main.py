@@ -63,17 +63,24 @@ def parse_files_to_ast(read_files):
     return class_visitors
 
 
-def calculate_absolute_weights(graph):
+def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
+    edges_to_remove = []
     for src, dst in graph.edges():
         edge_data = graph[src][dst]
 
         # If the dependency is of type EXTENDS, IMPLEMENTS or STATIC (less common than NORMAL)
-        if edge_data["dependency_type"] != "NORMAL":
-            edge_data[WeightType.ABSOLUTE] = .75
+        primary_types = {'EXTENDS', 'IMPLEMENTS', 'STATIC'}
+        # secondary_types = {'STATIC'}
+
+        # TODO : consider just removing the edge and adding it after clustering
+        if edge_data["dependency_type"] in primary_types:
+            edge_data[str(WeightType.ABSOLUTE)] = .5
         else:
-            edge_data[WeightType.ABSOLUTE] = edge_data[WeightType.TF_IDF]
+            edge_data[str(WeightType.ABSOLUTE)] = edge_data[str(weight_type)]
+
+        print(f"{src} -> {dst} : {edge_data}")
 
 
 def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
@@ -95,7 +102,7 @@ def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
 
     # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
     new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-        x[2][weight_type]) if x[2][weight_type] > 0 else ""), graph.edges(data=True)))
+        x[2][str(weight_type)]) if x[2][str(weight_type)] > 0 else ""), graph.edges(data=True)))
 
     nx.draw_networkx(graph, pos=pos, node_size=500, alpha=0.8,
                      font_size=10)
@@ -109,9 +116,13 @@ def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
 def apply_lda_to_classes(class_visitors, all=True):
 
     # Apply lda all classes
+    print("\nClass Visitors: ")
+    print(class_visitors)
     if all:
-        docs = ([[cla.get_merge_of_strings()] for cla in class_visitors])
-        lda_result = lda.apply_lda_to_text(docs)
+        for cla in class_visitors:
+            print(cla)
+        # docs = ([[cla.get_merge_of_strings()] for cla in class_visitors])
+        # lda_result = lda.apply_lda_to_text(docs)
 
     else:
         # Apply lda individually
@@ -152,13 +163,13 @@ def apply_tfidf_to_connections(graph, class_visitors):
 
     tf_idf = TfIdf()
     for src, dst in edges:
-        src_text = class_visitors[src].get_merge_of_strings()
-        dst_text = class_visitors[dst].get_merge_of_strings()
+        source = (src, class_visitors[src].get_merge_of_strings())
+        destination = (dst, class_visitors[dst].get_merge_of_strings())
 
-        similarity = round(tf_idf.apply_tfidf_to_pair(src_text, dst_text), 2)
+        similarity = round(tf_idf.apply_tfidf_to_pair(source, destination), 2)
         logging.info(f"{similarity} {src} - {dst}")
 
-        graph[src][dst][WeightType.TF_IDF] = similarity
+        graph[src][dst][str(WeightType.TF_IDF)] = similarity
 
 
 def set_edge_weight_by_identified_topics(graph, class_visitors):
@@ -173,7 +184,7 @@ def set_edge_weight_by_identified_topics(graph, class_visitors):
             src_visitor.get_lda(), dst_visitor.get_lda())
         logging.info(f"Best match {best_match}")
 
-        graph[src][dst][WeightType.LDA] = round(
+        graph[src][dst][str(WeightType.LDA)] = round(
             best_match[0], 2) if best_match else 0
 
 
@@ -269,12 +280,11 @@ def pre_process(graph):
     # TODO: could be optimized by caching already traversed nodes
     graph = graph.to_undirected()
 
-
     # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
     edges_remove = []
     for edge in graph.edges:
         data = graph.get_edge_data(edge[0], edge[1])
-        if data and data[WeightType.ABSOLUTE] < 0.1:
+        if data and data[str(WeightType.ABSOLUTE)] < 0.1:
             edges_remove.append((edge[0], edge[1]))
 
     for edge in edges_remove:
@@ -323,10 +333,10 @@ def identify_clusters_in_project(project_name):
     apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
-    # apply_lda_to_classes(class_visitors)
-    # set_edge_weight_by_identified_topics(graph, class_visitors)
+    # apply_lda_to_classes(qualified_visitors)
+    # set_edge_weight_by_identified_topics(graph, qualified_visitors)
 
-    calculate_absolute_weights(graph)
+    calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF)
     graph = pre_process(graph)
 
     return Clustering.community_detection_louvain(graph)
@@ -339,11 +349,21 @@ def main():
     # logging.getLogger().addHandler(logging.StreamHandler())
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--metrics", "-m",
+                        help="Parse, cluster and execute metrics for a given project name (relative path to set root path)")
     parser.add_argument("--metrics-condensed", "-mc",
                         help="Parse, cluster and execute metrics for a subset of projects", action="store_true")
     parser.add_argument("--metrics-full", "-mf",
                         help="Parse, cluster, and execute metrics for all defined projects", action="store_true")
     args = parser.parse_args()
+
+    if args.metrics:
+        result = ProcessResultsOutput()
+        project = args.metrics
+        clusters = identify_clusters_in_project(project)
+        result.add_project(project, str(clusters))
+        result.dump_to_json_file()
+        result.run_java_metrics()
 
     if args.metrics_condensed:
         projects = ['spring-blog', 'jpetstore',
