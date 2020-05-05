@@ -11,7 +11,7 @@ from random import random
 from operator import itemgetter
 from WeightType import WeightType
 from networkx import edge_betweenness_centrality as betweenness
-from networkx.algorithms.community import label_propagation_communities, kernighan_lin_bisection, greedy_modularity_communities, asyn_fluidc
+from networkx.algorithms.community import label_propagation_communities, kernighan_lin_bisection, greedy_modularity_communities, asyn_fluidc, asyn_lpa_communities
 from networkx.algorithms.community.centrality import girvan_newman
 
 
@@ -93,11 +93,13 @@ class Clustering:
             graph, most_valuable_edge=Clustering.most_central_edge)
 
         clusters = tuple(sorted(c) for c in next(clusters))
+        print(f"CLUSTERS: {clusters}")
         colors = Clustering.create_colors(clusters)
 
         print(f"Cluster girvan {clusters}")
 
         Graph.draw(graph, colors=colors)
+        return clusters
 
     # @staticmethod
     # def most_central_edge(graph, weight_type=WeightType.ABSOLUTE):
@@ -128,14 +130,23 @@ class Clustering:
         Graph.draw(graph, colors)
         print(f"Clusters: {clusters}")
 
-    # Bad results on clustering
     @staticmethod
     def label_propagation_communities(graph):
         clusters = label_propagation_communities(graph)
+        clusters = list(clusters)
         colors = Clustering.create_colors(clusters)
         Graph.draw(graph, colors)
 
         print(f"Len: {len(list(clusters))}")
+        return list(clusters)
+
+    @staticmethod
+    def async_label_propagation_communities(graph, weight=str(WeightType.ABSOLUTE)):
+        clusters = asyn_lpa_communities(graph)
+        clusters = list(clusters)
+        colors = Clustering.create_colors(clusters)
+        Graph.draw(graph, colors)
+        return list(clusters)
 
     # Only works with connected graphs
     @staticmethod
