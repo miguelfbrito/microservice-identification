@@ -342,3 +342,7 @@ symbolsolver/target/maven-status/maven-compiler-plugin/testCompile/default-testC
 app/file
 
 data/
+
+app/services_lda.txt
+
+projects.json

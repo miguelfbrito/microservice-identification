@@ -46,14 +46,11 @@ class StringUtils:
     @staticmethod
     def clear_java_words(string):
 
-        class_name = string[0]
-        string = string[1]
-
         if isinstance(string, list):
             string = string[0]
 
         stopwords = {
-            "abstract", "assert", "boolean",
+            "abstract", "assert", "boolean", "dao", "dto",
             "break", "byte", "case", "catch", "char", "class", "const",
             "continue", "default", "do", "double", "else", "extends", "false",
             "final", "finally", "float", "for", "goto", "if", "implements",

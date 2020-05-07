@@ -76,16 +76,22 @@ def apply_lda_to_text(docs):
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
 
+    print(f"Corpus {corpus}")
+
     # generate LDA model
     ldamodel = gensim.models.ldamodel.LdaModel(
         corpus, num_topics=5, id2word=dictionary, passes=20)
 
-    print(ldamodel.show_topics())
+    topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
+
+    # print(ldamodel.show_topics())
     data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
-    pyLDAvis.show(data)
+    # pyLDAvis.show(data)
 
-    topics = ldamodel.show_topics(
-        num_topics=1, num_words=6)
+    # topics = ldamodel.show_topics(
+    #     num_topics=1, num_words=6)
 
-    pattern = r"(\d\.?\d*)\*\"(\w*)\""
-    return re.findall(pattern, topics[0][1])
+    # pattern = r"(\d\.?\d*)\*\"(\w*)\""
+    # return re.findall(pattern, topics[0][1])
+
+    return topics_per_doc

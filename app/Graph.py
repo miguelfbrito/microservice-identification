@@ -33,6 +33,7 @@ class Graph:
                     edge_data = graph.get_edge_data(
                         qualified_name, dependency_name)
 
+                    # TODO: Think about this
                     if edge_data:
                         graph[qualified_name][dependency_name][str(
                             WeightType.STRUCTURAL)] = edge_data[str(WeightType.STRUCTURAL)] + 1

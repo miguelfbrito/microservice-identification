@@ -67,12 +67,18 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
     edges_to_remove = []
+    total_structural_weight = 0
+    structural_weight_distribution = {}
     for src, dst in graph.edges():
+
         edge_data = graph[src][dst]
 
         # If the dependency is of type EXTENDS, IMPLEMENTS or STATIC (less common than NORMAL)
         primary_types = {'EXTENDS', 'IMPLEMENTS', 'STATIC'}
         # secondary_types = {'STATIC'}
+        total_structural_weight += edge_data[str(WeightType.STRUCTURAL)]
+        structural_weight_distribution[edge_data[str(WeightType.STRUCTURAL)]] = structural_weight_distribution.get(
+            edge_data[str(WeightType.STRUCTURAL)], 0) + 1
 
         # TODO : consider just removing the edge and adding it after clustering
         if edge_data["dependency_type"] in primary_types:
@@ -80,7 +86,10 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
         else:
             edge_data[str(WeightType.ABSOLUTE)] = edge_data[str(weight_type)]
 
-        print(f"{src} -> {dst} : {edge_data}")
+        # print(f"{src} -> {dst} : {edge_data}")
+
+    print(f"Total structural weight: {total_structural_weight}")
+    print(f"Structural weight distribution: {structural_weight_distribution}")
 
 
 def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
@@ -113,16 +122,45 @@ def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
     plt.show()
 
 
-def apply_lda_to_classes(class_visitors, all=True):
+def apply_lda_to_classes(graph, class_visitors, all=True):
 
     # Apply lda all classes
     print("\nClass Visitors: ")
     print(class_visitors)
     if all:
-        for cla in class_visitors:
-            print(cla)
-        # docs = ([[cla.get_merge_of_strings()] for cla in class_visitors])
-        # lda_result = lda.apply_lda_to_text(docs)
+        docs = ([[cla.get_merge_of_strings()]
+                 for cla in class_visitors.values()])
+
+        lda_result = lda.apply_lda_to_text(docs)
+        print(f"LDA Result: {lda_result}")
+
+        services = {}
+        for class_name, topics in zip(class_visitors.keys(), lda_result):
+            print(f"{class_name} -> {topics}")
+
+            topic_number = 0
+            topic_value = 0
+            for topic in topics:
+                if topic[1] > topic_value:
+                    topic_value = topic[1]
+                    topic_number = topic[0]
+
+            class_per_service = services.get(topic_number)
+            if topic_number in services:
+                services[topic_number].append((class_name, topics))
+            else:
+                services[topic_number] = [(class_name, topics)]
+
+        print(f"Services : {services}")
+
+        with open("./services_lda.txt", "w") as f:
+            for service in services:
+                for cla in services[service]:
+                    f.write(f"{cla}\n")
+                f.write("\n")
+
+        colors = Clustering.create_colors(services.values())
+        Graph.draw(graph, colors)
 
     else:
         # Apply lda individually
@@ -141,30 +179,14 @@ def apply_lda_to_classes(class_visitors, all=True):
                     "Failed to process a file. It probably contains annotations that the parser is not prepared to handle (eg. @interface)")
 
 
-def get_src_dst_visitor(src, dst, class_visitors):
-    # TODO: Optimize by changing this list to a dict and doing O(1) accesses
-    src_visitor = None
-    dst_visitor = None
-
-    for visitor in class_visitors:
-        class_name = visitor.get_class_name()
-        if src == class_name:
-            src_visitor = visitor
-
-        if dst == class_name:
-            dst_visitor = visitor
-
-    return src_visitor, dst_visitor
-
-
 def apply_tfidf_to_connections(graph, class_visitors):
 
     edges = graph.edges()
 
     tf_idf = TfIdf()
     for src, dst in edges:
-        source = (src, class_visitors[src].get_merge_of_strings())
-        destination = (dst, class_visitors[dst].get_merge_of_strings())
+        source = class_visitors[src].get_merge_of_strings()
+        destination = class_visitors[dst].get_merge_of_strings()
 
         similarity = round(tf_idf.apply_tfidf_to_pair(source, destination), 2)
         logging.info(f"{similarity} {src} - {dst}")
@@ -175,8 +197,8 @@ def apply_tfidf_to_connections(graph, class_visitors):
 def set_edge_weight_by_identified_topics(graph, class_visitors):
 
     for src, dst in graph.edges():
-        src_visitor, dst_visitor = get_src_dst_visitor(
-            src, dst, class_visitors)
+        src_visitor = class_visitors[src]
+        dst_visitor = class_visitors[dst]
 
         # print(
         #     f"{src_visitor.get_class_name()} - {dst_visitor.get_class_name()}")
@@ -330,16 +352,17 @@ def identify_clusters_in_project(project_name):
     Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
 
     # Method 1. TF-IDF
-    apply_tfidf_to_connections(graph, qualified_visitors)
+    # apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
-    # apply_lda_to_classes(qualified_visitors)
+    apply_lda_to_classes(graph, qualified_visitors)
     # set_edge_weight_by_identified_topics(graph, qualified_visitors)
 
-    calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF)
-    graph = pre_process(graph)
+    # calculate_absolute_weights(graph, weight_type=WeightType.LDA)
+    # graph = pre_process(graph)
 
-    return Clustering.community_detection_louvain(graph)
+    # return Clustering.community_detection_louvain(graph)
+    return []
 
 
 def main():
@@ -363,7 +386,7 @@ def main():
         clusters = identify_clusters_in_project(project)
         result.add_project(project, str(clusters))
         result.dump_to_json_file()
-        result.run_java_metrics()
+        # result.run_java_metrics()
 
     if args.metrics_condensed:
         projects = ['spring-blog', 'jpetstore',

@@ -62,10 +62,10 @@ class Clustering:
         nx.draw_networkx(h, pos=sp, with_labels=True,
                          node_size=350, font_size=6, node_color=values)
 
-        edge_weight_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-            x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
-        nx.draw_networkx_edge_labels(
-            h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
+        # edge_weight_labels = dict(map(lambda x: ((x[0], x[1]),  str(
+        #     x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+        # nx.draw_networkx_edge_labels(
+        #     h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
