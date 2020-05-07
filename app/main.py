@@ -122,61 +122,63 @@ def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
     plt.show()
 
 
-def apply_lda_to_classes(graph, class_visitors, all=True):
+def apply_lda_to_classes(graph, class_visitors, pre_process=True):
 
-    # Apply lda all classes
-    print("\nClass Visitors: ")
-    print(class_visitors)
-    if all:
-        docs = ([[cla.get_merge_of_strings()]
-                 for cla in class_visitors.values()])
+    docs = []
 
-        lda_result = lda.apply_lda_to_text(docs)
-        print(f"LDA Result: {lda_result}")
-
-        services = {}
-        for class_name, topics in zip(class_visitors.keys(), lda_result):
-            print(f"{class_name} -> {topics}")
-
-            topic_number = 0
-            topic_value = 0
-            for topic in topics:
-                if topic[1] > topic_value:
-                    topic_value = topic[1]
-                    topic_number = topic[0]
-
-            class_per_service = services.get(topic_number)
-            if topic_number in services:
-                services[topic_number].append((class_name, topics))
-            else:
-                services[topic_number] = [(class_name, topics)]
-
-        print(f"Services : {services}")
-
-        with open("./services_lda.txt", "w") as f:
-            for service in services:
-                for cla in services[service]:
-                    f.write(f"{cla}\n")
-                f.write("\n")
-
-        colors = Clustering.create_colors(services.values())
-        Graph.draw(graph, colors)
-
-    else:
-        # Apply lda individually
+    # Remove loose sections of the graph
+    if pre_process:
+        classes_to_remove = []
         for cla in class_visitors:
-            logging.info(f"Applying LDA to {cla.get_class_name()}")
+            if cla not in graph.nodes():
+                classes_to_remove.append(cla)
+        for cla in classes_to_remove:
+            class_visitors.pop(cla, None)
 
-            try:
-                lda_result = lda.apply_lda_to_text(cla.get_merge_of_strings())
+    # (class_name, BOW)
+    docs = [cla.get_merge_of_strings()
+            for cla in class_visitors.values()]
 
-                # For now we only care about documents evaluated individually, hence the 0.
-                cla.set_lda(lda_result)
-                logging.info(cla.get_lda())
+    lda_result = lda.apply_lda_to_text(docs, class_visitors)
+    print(f"LDA Result: {lda_result}")
 
-            except ValueError:
-                logging.warning(
-                    "Failed to process a file. It probably contains annotations that the parser is not prepared to handle (eg. @interface)")
+    services = {}
+    for class_name, topics in zip(class_visitors.keys(), lda_result):
+        print(f"{class_name} -> {topics}")
+
+        topic_number = 0
+        topic_value = 0
+        for topic in topics:
+            if topic[1] > topic_value:
+                topic_value = topic[1]
+                topic_number = topic[0]
+
+        if topic_number in services:
+            services[topic_number].append((class_name, topics))
+        else:
+            services[topic_number] = [(class_name, topics)]
+
+    lda.set_weight_for_clustering(graph, class_visitors, lda_result)
+
+    with open("./services_lda.txt", "w") as f:
+        for service in services:
+            f.write(f"{service}\n")
+            for classe in services[service]:
+                f.write(f"{classe}\n")
+            f.write("\n")
+
+    # colors = Clustering.create_colors(services.values())
+    # Graph.draw(graph, colors)
+
+    # Create cluster string to measure metrics
+    clusters = []
+    for service in services:
+        cluster = []
+        for classe in services[service]:
+            cluster.append(classe[0])
+        clusters.append(cluster)
+
+    return clusters
 
 
 def apply_tfidf_to_connections(graph, class_visitors):
@@ -192,22 +194,6 @@ def apply_tfidf_to_connections(graph, class_visitors):
         logging.info(f"{similarity} {src} - {dst}")
 
         graph[src][dst][str(WeightType.TF_IDF)] = similarity
-
-
-def set_edge_weight_by_identified_topics(graph, class_visitors):
-
-    for src, dst in graph.edges():
-        src_visitor = class_visitors[src]
-        dst_visitor = class_visitors[dst]
-
-        # print(
-        #     f"{src_visitor.get_class_name()} - {dst_visitor.get_class_name()}")
-        best_match = lda.best_match_between_topics(
-            src_visitor.get_lda(), dst_visitor.get_lda())
-        logging.info(f"Best match {best_match}")
-
-        graph[src][dst][str(WeightType.LDA)] = round(
-            best_match[0], 2) if best_match else 0
 
 
 def test_clustering_algorithms(graph):
@@ -298,42 +284,46 @@ def visitors_to_qualified_name(visitors):
     return qualified_visitors
 
 
-def pre_process(graph):
+def pre_process(graph, remove_weak_edges=False, remove_disconnected_sections=False):
     # TODO: could be optimized by caching already traversed nodes
     graph = graph.to_undirected()
 
     # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
-    edges_remove = []
-    for edge in graph.edges:
-        data = graph.get_edge_data(edge[0], edge[1])
-        if data and data[str(WeightType.ABSOLUTE)] < 0.1:
-            edges_remove.append((edge[0], edge[1]))
 
-    for edge in edges_remove:
-        graph.remove_edge(edge[0], edge[1])
-        print("Removing edge")
+    edges_remove = []
+
+    if remove_weak_edges:
+        for edge in graph.edges:
+            data = graph.get_edge_data(edge[0], edge[1])
+            if data and data[str(WeightType.ABSOLUTE)] < 0.1:
+                edges_remove.append((edge[0], edge[1]))
+
+        for edge in edges_remove:
+            graph.remove_edge(edge[0], edge[1])
+            print("Removing edge")
 
     # Remove nodes that belong to a disconnected section consisting of less than [node_depth] nodes
     nodes_remove = []
-    for node in graph.nodes():
-        node_depth = 5
-        edges = nx.dfs_edges(graph, source=node, depth_limit=node_depth)
-        count = 0
+    if remove_disconnected_sections:
+        for node in graph.nodes():
+            node_depth = 5
+            edges = nx.dfs_edges(graph, source=node, depth_limit=node_depth)
+            count = 0
 
-        for edge in edges:
-            if node == 'com.raysmond.blog.error.NotFoundException':
-                print(edge)
+            for edge in edges:
+                if node == 'com.raysmond.blog.error.NotFoundException':
+                    print(edge)
 
-            count += 1
+                count += 1
 
-        print(f"Traversing node {node} {count}")
+            print(f"Traversing node {node} {count}")
 
-        if count < node_depth:
-            nodes_remove.append(node)
+            if count < node_depth:
+                nodes_remove.append(node)
 
-    for node in nodes_remove:
-        graph.remove_node(node)
-        print(f"Removing node (<{node_depth} dfs) {node}")
+        for node in nodes_remove:
+            graph.remove_node(node)
+            print(f"Removing node (<{node_depth} dfs) {node}")
 
     return graph
 
@@ -355,14 +345,14 @@ def identify_clusters_in_project(project_name):
     # apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
-    apply_lda_to_classes(graph, qualified_visitors)
-    # set_edge_weight_by_identified_topics(graph, qualified_visitors)
+    # TODO : think about if the pre_processing should be done or not
+    # graph = pre_process(graph, remove_disconnected_sections=True)
+    clusters = apply_lda_to_classes(graph, qualified_visitors)
 
-    # calculate_absolute_weights(graph, weight_type=WeightType.LDA)
-    # graph = pre_process(graph)
+    calculate_absolute_weights(graph, weight_type=WeightType.LDA)
 
-    # return Clustering.community_detection_louvain(graph)
-    return []
+    return Clustering.community_detection_louvain(graph)
+    # return clusters
 
 
 def main():
@@ -386,7 +376,7 @@ def main():
         clusters = identify_clusters_in_project(project)
         result.add_project(project, str(clusters))
         result.dump_to_json_file()
-        # result.run_java_metrics()
+        result.run_java_metrics()
 
     if args.metrics_condensed:
         projects = ['spring-blog', 'jpetstore',

@@ -2,6 +2,7 @@ import re
 import itertools
 import community
 import matplotlib
+import numpy as np
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -15,8 +16,6 @@ from networkx import edge_betweenness_centrality as betweenness
 from networkx.algorithms.community import label_propagation_communities, kernighan_lin_bisection, greedy_modularity_communities, asyn_fluidc, asyn_lpa_communities
 from networkx.algorithms.community.centrality import girvan_newman
 
-
-import numpy as np
 
 from karateclub.node_embedding.neighbourhood import GraRep, DeepWalk, Walklets, NMFADMM, Diff2Vec, BoostNE, NetMF, LaplacianEigenmaps, HOPE, NodeSketch
 from karateclub.community_detection.overlapping import EgoNetSplitter, NNSED, DANMF, MNMF, BigClam, SymmNMF
@@ -70,7 +69,7 @@ class Clustering:
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
         # print(f"Modularity: {community.modularity(partition, g)}")
-        plt.show()
+        # plt.show()
 
         return clusters
 
@@ -306,3 +305,7 @@ class Clustering:
             G_core_60, pos=pos, node_size=100, edge_color="red", alpha=0.5, with_labels=False)
 
         plt.show()
+
+    @staticmethod
+    def cosine_similarity(vector1, vector2):
+        return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))

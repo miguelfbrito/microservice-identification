@@ -27,8 +27,6 @@ class ProcessResultsOutput:
         self.projects.append(project)
 
     def dump_to_json_file(self):
-        print("Writing to json")
-        print(self.projects)
         with open(str(ProcessResultsOutput.PROJECTS_PATH), "w") as f:
             f.write(json.dumps(self.projects, indent=4))
 

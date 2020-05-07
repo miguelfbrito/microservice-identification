@@ -1,12 +1,16 @@
+import re
+import gensim
+import logging
+import numpy as np
+import pyLDAvis.gensim
+
+from WeightType import WeightType
+from Clustering import Clustering
 from nltk.tokenize import RegexpTokenizer
 from stop_words import get_stop_words
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
 from StringUtils import StringUtils
-import re
-import gensim
-import logging
-import pyLDAvis.gensim
 
 
 def best_match_between_topics(topics_a, topics_b):
@@ -28,7 +32,7 @@ def best_match_between_topics(topics_a, topics_b):
     return word_match[0] if len(word_match) > 0 else None
 
 
-def apply_lda_to_text(docs):
+def apply_lda_to_text(docs, class_visitors):
 
     tokenizer = RegexpTokenizer(r'\w+')
 
@@ -39,10 +43,8 @@ def apply_lda_to_text(docs):
     p_stemmer = PorterStemmer()
 
     # Clean text based on java stop words
+
     docs = [StringUtils.clear_java_words(doc) for doc in docs]
-
-    print(len(docs))
-
     logging.info(docs)
 
     # compile sample documents into a list
@@ -52,46 +54,63 @@ def apply_lda_to_text(docs):
     texts = []
 
     # loop through document list
-    for i in doc_set:
-
+    for text in doc_set:
         # clean and tokenize document string
-        raw = i.lower()
+        raw = text.lower()
         tokens = tokenizer.tokenize(raw)
-
         # remove stop words from tokens
-        stopped_tokens = [i for i in tokens if not i in en_stop]
+        stopped_tokens = [t for t in tokens if not t in en_stop]
 
         # stem tokens
-        stemmed_tokens = [p_stemmer.stem(i) for i in stopped_tokens]
+        stemmed_tokens = [p_stemmer.stem(st) for st in stopped_tokens]
 
         # add tokens to list
         texts.append(stemmed_tokens)
 
-    # turn our tokenized documents into a id <-> term dictionary
+    # turn tokenized documents into a id <-> term dictionary
     dictionary = corpora.Dictionary(texts)
 
     # filter dictionary from outliers
-    dictionary.filter_extremes(no_below=3, no_above=0.8, keep_n=10000)
+    dictionary.filter_extremes(no_below=5, no_above=0.8, keep_n=10000)
 
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
 
-    print(f"Corpus {corpus}")
-
     # generate LDA model
     ldamodel = gensim.models.ldamodel.LdaModel(
-        corpus, num_topics=5, id2word=dictionary, passes=20)
+        corpus, num_topics=4, id2word=dictionary, passes=20)
 
     topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
 
     # print(ldamodel.show_topics())
-    data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
+    # data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
     # pyLDAvis.show(data)
 
-    # topics = ldamodel.show_topics(
-    #     num_topics=1, num_words=6)
-
-    # pattern = r"(\d\.?\d*)\*\"(\w*)\""
-    # return re.findall(pattern, topics[0][1])
-
     return topics_per_doc
+
+
+def set_weight_for_clustering(graph, class_visitors, topics_per_doc):
+
+    class_topics = {z[0]: z[1]
+                    for z in zip(class_visitors.keys(), topics_per_doc)}
+
+    k = 4
+    for src, dst in graph.edges():
+        src_vector = topics_vector(class_topics[src], k)
+        dst_vector = topics_vector(class_topics[dst], k)
+
+        similarity = Clustering.cosine_similarity(src_vector, dst_vector)
+        graph[src][dst][str(WeightType.LDA)] = similarity
+        print(f" {src} -> {dst} similarity of {similarity}")
+
+
+def topics_vector(topics, k):
+    dict_topics = {t[0]: t[1] for t in topics}
+    vector = []
+    for i in range(0, k):
+        if i in dict_topics:
+            vector.append(dict_topics[i])
+        else:
+            vector.append(0)
+
+    return np.array(vector)
