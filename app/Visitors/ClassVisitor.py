@@ -89,6 +89,16 @@ class ClassVisitor:
         self.methods.append(str(type.name))
         logging.info("Visiting method declaration: " + str(type.name))
 
+    @dispatch(javalang.tree.MethodReference)
+    def visit(self, type):
+        # self.methods.append(str(type.name))
+        logging.info("Visiting method reference: " + str(type))
+
+    @dispatch(javalang.tree.MethodInvocation)
+    def visit(self, type):
+        # self.methods.append(str(type.name))
+        logging.info("Visiting method invocation: " + str(type))
+
     # Difference to VariableDeclarator?
     @dispatch(javalang.tree.FieldDeclaration)
     def visit(self, type):

@@ -48,6 +48,8 @@ class Clustering:
         print(
             f"Total Clusters len>2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
 
+        Clustering.merge_clusters(g, clusters, weight_type)
+
         # TODO : refactor and move this section to Graph.draw()
         # Relabel nodes from qualified name (package+classname) for better graph visibility
         h = g.copy()
@@ -61,15 +63,16 @@ class Clustering:
         nx.draw_networkx(h, pos=sp, with_labels=True,
                          node_size=350, font_size=6, node_color=values)
 
-        # edge_weight_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-        #     x[2][weight_type]) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
-        # nx.draw_networkx_edge_labels(
-        #     h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
+        edge_weight_labels = dict(map(lambda x: (
+            (x[0], x[1]),  f"{x[2][weight_type]} - {x[2][str(WeightType.STRUCTURAL)]}" if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+
+        nx.draw_networkx_edge_labels(
+            h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
         # print(f"Modularity: {community.modularity(partition, g)}")
-        # plt.show()
+        plt.show()
 
         return clusters
 
@@ -309,3 +312,48 @@ class Clustering:
     @staticmethod
     def cosine_similarity(vector1, vector2):
         return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
+
+    @staticmethod
+    def pre_process(graph, remove_weak_edges=False, remove_disconnected_sections=False):
+        # TODO: could be optimized by caching already traversed nodes
+        graph = graph.to_undirected()
+
+        # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
+
+        edges_remove = []
+
+        if remove_weak_edges:
+            for edge in graph.edges:
+                data = graph.get_edge_data(edge[0], edge[1])
+                if data and data[str(WeightType.ABSOLUTE)] < 0.1:
+                    edges_remove.append((edge[0], edge[1]))
+
+            for edge in edges_remove:
+                graph.remove_edge(edge[0], edge[1])
+                print("Removing edge")
+
+        # Remove nodes that belong to a disconnected section consisting of less than [node_depth] nodes
+        nodes_remove = []
+        if remove_disconnected_sections:
+            for node in graph.nodes():
+                node_depth = 5
+                edges = nx.dfs_edges(graph, source=node,
+                                     depth_limit=node_depth)
+                count = 0
+
+                for edge in edges:
+                    count += 1
+
+                if count < node_depth:
+                    nodes_remove.append(node)
+
+            for node in nodes_remove:
+                graph.remove_node(node)
+                print(f"Removing node (<{node_depth} dfs) {node}")
+
+        return graph
+
+    @staticmethod
+    def merge_clusters(g, clusters, weight_type):
+        print(f"\nMerging clusters {clusters}")
+        print(f"Graph Nodes: {g.nodes()}")

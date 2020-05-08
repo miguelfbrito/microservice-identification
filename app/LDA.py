@@ -13,26 +13,67 @@ from gensim import corpora, models
 from StringUtils import StringUtils
 
 
-def best_match_between_topics(topics_a, topics_b):
+def apply_lda_to_classes(graph, class_visitors, num_topics, pre_process=False):
 
-    # print(topics_a)
-    # print(topics_b)
-    # print()
+    docs = []
 
-    word_match = []
-    if not topics_a or not topics_b:
-        return None
+    # Remove loose sections of the graph
+    if pre_process:
+        classes_to_remove = []
+        for cla in class_visitors:
+            if cla not in graph.nodes():
+                classes_to_remove.append(cla)
+        for cla in classes_to_remove:
+            class_visitors.pop(cla, None)
 
-    for a in topics_a:
-        for b in topics_b:
-            if a[1] == b[1]:
-                word_match.append(((float(a[0]) + float(b[0]) / 2), a[1]))
+    # (class_name, BOW)
+    docs = [cla.get_merge_of_strings()
+            for cla in class_visitors.values()]
 
-    word_match.sort(key=lambda x: x[0], reverse=True)
-    return word_match[0] if len(word_match) > 0 else None
+    lda_result = apply_lda_to_text(docs, class_visitors, num_topics)
+    print(f"LDA Result: {lda_result}")
+
+    services = {}
+    for class_name, topics in zip(class_visitors.keys(), lda_result):
+        print(f"{class_name} -> {topics}")
+
+        topic_number = 0
+        topic_value = 0
+        for topic in topics:
+            if topic[1] > topic_value:
+                topic_value = topic[1]
+                topic_number = topic[0]
+
+        if topic_number in services:
+            services[topic_number].append((class_name, topics))
+        else:
+            services[topic_number] = [(class_name, topics)]
+
+    set_weight_for_clustering(
+        graph, class_visitors, lda_result, num_topics)
+
+    with open("./services_lda.txt", "w") as f:
+        for service in services:
+            f.write(f"{service}\n")
+            for classe in services[service]:
+                f.write(f"{classe}\n")
+            f.write("\n")
+
+    # colors = Clustering.create_colors(services.values())
+    # Graph.draw(graph, colors)
+
+    # Create cluster string to measure metrics
+    clusters = []
+    for service in services:
+        cluster = []
+        for classe in services[service]:
+            cluster.append(classe[0])
+        clusters.append(cluster)
+
+    return clusters
 
 
-def apply_lda_to_text(docs, class_visitors):
+def apply_lda_to_text(docs, class_visitors, num_topics):
 
     tokenizer = RegexpTokenizer(r'\w+')
 
@@ -71,17 +112,23 @@ def apply_lda_to_text(docs, class_visitors):
     dictionary = corpora.Dictionary(texts)
 
     # filter dictionary from outliers
-    dictionary.filter_extremes(no_below=5, no_above=0.8, keep_n=10000)
+    dictionary.filter_extremes(no_below=3, no_above=0.8, keep_n=10000)
 
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
 
     # generate LDA model
+    # TODO : load a gensim model
+    # https://radimrehurek.com/gensim/models/ldamodel.html
+    # ldamodel = LdaModel.load()
+
     ldamodel = gensim.models.ldamodel.LdaModel(
-        corpus, num_topics=4, id2word=dictionary, passes=20)
+        corpus, num_topics=num_topics, id2word=dictionary, passes=50)
 
     topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
 
+    print("\n\n\nShowing topics")
+    print(ldamodel.show_topics(num_topics=num_topics, num_words=5, formatted=True))
     # print(ldamodel.show_topics())
     # data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
     # pyLDAvis.show(data)
@@ -89,12 +136,11 @@ def apply_lda_to_text(docs, class_visitors):
     return topics_per_doc
 
 
-def set_weight_for_clustering(graph, class_visitors, topics_per_doc):
+def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):
 
     class_topics = {z[0]: z[1]
                     for z in zip(class_visitors.keys(), topics_per_doc)}
 
-    k = 4
     for src, dst in graph.edges():
         src_vector = topics_vector(class_topics[src], k)
         dst_vector = topics_vector(class_topics[dst], k)
