@@ -1,13 +1,11 @@
 package metrics;
 
 import com.github.javaparser.ast.CompilationUnit;
-import graph.MyGraph;
-import graph.creation.ByMethodCallInvocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import parser.Parse;
-import parser.ParseResult;
+import parser.ParseResultServices;
 import parser.Parser;
 
 import java.io.IOException;
@@ -35,9 +33,9 @@ public class CHDProjectsTest {
     public double CHDProjectTest(String clusters, String path) throws IOException {
         List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(path));
         Parse parse = new Parse();
-        ParseResult parseResult = parse.completeParseClusters(compilationUnits, clusters);
+        ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
-        Metric CHD = new CHD(parseResult);
+        Metric CHD = new CHD(parseResultServices);
         double chd  = CHD.calculateService();
         System.out.println("chd Project: " + chd);
         return chd;

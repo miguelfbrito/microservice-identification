@@ -4,16 +4,16 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.types.ResolvedType;
 import graph.entities.MyClass;
 import graph.entities.Service;
-import parser.ParseResult;
+import parser.ParseResultServices;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ExtractOperations {
 
-    public static void extractAtServiceLevel(ParseResult parseResult) {
-        Map<Integer, Service> services = parseResult.getServices();
-        Map<String, MyClass> classes = parseResult.getClasses();
+    public static void extractAtServiceLevel(ParseResultServices parseResultServices) {
+        Map<Integer, Service> services = parseResultServices.getServices();
+        Map<String, MyClass> classes = parseResultServices.getClasses();
 
         for (Map.Entry<Integer, Service> service : services.entrySet()) {
             for (Map.Entry<String, MyClass> entryClasses : service.getValue().getClasses().entrySet()) {
@@ -45,8 +45,6 @@ public class ExtractOperations {
         }
     }
 
-
-
     public static void extractAllClassOperationsToServiceLevel(Map<Integer, Service> services) {
         for (Service service : services.values()) {
             Map<String, String> operations = new HashMap<>();
@@ -59,3 +57,6 @@ public class ExtractOperations {
         }
     }
 }
+
+
+

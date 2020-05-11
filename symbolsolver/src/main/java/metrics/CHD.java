@@ -3,7 +3,7 @@ package metrics;
 import extraction.ExtractOperations;
 import graph.entities.MyMethod;
 import graph.entities.Service;
-import parser.ParseResult;
+import parser.ParseResultServices;
 import utils.StringUtils;
 
 import java.util.HashSet;
@@ -17,11 +17,11 @@ import java.util.Set;
  */
 public class CHD implements Metric {
 
-    private ParseResult parseResult;
+    private ParseResultServices parseResultServices;
     private boolean includeParameters;
 
-    public CHD(ParseResult parseResult) {
-        this.parseResult = parseResult;
+    public CHD(ParseResultServices parseResultServices) {
+        this.parseResultServices = parseResultServices;
         this.includeParameters = true;
     }
 
@@ -48,9 +48,9 @@ public class CHD implements Metric {
 
     @Override
     public double calculateService() {
-        ExtractOperations.extractAtServiceLevel(parseResult);
-        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResult.getServices());
-        Map<Integer, Service> services = parseResult.getServices();
+        ExtractOperations.extractAtServiceLevel(parseResultServices);
+        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResultServices.getServices());
+        Map<Integer, Service> services = parseResultServices.getServices();
 
         double chd = 0.0;
         int countedServices = 0;
@@ -83,8 +83,8 @@ public class CHD implements Metric {
                     String sourceClassName = service.getOperations().get(sourceOperation);
                     String targetClassName = service.getOperations().get(targetOperation);
 
-                    MyMethod sourceMethod = parseResult.getClasses().get(sourceClassName).getMethods().get(sourceOperation);
-                    MyMethod targetMethod = parseResult.getClasses().get(targetClassName).getMethods().get(targetOperation);
+                    MyMethod sourceMethod = parseResultServices.getClasses().get(sourceClassName).getMethods().get(sourceOperation);
+                    MyMethod targetMethod = parseResultServices.getClasses().get(targetClassName).getMethods().get(targetOperation);
 
                     if (sourceMethod == null || targetMethod == null) {
                         /*

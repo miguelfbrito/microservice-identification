@@ -1,17 +1,9 @@
 package graph;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import graph.entities.MyClass;
-import graph.entities.MyMethod;
-import graph.entities.Service;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DirectedMultigraph;
-import parser.ParseResult;
-import utils.StringUtils;
-import visitors.ClassOrInterfaceDeclarationVisitor;
+import parser.ParseResultServices;
 
 import java.util.*;
 
@@ -23,13 +15,13 @@ public class MyGraph {
         graph = new DirectedMultigraph<>(DependencyEdge.class);
     }
 
-    public MyGraph(ParseResult parseResult) {
+    public MyGraph(ParseResultServices parseResultServices) {
         graph = new DirectedMultigraph<>(DependencyEdge.class);
-        this.addNodes(parseResult);
+        this.addNodes(parseResultServices);
     }
 
-    public void addNodes(ParseResult parseResult) {
-        Map<String, MyClass> classes = parseResult.getClasses();
+    public void addNodes(ParseResultServices parseResultServices) {
+        Map<String, MyClass> classes = parseResultServices.getClasses();
 
         for(MyClass myClass : classes.values()){
             graph.addVertex(myClass);

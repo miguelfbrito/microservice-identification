@@ -2,15 +2,12 @@ package metrics;
 
 import com.github.javaparser.ast.CompilationUnit;
 
-import graph.MyGraph;
-import graph.creation.ByMethodCallInvocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import parser.Parse;
-import parser.ParseResult;
+import parser.ParseResultServices;
 import parser.Parser;
-import utils.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -37,10 +34,10 @@ public class CHMProjectsTest {
     public double CHMProjectTest(String clusters, String path) throws IOException {
         List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(path));
         Parse parse = new Parse();
-        ParseResult parseResult = parse.completeParseClusters(compilationUnits, clusters);
+        ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
      //   MyGraph graphReference = new ByMethodCallInvocation(parseResult);
-        Metric CHM = new CHM(parseResult);
+        Metric CHM = new CHM(parseResultServices);
         double chm = CHM.calculateService();
         System.out.println("CHM Project: " + chm);
         return chm;

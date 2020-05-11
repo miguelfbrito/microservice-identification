@@ -1,12 +1,10 @@
 package metrics;
 
 import com.github.javaparser.ast.CompilationUnit;
-import graph.MyGraph;
-import graph.creation.ByMethodCallInvocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import parser.Parse;
-import parser.ParseResult;
+import parser.ParseResultServices;
 import parser.Parser;
 
 import java.io.IOException;
@@ -33,9 +31,9 @@ public class OPNProjectsTest {
     public double OPNProjectTest(String clusters, String path) throws IOException {
         List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(path));
         Parse parse = new Parse();
-        ParseResult parseResult = parse.completeParseClusters(compilationUnits, clusters);
+        ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
-        Metric OPN = new OPN(parseResult);
+        Metric OPN = new OPN(parseResultServices);
         double opn = OPN.calculateService();
         System.out.println("OPN Project: " + opn);
         return opn;

@@ -1,16 +1,8 @@
 package metrics;
 
 import extraction.ExtractOperations;
-import graph.DependencyEdge;
-import graph.MyGraph;
-import graph.entities.MyClass;
 import graph.entities.Service;
-import org.jgrapht.Graph;
-import parser.ParseResult;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import parser.ParseResultServices;
 
 /**
  * Coupling Metric
@@ -18,19 +10,19 @@ import java.util.Set;
  */
 public class OPN implements Metric {
 
-    private ParseResult parseResult;
+    private ParseResultServices parseResultServices;
 
-    public OPN(ParseResult parseResult) {
-        this.parseResult = parseResult;
+    public OPN(ParseResultServices parseResultServices) {
+        this.parseResultServices = parseResultServices;
     }
 
     @Override
     public double calculateService() {
-        ExtractOperations.extractAtServiceLevel(parseResult);
-        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResult.getServices());
+        ExtractOperations.extractAtServiceLevel(parseResultServices);
+        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResultServices.getServices());
 
         int totalOPN = 0;
-        for (Service service : parseResult.getServices().values()) {
+        for (Service service : parseResultServices.getServices().values()) {
             totalOPN += service.getOperations().size();
         }
 

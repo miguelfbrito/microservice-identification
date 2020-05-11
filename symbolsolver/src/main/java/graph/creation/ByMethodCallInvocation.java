@@ -1,23 +1,21 @@
 package graph.creation;
 
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.types.ResolvedType;
 import graph.DependencyEdge;
 import graph.MyGraph;
 import graph.entities.MyClass;
-import parser.ParseResult;
+import parser.ParseResultServices;
 
-import java.util.List;
 import java.util.Map;
 
 public class ByMethodCallInvocation extends MyGraph {
 
-    private ParseResult parseResult;
+    private ParseResultServices parseResultServices;
 
-    public ByMethodCallInvocation(ParseResult parseResult) {
-        super(parseResult);
-        this.parseResult = parseResult;
+    public ByMethodCallInvocation(ParseResultServices parseResultServices) {
+        super(parseResultServices);
+        this.parseResultServices = parseResultServices;
         this.addEdges();
     }
 
@@ -26,7 +24,7 @@ public class ByMethodCallInvocation extends MyGraph {
      */
     @Override
     public void addEdges() {
-        Map<String, MyClass> classes = parseResult.getClasses();
+        Map<String, MyClass> classes = parseResultServices.getClasses();
 
         for (MyClass source : classes.values()) {
             for (MethodCallExpr methodCall : source.getVisitor().findAll(MethodCallExpr.class)) {

@@ -5,12 +5,12 @@ import graph.entities.Service;
 
 import java.util.Map;
 
-public class ParseResult {
+public class ParseResultServices {
 
     private Map<String, MyClass> classes;
     private Map<Integer, Service> services;
 
-    public ParseResult(Map<String, MyClass> classes, Map<Integer, Service> services) {
+    public ParseResultServices(Map<String, MyClass> classes, Map<Integer, Service> services) {
         this.classes = classes;
         this.services = services;
     }

@@ -1,18 +1,12 @@
 package graph.creation;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
-import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
 import graph.DependencyEdge;
 import graph.entities.MyClass;
 import graph.MyGraph;
-import parser.ParseResult;
+import parser.ParseResultServices;
 
-import java.util.InvalidPropertiesFormatException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,17 +15,17 @@ import java.util.Map;
  */
 public class ByClassOrInterfaceType extends MyGraph {
 
-    private ParseResult parseResult;
+    private ParseResultServices parseResultServices;
 
-    public ByClassOrInterfaceType(ParseResult parseResult) {
-        super(parseResult);
-        this.parseResult = parseResult;
+    public ByClassOrInterfaceType(ParseResultServices parseResultServices) {
+        super(parseResultServices);
+        this.parseResultServices = parseResultServices;
         this.addEdges();
     }
 
     @Override
     public void addEdges() {
-        Map<String, MyClass> classes = parseResult.getClasses();
+        Map<String, MyClass> classes = parseResultServices.getClasses();
         for (MyClass source : classes.values()) {
             for (ClassOrInterfaceType classOrInterfaceType : source.getVisitor().findAll(ClassOrInterfaceType.class)) {
                 try {

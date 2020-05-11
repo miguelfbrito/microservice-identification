@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import parser.Parse;
-import parser.ParseResult;
+import parser.ParseResultServices;
 import parser.Parser;
 
 import java.io.IOException;
@@ -35,10 +35,10 @@ public class IRNProjectsTest {
     public double IRNProjectTest(String clusters, String path) throws IOException {
         List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(path));
         Parse parse = new Parse();
-        ParseResult parseResult = parse.completeParseClusters(compilationUnits, clusters);
+        ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
-        MyGraph graphReference = new ByMethodCallInvocation(parseResult);
-        Metric IRN = new IRN(graphReference, parseResult);
+        MyGraph graphReference = new ByMethodCallInvocation(parseResultServices);
+        Metric IRN = new IRN(graphReference, parseResultServices);
         double irn = IRN.calculateService();
         System.out.println("IRN Project: " + irn);
         return irn;

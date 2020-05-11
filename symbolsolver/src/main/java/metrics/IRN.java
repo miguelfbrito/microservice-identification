@@ -5,7 +5,7 @@ import graph.entities.MyClass;
 import graph.MyGraph;
 import graph.entities.Service;
 import org.jgrapht.Graph;
-import parser.ParseResult;
+import parser.ParseResultServices;
 
 /**
  * Coupling Metric
@@ -14,11 +14,11 @@ import parser.ParseResult;
 public class IRN implements Metric {
 
     private MyGraph myGraph;
-    private ParseResult parseResult;
+    private ParseResultServices parseResultServices;
 
-    public IRN(MyGraph myGraph, ParseResult parseResult) {
+    public IRN(MyGraph myGraph, ParseResultServices parseResultServices) {
         this.myGraph = myGraph;
-        this.parseResult = parseResult;
+        this.parseResultServices = parseResultServices;
     }
 
     @Override
@@ -29,8 +29,8 @@ public class IRN implements Metric {
 
         System.out.println("\nGraph total nodes: " + graph.vertexSet().size());
         System.out.println("Graph total edges: " + graph.edgeSet().size());
-        System.out.println("Total services size: "  + parseResult.getServices().size());
-        System.out.println("Total classes size: "  + parseResult.getClasses().size());
+        System.out.println("Total services size: "  + parseResultServices.getServices().size());
+        System.out.println("Total classes size: "  + parseResultServices.getClasses().size());
 
         double totalIrn = 0;
 
@@ -39,8 +39,8 @@ public class IRN implements Metric {
             MyClass target = graph.getEdgeTarget(edge);
 
             // TODO: Handle null pointer
-            Service serviceOfSource = parseResult.getClasses().get(source.getQualifiedName()).getService();
-            Service serviceOfTarget = parseResult.getClasses().get(target.getQualifiedName()).getService();
+            Service serviceOfSource = parseResultServices.getClasses().get(source.getQualifiedName()).getService();
+            Service serviceOfTarget = parseResultServices.getClasses().get(target.getQualifiedName()).getService();
 
             if (serviceOfSource != null && serviceOfTarget != null &&
                     serviceOfSource.getId() != serviceOfTarget.getId()) {

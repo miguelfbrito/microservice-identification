@@ -9,7 +9,7 @@ import graph.entities.MyClass;
 import graph.entities.Service;
 import metrics.*;
 import parser.Parse;
-import parser.ParseResult;
+import parser.ParseResultServices;
 import parser.Parser;
 
 import java.io.*;
@@ -95,46 +95,46 @@ public class GenerateMetrics {
             String completePath = PROJECTS_ROOT + "/" + proj.getRelativePath();
             List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(completePath));
             Parse parse = new Parse();
-            ParseResult parseResult = parse.completeParseClusters(compilationUnits, proj.getClusterString());
+            ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, proj.getClusterString());
             ProjectMetrics pm = new ProjectMetrics(proj);
 
-            pm.setIrn(calculateIRN(parseResult));
-            pm.setOpn(calculateOPN(parseResult));
-            pm.setChm(calculateCHM(parseResult));
-            pm.setChd(calculateCHD(parseResult));
+            pm.setIrn(calculateIRN(parseResultServices));
+            pm.setOpn(calculateOPN(parseResultServices));
+            pm.setChm(calculateCHM(parseResultServices));
+            pm.setChd(calculateCHD(parseResultServices));
 
             projectMetrics.add(pm);
-            extractClustersToFile(parseResult.getServices(), proj);
+            extractClustersToFile(parseResultServices.getServices(), proj);
             writeToFile(pm);
         }
 
         return projectMetrics;
     }
 
-    public double calculateIRN(ParseResult parseResult) throws IOException {
-        MyGraph graphReference = new ByMethodCallInvocation(parseResult);
-        Metric IRN = new IRN(graphReference, parseResult);
+    public double calculateIRN(ParseResultServices parseResultServices) throws IOException {
+        MyGraph graphReference = new ByMethodCallInvocation(parseResultServices);
+        Metric IRN = new IRN(graphReference, parseResultServices);
         double irn = IRN.calculateService();
         System.out.println("IRN Project: " + irn);
         return irn;
     }
 
-    public double calculateOPN(ParseResult parseResult) throws IOException {
-        Metric OPN = new OPN(parseResult);
+    public double calculateOPN(ParseResultServices parseResultServices) throws IOException {
+        Metric OPN = new OPN(parseResultServices);
         double opn = OPN.calculateService();
         System.out.println("OPN Project: " + opn);
         return opn;
     }
 
-    public double calculateCHM(ParseResult parseResult) throws IOException {
-        Metric CHM = new CHM(parseResult);
+    public double calculateCHM(ParseResultServices parseResultServices) throws IOException {
+        Metric CHM = new CHM(parseResultServices);
         double chm = CHM.calculateService();
         System.out.println("CHM Project: " + chm);
         return chm;
     }
 
-    public double calculateCHD(ParseResult parseResult) throws IOException {
-        Metric CHD = new CHD(parseResult);
+    public double calculateCHD(ParseResultServices parseResultServices) throws IOException {
+        Metric CHD = new CHD(parseResultServices);
         double chd = CHD.calculateService();
         System.out.println("CHD Project: " + chd);
         return chd;
