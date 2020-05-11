@@ -1,13 +1,20 @@
 package graph.entities;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyMethod {
+    private MyClass myClass;
+    @Expose
     private String name;
+    @Expose
     private List<String> parametersDataType;
+    @Expose
     private List<String> returnDataType;
 
+    // TODO : Add myClass as parent on constructors
     public MyMethod(String name) {
         this.name = name;
         this.parametersDataType = new ArrayList<>();
@@ -47,6 +54,16 @@ public class MyMethod {
 
     public void setReturnDataType(List<String> returnDataType) {
         this.returnDataType = returnDataType;
+    }
+
+    public MyClass getMyClass() {
+        return myClass;
+   }
+
+    public void setMyClass(MyClass myClass) {
+        if(myClass.getMethods().containsKey(name)){
+            this.myClass = myClass;
+        }
     }
 
     @Override

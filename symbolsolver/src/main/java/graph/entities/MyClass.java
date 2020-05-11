@@ -1,6 +1,11 @@
 package graph.entities;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.google.gson.annotations.Expose;
+import javassist.expr.MethodCall;
 
 import java.util.*;
 
@@ -8,36 +13,36 @@ public class MyClass {
     private String simpleName;
     private String qualifiedName;
     private ClassOrInterfaceDeclaration visitor;
-    // TODO: consider changint to set
-    private Map<String, MyMethod> methods;
-    private Set<String> operations; // List of methods called from another service
+    private List<MarkerAnnotationExpr> annotations;
+    private List<VariableDeclarator> variables;
+    private Map<String, MyMethod> methods; // method name, method reference
+    private List<MethodCallExpr> methodInvocations;
+    private Set<String> operations; // List of methods called from another service, used for metric calculation
+    private Set<String> implementedTypes;
+    private Set<String> extendedTypes;
     private Service service;
 
-    /**
-     * Should only be used as a mean to find a match in the graph through hashing
-     *
-     * @param qualifiedName
-     */
     public MyClass(String qualifiedName) {
         this.qualifiedName = qualifiedName;
         this.methods = new HashMap<>();
         this.operations = new HashSet<>();
-        this.service = null;
+        this.implementedTypes = new HashSet<>();
+        this.extendedTypes = new HashSet<>();
     }
 
     public MyClass(String qualifiedName, Service service) {
-        this.qualifiedName = qualifiedName;
-        this.methods = new HashMap<>();
-        this.operations = new HashSet<>();
+        this(qualifiedName);
         this.service = service;
     }
 
     public MyClass(ClassOrInterfaceDeclaration visitor) {
+        this.methods = new HashMap<>();
+        this.operations = new HashSet<>();
+        this.implementedTypes = new HashSet<>();
+        this.extendedTypes = new HashSet<>();
         this.visitor = visitor;
         visitor.getFullyQualifiedName().ifPresent(qualifiedName -> this.qualifiedName = qualifiedName);
         this.simpleName = visitor.getName().toString();
-        this.methods = new HashMap<>();
-        this.operations = new HashSet<>();
         this.service = null;
     }
 
@@ -87,11 +92,51 @@ public class MyClass {
         }
     }
 
+    public Set<String> getImplementedTypes() {
+        return implementedTypes;
+    }
+
+    public void setImplementedTypes(Set<String> implementedTypes) {
+        this.implementedTypes = implementedTypes;
+    }
+
+    public Set<String> getExtendedTypes() {
+        return extendedTypes;
+    }
+
+    public void setExtendedTypes(Set<String> extendedTypes) {
+        this.extendedTypes = extendedTypes;
+    }
+
+    public List<MethodCallExpr> getMethodInvocations() {
+        return methodInvocations;
+    }
+
+    public void setMethodInvocations(List<MethodCallExpr> methodInvocations) {
+        this.methodInvocations = methodInvocations;
+    }
+
     @Override
     public String toString() {
         return "MyClass{" +
                 "qualifiedName='" + qualifiedName + '\'' +
                 '}';
+    }
+
+    public List<MarkerAnnotationExpr> getAnnotations() {
+        return annotations;
+    }
+
+    public List<VariableDeclarator> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<VariableDeclarator> variables) {
+        this.variables = variables;
+    }
+
+    public void setAnnotations(List<MarkerAnnotationExpr> annotations) {
+        this.annotations = annotations;
     }
 
     @Override

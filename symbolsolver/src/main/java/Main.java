@@ -1,23 +1,27 @@
+import com.github.javaparser.ast.CompilationUnit;
+import parser.Parse;
+import parser.Parser;
 import utils.StringUtils;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
+        final String PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/monoliths";
+        final String project_name = "/spring-petclinic";
 
-/*
-        Check tests to know more about how to measure metrics from projects
+        for (String s : args) {
+            System.out.println(s);
+        }
+        Parser parser = new Parser();
+        List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(PROJECTS_ROOT + project_name));
+        Parse parse = new Parse();
+        parse.completeParse(compilationUnits);
 
-        MyGraph graphSpringBlog = new ByMethodCallInvocation(compilationUnits);
-        Metric metricIRN = new IRN(graphSpringBlog);
-        double irn = metricIRN.calculateCluster(mapClusters);
-        System.out.println("Calculated IRN Spring-Blog: " + irn);
-
-        MyGraph graphJpetStore = new ByMethodCallInvocation(compilationUnitsPetStore);
-        Metric irnPetStore = new IRN(graphJpetStore);
-        double irnPet = irnPetStore.calculateCluster(mapClustersPetStore);
-        System.out.println("Calculated IRN PetStore: " + irnPet);
-*/
 
     }
 }
