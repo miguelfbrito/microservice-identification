@@ -346,3 +346,5 @@ data/
 app/services_lda.txt
 
 projects.json
+
+symbolsolver/output.json

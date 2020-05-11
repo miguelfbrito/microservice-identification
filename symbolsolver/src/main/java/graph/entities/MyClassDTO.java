@@ -1,15 +1,12 @@
-package utils;
+package graph.entities;
 
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.google.gson.annotations.Expose;
-import graph.entities.MyClass;
-import graph.entities.MyMethod;
 
 import java.util.*;
 import java.util.stream.Collectors;

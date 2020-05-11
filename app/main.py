@@ -4,11 +4,14 @@ from operator import itemgetter
 from TfIdf import TfIdf
 from WeightType import WeightType
 from Clustering import Clustering
-from Visitors.ClassVisitor import ClassVisitor
+from visitors.ClassVisitor import ClassVisitor
 from ProcessResultsOutput import ProcessResultsOutput
+from entities.Method import Method
+from entities.Class import Class
 
 import re
 import math
+import json
 import argparse
 import community
 import collections
@@ -225,34 +228,68 @@ def visitors_to_qualified_name(visitors):
     return qualified_visitors
 
 
+def extract_classes_information_from_parsed_json(json_dict):
+    for class_name in json_dict:
+        curr = json_dict[class_name]
+        annotations = curr['annotations']
+        variables = curr['variables']
+        variables_dependencies = curr['variablesDependencies']
+        temp_methods = curr['methods']
+        methods = []
+
+        for method in temp_methods:
+            new_method = Method(
+                method, temp_methods[method]['parametersDataType'], temp_methods[method]['returnDataType'])
+            methods.append(new_method)
+
+        method_invocations = curr['methodInvocations']
+        implemented_types = curr['implementedTypes']
+        extended_types = curr['extendedTypes']
+
+        new_class = Class(class_name, annotations, variables,
+                          variables_dependencies, methods, method_invocations)
+
+        print(new_class)
+
+
 def identify_clusters_in_project(project):
 
     project_name = project[0]
     num_topics = project[1]
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
 
-    files = StringUtils.search_java_files(directory)
-    files = read_files(files)
+    temp_json_location = '../symbolsolver/output.json'
+
+    # files = StringUtils.search_java_files(directory)
+    # files = read_files(files)
 
     graph = nx.DiGraph()
-    class_visitors = parse_files_to_ast(files)
-    graph = Graph.create_dependencies(class_visitors, graph)
+    # class_visitors = parse_files_to_ast(files)
+    # graph = Graph.create_dependencies(class_visitors, graph)
+    # qualified_visitors = visitors_to_qualified_name(class_visitors)
+    # Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
 
-    qualified_visitors = visitors_to_qualified_name(class_visitors)
-    Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
+    # 1. Read parsed document
+    parsed_raw_json = {}
+    with open(temp_json_location) as json_file:
+        parsed_raw_json = json.load(json_file)
+
+    parsed_classes = extract_classes_information_from_parsed_json(
+        parsed_raw_json)
 
     # Method 1. TF-IDF
     # apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
     # TODO : think about if the pre_processing should be done or not
-    lda.apply_lda_to_classes(graph, qualified_visitors, num_topics)
+    # lda.apply_lda_to_classes(graph, qualified_visitors, num_topics)
 
-    calculate_absolute_weights(graph, weight_type=WeightType.LDA)
-    graph = Clustering.pre_process(
-        graph, remove_weak_edges=False, remove_disconnected_sections=True)
+    # calculate_absolute_weights(graph, weight_type=WeightType.LDA)
+    # graph = Clustering.pre_process(
+    #     graph, remove_weak_edges=False, remove_disconnected_sections=True)
 
-    return Clustering.community_detection_louvain(graph)
+    # return Clustering.community_detection_louvain(graph)
+    return []
     # return clusters
 
 

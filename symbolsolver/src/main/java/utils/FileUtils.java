@@ -2,19 +2,17 @@ package utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import graph.entities.MyClass;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class FileUtils {
 
     @Test
-    public static <T> void jsonDump(List<T> data) throws IOException {
+    public static <T> void jsonDump(Object data) throws IOException {
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         FileWriter file = null;
         try {

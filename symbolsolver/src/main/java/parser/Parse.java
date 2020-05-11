@@ -14,7 +14,7 @@ import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
 import utils.FileUtils;
-import utils.MyClassDTO;
+import graph.entities.MyClassDTO;
 import utils.StringUtils;
 import visitors.*;
 
@@ -164,12 +164,12 @@ public class Parse {
             myClass.setMethodInvocations(methodCallInvocations);
         }
 
-        List<MyClassDTO> myClassDTOS = new ArrayList<>();
+        Map<String, MyClassDTO> myClassDTOS = new HashMap<>();
         try {
             for (MyClass myClass : myClasses.values()) {
-                myClassDTOS.add(new MyClassDTO(myClass));
+                myClassDTOS.put(myClass.getQualifiedName(), new MyClassDTO(myClass));
             }
-            FileUtils.jsonDump(new ArrayList<>(myClassDTOS));
+            FileUtils.jsonDump(myClassDTOS);
         } catch (IOException e) {
             e.printStackTrace();
         }
