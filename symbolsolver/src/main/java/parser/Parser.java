@@ -1,4 +1,4 @@
-package parser;
+    package parser;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
@@ -20,14 +20,13 @@ import java.util.List;
 public class Parser {
 
     public List<CompilationUnit> parseProject(Path path) throws IOException, IOException {
-
         final ProjectRoot projectRoot = new ParserCollectionStrategy().collect(path);
         final List<CompilationUnit> compilationUnits = new ArrayList<>();
 
         for (SourceRoot sr : projectRoot.getSourceRoots()) {
             // The SymbolSolver has to receive a SourceRoot instead of a Project Root!
             CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-            combinedTypeSolver.add(new ReflectionTypeSolver());
+            // combinedTypeSolver.add(new ReflectionTypeSolver());
             combinedTypeSolver.add(new JavaParserTypeSolver(sr.getRoot()));
             JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
 
