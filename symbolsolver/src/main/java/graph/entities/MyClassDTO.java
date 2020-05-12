@@ -34,7 +34,10 @@ public class MyClassDTO {
     @Expose
     private List<String> extendedTypes;
 
-    public MyClassDTO(MyClass myClass) {
+    private Set<String> validClasses;
+
+    public MyClassDTO(MyClass myClass, Set<String> validClasses) {
+        this.validClasses = validClasses;
         this.qualifiedName = myClass.getQualifiedName();
         this.annotations = myClass.getAnnotations().stream().map(NodeWithName::getNameAsString).collect(Collectors.toList());
         this.variables = myClass.getVariables().stream().map(v -> v.getType().asString() + " " + v.getName().toString()).collect(Collectors.toList());
@@ -58,10 +61,8 @@ public class MyClassDTO {
                 try {
                     ResolvedReferenceType resolvedReferenceType = mc.calculateResolvedType().asReferenceType();
                     String targetClassName = resolvedReferenceType.getQualifiedName();
-                    if (ignoredClasses.contains(targetClassName)) {
-                        return;
-                    }
-                    processedMethods.put(methodCallExpr.getNameAsString(), targetClassName); // TODO: handle method overloading causing conflicts and getting overwritten
+                    if(isValidClass(targetClassName))
+                        processedMethods.put(methodCallExpr.getNameAsString(), targetClassName); // TODO: handle method overloading causing conflicts and getting overwritten
                 } catch (UnsolvedSymbolException e) {
                     // When it tries to resolve a class not explicitly present in the project. We don't care about those.
                 } catch (UnsupportedOperationException e) {
@@ -83,8 +84,8 @@ public class MyClassDTO {
                 for (ClassOrInterfaceType ref : references) {
                     try {
                         String qualifiedName = ref.resolve().getQualifiedName();
-                        System.out.println();
-                        dependencyList.add(qualifiedName);
+                        if(isValidClass(qualifiedName))
+                            dependencyList.add(qualifiedName);
                     } catch (UnsolvedSymbolException | UnsupportedOperationException e) {
                     }
                 }
@@ -103,7 +104,8 @@ public class MyClassDTO {
 
                 methodDeclaration.getParameters().forEach(parameter -> {
                     String paramTargetClassName = parameter.getType().resolve().asReferenceType().getQualifiedName();
-                    dependencyList.add(paramTargetClassName);
+                    if(isValidClass(paramTargetClassName))
+                        dependencyList.add(paramTargetClassName);
                 });
 
             } catch (UnsolvedSymbolException e) {
@@ -113,5 +115,9 @@ public class MyClassDTO {
             }
         }
         return dependencyList;
+    }
+
+    private boolean isValidClass(String qualifiedName){
+        return this.validClasses.contains(qualifiedName);
     }
 }

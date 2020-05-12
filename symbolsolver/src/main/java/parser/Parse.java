@@ -169,7 +169,7 @@ public class Parse {
         Map<String, MyClassDTO> myClassDTOS = new HashMap<>();
         try {
             for (MyClass myClass : myClasses.values()) {
-                myClassDTOS.put(myClass.getQualifiedName(), new MyClassDTO(myClass));
+                myClassDTOS.put(myClass.getQualifiedName(), new MyClassDTO(myClass, myClasses.keySet()));
             }
             FileUtils.jsonDump(myClassDTOS);
         } catch (IOException e) {
