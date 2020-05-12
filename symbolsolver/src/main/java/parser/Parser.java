@@ -26,7 +26,7 @@ public class Parser {
         for (SourceRoot sr : projectRoot.getSourceRoots()) {
             // The SymbolSolver has to receive a SourceRoot instead of a Project Root!
             CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-            // combinedTypeSolver.add(new ReflectionTypeSolver());
+            //combinedTypeSolver.add(new ReflectionTypeSolver());
             combinedTypeSolver.add(new JavaParserTypeSolver(sr.getRoot()));
             JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
 

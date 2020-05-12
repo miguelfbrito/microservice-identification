@@ -126,6 +126,7 @@ public class Parse {
         for (MyClass myClass : myClasses.values()) {
             myClass.getVisitor().findAll(MethodDeclaration.class).forEach(methodDeclaration -> {
                         MyMethod method = new MyMethod(methodDeclaration.getName().toString());
+
                         List<String> parametersDataType = new ArrayList<>();
 
                         for (Parameter parameter : methodDeclaration.getParameters()) {
@@ -137,6 +138,7 @@ public class Parse {
 
                         myClass.getMethods().put(methodDeclaration.getName().toString(), method);
                         method.setMyClass(myClass);
+                        method.setVisitor(methodDeclaration);
                     }
             );
         }
@@ -144,11 +146,11 @@ public class Parse {
 
     public void parseClasses(Map<String, MyClass> myClasses) {
         // TODO : Method declarations are being identified elsewhere, consider refactoring it to a visitor and add it here.
-        Set<MarkerAnnotationExpr> annotations = new HashSet<>();
-        List<VariableDeclarator> variables = new ArrayList<>();
-        List<MethodCallExpr> methodCallInvocations = new ArrayList<>();
 
         for (MyClass myClass : myClasses.values()) {
+            Set<MarkerAnnotationExpr> annotations = new HashSet<>();
+            List<VariableDeclarator> variables = new ArrayList<>();
+            List<MethodCallExpr> methodCallInvocations = new ArrayList<>();
             ClassOrInterfaceDeclaration visitor = myClass.getVisitor();
             // visitor.accept(new FieldDeclarationVisitor(), fields);
             visitor.accept(new AnnotationVisitor(), annotations);

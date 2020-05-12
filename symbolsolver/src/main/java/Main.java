@@ -12,7 +12,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         final String PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/monoliths";
-        final String project_name = "/spring-petclinic";
+        final String project_name = "/spring-blog";
+        // final String project_name = "/spring-blog";
 
         for (String s : args) {
             System.out.println(s);

@@ -1,5 +1,6 @@
 package graph.entities;
 
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class MyMethod {
     private List<String> parametersDataType;
     @Expose
     private List<String> returnDataType;
+    private MethodDeclaration visitor;
 
     // TODO : Add myClass as parent on constructors
     public MyMethod(String name) {
@@ -59,6 +61,14 @@ public class MyMethod {
     public MyClass getMyClass() {
         return myClass;
    }
+
+    public void setVisitor(MethodDeclaration visitor) {
+        this.visitor = visitor;
+    }
+
+    public MethodDeclaration getVisitor() {
+        return visitor;
+    }
 
     public void setMyClass(MyClass myClass) {
         if(myClass.getMethods().containsKey(name)){
