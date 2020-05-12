@@ -13,28 +13,28 @@ from gensim import corpora, models
 from StringUtils import StringUtils
 
 
-def apply_lda_to_classes(graph, class_visitors, num_topics, pre_process=False):
+def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
 
     docs = []
 
     # Remove loose sections of the graph
     if pre_process:
         classes_to_remove = []
-        for cla in class_visitors:
+        for cla in classes:
             if cla not in graph.nodes():
                 classes_to_remove.append(cla)
         for cla in classes_to_remove:
-            class_visitors.pop(cla, None)
+            classes.pop(cla, None)
 
     # (class_name, BOW)
     docs = [cla.get_merge_of_strings()
-            for cla in class_visitors.values()]
+            for cla in classes.values()]
 
-    lda_result = apply_lda_to_text(docs, class_visitors, num_topics)
+    lda_result = apply_lda_to_text(docs, classes, num_topics)
     print(f"LDA Result: {lda_result}")
 
     services = {}
-    for class_name, topics in zip(class_visitors.keys(), lda_result):
+    for class_name, topics in zip(classes.keys(), lda_result):
         print(f"{class_name} -> {topics}")
 
         topic_number = 0
@@ -50,7 +50,7 @@ def apply_lda_to_classes(graph, class_visitors, num_topics, pre_process=False):
             services[topic_number] = [(class_name, topics)]
 
     set_weight_for_clustering(
-        graph, class_visitors, lda_result, num_topics)
+        graph, classes, lda_result, num_topics)
 
     with open("./services_lda.txt", "w") as f:
         for service in services:

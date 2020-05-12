@@ -229,11 +229,12 @@ def visitors_to_qualified_name(visitors):
 
 
 def extract_classes_information_from_parsed_json(json_dict):
+    classes = {}
     for class_name in json_dict:
         curr = json_dict[class_name]
         annotations = curr['annotations']
         variables = curr['variables']
-        variables_dependencies = curr['variablesDependencies']
+        dependencies = curr['dependencies']
         temp_methods = curr['methods']
         methods = []
 
@@ -247,9 +248,13 @@ def extract_classes_information_from_parsed_json(json_dict):
         extended_types = curr['extendedTypes']
 
         new_class = Class(class_name, annotations, variables,
-                          variables_dependencies, methods, method_invocations)
+                          dependencies, methods, method_invocations,
+                          implemented_types, extended_types)
 
+        classes[class_name] = new_class
         print(new_class)
+
+    return classes
 
 
 def identify_clusters_in_project(project):
@@ -263,7 +268,7 @@ def identify_clusters_in_project(project):
     # files = StringUtils.search_java_files(directory)
     # files = read_files(files)
 
-    graph = nx.DiGraph()
+    # graph = nx.DiGraph()
     # class_visitors = parse_files_to_ast(files)
     # graph = Graph.create_dependencies(class_visitors, graph)
     # qualified_visitors = visitors_to_qualified_name(class_visitors)
@@ -274,15 +279,25 @@ def identify_clusters_in_project(project):
     with open(temp_json_location) as json_file:
         parsed_raw_json = json.load(json_file)
 
-    parsed_classes = extract_classes_information_from_parsed_json(
+    classes = extract_classes_information_from_parsed_json(
         parsed_raw_json)
+
+    graph = nx.DiGraph()
+    graph = Graph.create_dependencies(classes, graph)
+
+    print("NODES")
+    print(graph.nodes())
+    print("\n\n")
+    print(graph.edges())
+    print(f"EDGE LENGTH {len(graph.edges())}")
+    Graph.draw(graph, weight_type=str(WeightType.STRUCTURAL))
 
     # Method 1. TF-IDF
     # apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
     # TODO : think about if the pre_processing should be done or not
-    # lda.apply_lda_to_classes(graph, qualified_visitors, num_topics)
+    lda.apply_lda_to_classes(graph, classes, num_topics)
 
     # calculate_absolute_weights(graph, weight_type=WeightType.LDA)
     # graph = Clustering.pre_process(
