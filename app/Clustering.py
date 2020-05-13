@@ -51,11 +51,15 @@ class Clustering:
         Clustering.merge_clusters(g, clusters, weight_type)
 
         # TODO : refactor and move this section to Graph.draw()
-        # Relabel nodes from qualified name (package+classname) for better graph visibility
+        # Relabel nodes from qualified name (package+classname) to classname for better graph visibility
+        # This can cause problems if there are 2 classes with the same name on different packages
+        # eg. com.blog.controllers.PostController and com.blog.admin.PostController
         h = g.copy()
         mappings = {}
-        for node in h.nodes():
-            mappings[node] = re.search(r'\.(\w*)$', node)[1]
+
+        for index, node in enumerate(h.nodes()):
+            curr_class_name = re.search(r'\.(\w*)$', node)[1]
+            mappings[node] = f"{curr_class_name}_{index}"
         h = nx.relabel_nodes(h, mappings)
 
         # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
@@ -64,14 +68,14 @@ class Clustering:
                          node_size=350, font_size=6, node_color=values)
 
         edge_weight_labels = dict(map(lambda x: (
-            (x[0], x[1]),  f"{x[2][weight_type]} - {x[2][str(WeightType.STRUCTURAL)]}" if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+            (x[0], x[1]),  round(x[2][weight_type], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
 
         nx.draw_networkx_edge_labels(
             h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
-        # print(f"Modularity: {community.modularity(partition, g)}")
+        print(f"Modularity: {community.modularity(partition, g)}")
         plt.show()
 
         return clusters

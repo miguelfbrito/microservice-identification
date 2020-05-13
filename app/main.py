@@ -82,12 +82,20 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
         structural_weight_distribution[edge_data[str(WeightType.STRUCTURAL)]] = structural_weight_distribution.get(
             edge_data[str(WeightType.STRUCTURAL)], 0) + 1
 
+        print(f"EDGEDATA {src} -> {dst}  {edge_data}")
+
         # TODO : consider just removing the edge and adding it after clustering
-        if edge_data["dependency_type"] in primary_types:
-            edge_data[str(WeightType.ABSOLUTE)] = 0.9
-        else:
-            edge_data[str(WeightType.ABSOLUTE)] = round(
-                edge_data[str(weight_type)], 2)  # + edge_data[str(WeightType.STRUCTURAL)], 2)
+        try:
+            if edge_data["dependency_type"] in primary_types:
+                edge_data[str(WeightType.ABSOLUTE)] = 0.9
+            else:
+                edge_data[str(WeightType.ABSOLUTE)] = round(
+                    edge_data[str(weight_type)], 2)  # + edge_data[str(WeightType.STRUCTURAL)], 2)
+        except KeyError as e:
+            # TODO : review why does this only happens on a specific case
+            edge_data[str(WeightType.ABSOLUTE)] = 0
+            print(f"KEY ERROR {e} {src} {dst}")
+            print(f"-- {edge_data}")
 
         # print(f"{src} -> {dst} : {edge_data}")
 
@@ -285,13 +293,6 @@ def identify_clusters_in_project(project):
     graph = nx.DiGraph()
     graph = Graph.create_dependencies(classes, graph)
 
-    print("NODES")
-    print(graph.nodes())
-    print("\n\n")
-    print(graph.edges())
-    print(f"EDGE LENGTH {len(graph.edges())}")
-    Graph.draw(graph, weight_type=str(WeightType.STRUCTURAL))
-
     # Method 1. TF-IDF
     # apply_tfidf_to_connections(graph, qualified_visitors)
 
@@ -299,13 +300,11 @@ def identify_clusters_in_project(project):
     # TODO : think about if the pre_processing should be done or not
     lda.apply_lda_to_classes(graph, classes, num_topics)
 
-    # calculate_absolute_weights(graph, weight_type=WeightType.LDA)
-    # graph = Clustering.pre_process(
-    #     graph, remove_weak_edges=False, remove_disconnected_sections=True)
+    calculate_absolute_weights(graph, weight_type=WeightType.LDA)
+    graph = Clustering.pre_process(
+        graph, remove_weak_edges=False, remove_disconnected_sections=True)
 
-    # return Clustering.community_detection_louvain(graph)
-    return []
-    # return clusters
+    return Clustering.community_detection_louvain(graph)
 
 
 def main():

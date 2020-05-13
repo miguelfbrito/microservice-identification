@@ -44,10 +44,6 @@ class Graph:
         for dependency_name in dependencies:
             qualified_name = curr_classe.get_qualified_name()
 
-            if dependency_name == 'org.springframework.samples.petclinic.vet.Specialty':
-                print(
-                    f"SPECIALTYDEPENDENCY {dependency_name} {dependency_type}")
-
             try:
                 # TODO : Go back to reconsidering the type of dependency
                 # ('CLASS_NAME', '{TYPE}')  TYPE = {'EXTENDS', 'IMPLEMENTS', 'NORMAL'}

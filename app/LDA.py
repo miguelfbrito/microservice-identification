@@ -14,8 +14,9 @@ from StringUtils import StringUtils
 
 
 def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
-
+    # classes {class_name : Class}
     docs = []
+    print(f"CLASSESAPPLY {classes}")
 
     # Remove loose sections of the graph
     if pre_process:
@@ -30,7 +31,8 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     docs = [cla.get_merge_of_strings()
             for cla in classes.values()]
 
-    lda_result = apply_lda_to_text(docs, classes, num_topics)
+    print(f"DOCS: {docs}")
+    lda_result = apply_lda_to_text(docs, num_topics)
     print(f"LDA Result: {lda_result}")
 
     services = {}
@@ -70,10 +72,12 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
             cluster.append(classe[0])
         clusters.append(cluster)
 
+    print(f"CLUSTERSLDA: {clusters}")
+
     return clusters
 
 
-def apply_lda_to_text(docs, class_visitors, num_topics):
+def apply_lda_to_text(docs, num_topics):
 
     tokenizer = RegexpTokenizer(r'\w+')
 
@@ -142,12 +146,16 @@ def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):
                     for z in zip(class_visitors.keys(), topics_per_doc)}
 
     for src, dst in graph.edges():
-        src_vector = topics_vector(class_topics[src], k)
-        dst_vector = topics_vector(class_topics[dst], k)
+        try:
 
-        similarity = Clustering.cosine_similarity(src_vector, dst_vector)
-        graph[src][dst][str(WeightType.LDA)] = similarity
-        print(f" {src} -> {dst} similarity of {similarity}")
+            src_vector = topics_vector(class_topics[src], k)
+            dst_vector = topics_vector(class_topics[dst], k)
+
+            similarity = Clustering.cosine_similarity(src_vector, dst_vector)
+            graph[src][dst][str(WeightType.LDA)] = similarity
+            print(f" {src} -> {dst} similarity of {similarity}")
+        except KeyError:
+            pass
 
 
 def topics_vector(topics, k):

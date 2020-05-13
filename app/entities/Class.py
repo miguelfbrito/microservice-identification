@@ -40,8 +40,11 @@ class Class:
     def get_merge_of_strings(self):
         logging.info(f"Dependencies: {self.dependencies}")
         dependencies = [dep[0] for dep in self.dependencies]
-        len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
-            self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1
+        # len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
+        #     self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1
+
+        # TODO : estava a considerar o uso das dependencias antes? Voltar a utilizar?!
+        len_words = self.total_words(self.variables) + 1
 
         # TODO: we could apply other heuristics to try to identify we're currently in an entity
         # TODO: search for the qualified name for Entitities. Entity, DTO, DAO, domain, (common name conventions representing strong domain concepts)
@@ -52,7 +55,7 @@ class Class:
             if entity in self.annotations:
                 is_entity = True
 
-        class_name_weight = math.ceil(
+        qualified_name_weight = math.ceil(
             len_words * 1) if is_entity else math.ceil(len_words * 0.25)
         dependencies_weight = 1
         variables_weight = 1
@@ -61,11 +64,12 @@ class Class:
         literals_weight = 1
         comments_weight = 1
 
-        string = dependencies_weight * dependencies + variables_weight * self.variables + methods_weight * \
-            self.methods + formal_parameters_weight * self.formal_parameters + \
-            literals_weight * self.literals + comments_weight * self.comments
+        # string = dependencies_weight * dependencies + variables_weight * self.variables + methods_weight * \
+        #     self.methods
 
-        return " ".join(string) + class_name_weight * (" " + self.class_name)
+        string = variables_weight * self.variables
+
+        return " ".join(string) + qualified_name_weight * (" " + self.qualified_name)
 
     def get_class_name(self):
         return self.class_name
