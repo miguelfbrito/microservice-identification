@@ -87,7 +87,7 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
         # TODO : consider just removing the edge and adding it after clustering
         try:
             if edge_data["dependency_type"] in primary_types:
-                edge_data[str(WeightType.ABSOLUTE)] = 0.9
+                edge_data[str(WeightType.ABSOLUTE)] = 1
             else:
                 edge_data[str(WeightType.ABSOLUTE)] = round(
                     edge_data[str(weight_type)], 2)  # + edge_data[str(WeightType.STRUCTURAL)], 2)
@@ -139,8 +139,8 @@ def apply_tfidf_to_connections(graph, class_visitors):
 
     tf_idf = TfIdf()
     for src, dst in edges:
-        source = class_visitors[src].get_merge_of_strings()
-        destination = class_visitors[dst].get_merge_of_strings()
+        source = class_visitors[src].get_merge_of_entities()
+        destination = class_visitors[dst].get_merge_of_entities()
 
         similarity = round(tf_idf.apply_tfidf_to_pair(source, destination), 2)
         logging.info(f"{similarity} {src} - {dst}")

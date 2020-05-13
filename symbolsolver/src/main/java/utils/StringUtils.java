@@ -63,7 +63,9 @@ public class StringUtils {
 
         while (m.find()) {
             if (!m.group(0).equals("")) {
-                strings.add(m.group(0).toLowerCase());
+                // TODO : REVIEW, previously used as toLowerCase() for metrics but it interfers currently
+                // we need the camel case version to export the parsed information
+                strings.add(m.group(0));
             }
         }
 

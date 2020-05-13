@@ -28,10 +28,9 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
             classes.pop(cla, None)
 
     # (class_name, BOW)
-    docs = [cla.get_merge_of_strings()
+    docs = [cla.get_merge_of_entities()
             for cla in classes.values()]
 
-    print(f"DOCS: {docs}")
     lda_result = apply_lda_to_text(docs, num_topics)
     print(f"LDA Result: {lda_result}")
 
@@ -71,8 +70,6 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
         for classe in services[service]:
             cluster.append(classe[0])
         clusters.append(cluster)
-
-    print(f"CLUSTERSLDA: {clusters}")
 
     return clusters
 

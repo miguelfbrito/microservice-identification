@@ -1,9 +1,10 @@
-from multipledispatch import dispatch
+import re
 import math
 import logging
 import javalang
 
 from StringUtils import StringUtils
+from multipledispatch import dispatch
 
 
 class Class:
@@ -21,8 +22,9 @@ class Class:
     #     self.literals = []
     #     self.comments = []
 
-    def __init__(self, qualified_name="FailedToLoadClassName", annotations=[], variables=[], dependencies=[], methods=[], method_invocations={}, implemented_types=[], extended_types=[]):
+    def __init__(self, qualified_name="package.FailedToLoadClassName", annotations=[], variables=[], dependencies=[], methods=[], method_invocations={}, implemented_types=[], extended_types=[]):
         self.qualified_name = qualified_name
+        self.class_name = re.search(r'\.(\w*)$', qualified_name)[1]
         self.annotations = annotations
         self.variables = variables
         self.dependencies = dependencies
@@ -35,41 +37,52 @@ class Class:
         self.comments = StringUtils.extract_comments_from_string(string)
 
     def total_words(self, array):
+        # Could be more precise using regex, not a big deal
         return sum(len(sentence.split()) for sentence in array)
 
-    def get_merge_of_strings(self):
+    def get_merge_of_entities(self):
         logging.info(f"Dependencies: {self.dependencies}")
         dependencies = [dep[0] for dep in self.dependencies]
+
+        # TODO : estava a considerar o uso das dependencias antes? Voltar a utilizar?!
+
         # len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
         #     self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1
 
-        # TODO : estava a considerar o uso das dependencias antes? Voltar a utilizar?!
-        len_words = self.total_words(self.variables) + 1
+        len_words = 0
+        methods = []
+        for m in self.methods:
+            method_string = m.get_merge_of_entities()
+            print(f"Method string {method_string}")
+            len_words += self.total_words(method_string)
+            methods.append(method_string)
+
+        len_words += self.total_words(self.variables) + \
+            self.total_words(self.method_invocations.keys())
 
         # TODO: we could apply other heuristics to try to identify we're currently in an entity
-        # TODO: search for the qualified name for Entitities. Entity, DTO, DAO, domain, (common name conventions representing strong domain concepts)
-        entity_types = ["Entity", "MappedSuperclass", "Repository"]
+        # TODO: search for the qualified name for Entitities. Entity, DAO, domain, (common name conventions representing strong domain concepts)
+        entity_types = {"Entity", "MappedSuperclass", "Repository"}
 
         is_entity = False
-        for entity in entity_types:
-            if entity in self.annotations:
+        for annotation in self.annotations:
+            if annotation in entity_types:
                 is_entity = True
 
-        qualified_name_weight = math.ceil(
+        class_name_weight = math.ceil(
             len_words * 1) if is_entity else math.ceil(len_words * 0.25)
-        dependencies_weight = 1
         variables_weight = 1
         methods_weight = 1
-        formal_parameters_weight = 1
         literals_weight = 1
         comments_weight = 1
+        method_invocations_weight = 1
 
-        # string = dependencies_weight * dependencies + variables_weight * self.variables + methods_weight * \
-        #     self.methods
+        string = variables_weight * self.variables + methods_weight * \
+            methods + method_invocations_weight * \
+            list(self.method_invocations.keys())
 
-        string = variables_weight * self.variables
-
-        return " ".join(string) + qualified_name_weight * (" " + self.qualified_name)
+        print(f"Final String {string}")
+        return " ".join(string) + class_name_weight * (" " + self.class_name)
 
     def get_class_name(self):
         return self.class_name

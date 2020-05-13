@@ -117,7 +117,7 @@ class ClassVisitor:
     def total_words(self, array):
         return sum(len(sentence.split()) for sentence in array)
 
-    def get_merge_of_strings(self):
+    def get_merge_of_entities(self):
 
         logging.info(f"Dependencies: {self.dependencies}")
         dependencies = [dep[0] for dep in self.dependencies]
