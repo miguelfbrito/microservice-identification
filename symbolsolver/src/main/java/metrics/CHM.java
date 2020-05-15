@@ -114,7 +114,9 @@ public class CHM implements Metric {
                             The only case I saw this happen, is when the parser operates on
                             codebases with method invocations to methods without declaration
                          */
+/*
                         System.out.println("[CHM Source or Target method not found] " + sourceOperation + ", " + targetOperation);
+*/
                         continue;
                     }
 
@@ -125,12 +127,16 @@ public class CHM implements Metric {
             }
 
             // TODO: Originally stated as == 1, but how do we handle when the service has no operations?
+            // We're currently skipping services with 0 operations, however, services with 0 operations should not exist at all
             if (service.getOperations().size() == 1) {
                 serviceJaccard = 1;
             } else {
                 int opSize = service.getOperations().size();
                 serviceJaccard = opSize != 0 ? serviceJaccard / (double) (opSize * (opSize - 1) / 2) : 0;
             }
+
+
+            service.setChm(serviceJaccard);
 
             chm += serviceJaccard;
 

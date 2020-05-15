@@ -11,18 +11,16 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        final String PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/monoliths";
-        final String project_name = "/spring-blog";
-        // final String project_name = "/spring-blog";
+        final String PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/monoliths/";
 
-        for (String s : args) {
-            System.out.println(s);
+        String project_name = System.getProperty("project");
+        if (project_name != null) {
+            Parser parser = new Parser();
+            List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(PROJECTS_ROOT + project_name));
+            Parse parse = new Parse();
+            parse.completeParse(compilationUnits);
+
         }
-        Parser parser = new Parser();
-        List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(PROJECTS_ROOT + project_name));
-        Parse parse = new Parse();
-        parse.completeParse(compilationUnits);
-
 
     }
 }

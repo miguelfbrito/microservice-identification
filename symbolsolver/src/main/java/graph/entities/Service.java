@@ -10,6 +10,10 @@ public class Service {
     private Map<String, String> operations; // <name, correspondingClass>
     private int id;
 
+    // Metrics
+    private double chm;
+    private double chd;
+
     public Service(int id) {
         this.classes = new HashMap<>();
         this.operations = new HashMap<>();
@@ -34,6 +38,22 @@ public class Service {
 
     public Map<String, String> getOperations() {
         return operations;
+    }
+
+    public double getChm() {
+        return chm;
+    }
+
+    public void setChm(double chm) {
+        this.chm = chm;
+    }
+
+    public double getChd() {
+        return chd;
+    }
+
+    public void setChd(double chd) {
+        this.chd = chd;
     }
 
     @Override

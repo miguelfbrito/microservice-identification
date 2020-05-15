@@ -359,5 +359,23 @@ class Clustering:
 
     @staticmethod
     def merge_clusters(g, clusters, weight_type):
+        # TODO : Implement this
         print(f"\nMerging clusters {clusters}")
         print(f"Graph Nodes: {g.nodes()}")
+
+    @staticmethod
+    def test_clustering_algorithms(graph):
+        print("\nGirvan Method 1")
+        Clustering.girvan_newman(graph)
+
+        print("\nGirvan Method 2")
+        Clustering.girvan_newman_weight(graph)
+
+        print("\nKernighan Lin Bisection")
+        Clustering.kernighan_lin_bisection(graph)
+
+        print("\nGreedy_modularity_communities")
+        Clustering.greedy_modularity_communities(graph)
+
+        print("\nLabel_propagation_communities")
+        Clustering.label_propagation_communities(graph)

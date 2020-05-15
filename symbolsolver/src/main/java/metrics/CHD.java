@@ -91,7 +91,9 @@ public class CHD implements Metric {
                             The only case I saw this happen, is when the parser operates on
                             codebases with method invocations to methods without declaration
                          */
+/*
                         System.out.println("[CHM Source or Target method not found] " + sourceOperation + ", " + targetOperation);
+*/
                         continue;
                     }
                     double jaccard = calculateJaccardCoefficient(sourceMethod, targetMethod);
@@ -107,8 +109,10 @@ public class CHD implements Metric {
                 serviceJaccard = opSize != 0 ? serviceJaccard / (double) (opSize * (opSize - 1) / 2) : 0;
             }
 
+            service.setChd(serviceJaccard);
             chd += serviceJaccard;
         }
+
 
 
         // TODO : chm / countedServices or services.size();

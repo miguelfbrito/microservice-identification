@@ -21,6 +21,7 @@ import numpy as np
 import logging
 import javalang
 import networkx as nx
+import Utils as utils
 import matplotlib.pyplot as plt
 
 from random import random
@@ -90,7 +91,7 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
                 edge_data[str(WeightType.ABSOLUTE)] = 1
             else:
                 edge_data[str(WeightType.ABSOLUTE)] = round(
-                    edge_data[str(weight_type)], 2)  # + edge_data[str(WeightType.STRUCTURAL)], 2)
+                    edge_data[str(weight_type)], 2)  # * edge_data[str(WeightType.STRUCTURAL)], 2
         except KeyError as e:
             # TODO : review why does this only happens on a specific case
             edge_data[str(WeightType.ABSOLUTE)] = 0
@@ -148,23 +149,6 @@ def apply_tfidf_to_connections(graph, class_visitors):
         graph[src][dst][str(WeightType.TF_IDF)] = similarity
 
 
-def test_clustering_algorithms(graph):
-    print("\nGirvan Method 1")
-    Clustering.girvan_newman(graph)
-
-    print("\nGirvan Method 2")
-    Clustering.girvan_newman_weight(graph)
-
-    print("\nKernighan Lin Bisection")
-    Clustering.kernighan_lin_bisection(graph)
-
-    print("\nGreedy_modularity_communities")
-    Clustering.greedy_modularity_communities(graph)
-
-    print("\nLabel_propagation_communities")
-    Clustering.label_propagation_communities(graph)
-
-
 def prepare_matrix(graph, weight_type=WeightType.ABSOLUTE):
     # https://stackoverflow.com/questions/49064611/how-to-find-different-groups-in-networkx-using-python
     # X = nx.to_numpy_matrix(graph, weight=WEIGHT)
@@ -220,7 +204,7 @@ def community_detection_by_affinity(graph, weight_type=WeightType.ABSOLUTE):
                      node_size=250, font_size=8)
     plt.show()
 
-    return clusters
+    return [cluster for cluster in clusters.values()]
     # y_pos = np.arange(len(clusters.items()))
     # plt.bar(y_pos, cluster_distribution)
     # plt.ylabel("Cluster Size")
@@ -271,16 +255,9 @@ def identify_clusters_in_project(project):
     num_topics = project[1]
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
 
-    temp_json_location = '../symbolsolver/output.json'
+    temp_json_location = '../symbolsolver/target/output.json'
 
-    # files = StringUtils.search_java_files(directory)
-    # files = read_files(files)
-
-    # graph = nx.DiGraph()
-    # class_visitors = parse_files_to_ast(files)
-    # graph = Graph.create_dependencies(class_visitors, graph)
-    # qualified_visitors = visitors_to_qualified_name(class_visitors)
-    # Graph.clean_irrelevant_dependencies(qualified_visitors, graph)
+    utils.execute_parser(project_name)
 
     # 1. Read parsed document
     parsed_raw_json = {}
@@ -304,7 +281,16 @@ def identify_clusters_in_project(project):
     graph = Clustering.pre_process(
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
 
-    return Clustering.community_detection_louvain(graph)
+    clusters = Clustering.community_detection_louvain(graph)
+
+    print(f"CLUSTERSHERE {clusters}")
+
+    with open('./clusters.txt', 'w') as f:
+        for cluster in clusters.values():
+            for class_name in cluster:
+                f.write(f"{class_name}\n")
+            f.write("\n\n")
+    return [cluster for cluster in clusters.values()]
 
 
 def main():
