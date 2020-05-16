@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 from Graph import Graph
 from random import random
 from operator import itemgetter
-from WeightType import WeightType
 from networkx.drawing.nx_pydot import write_dot
 from networkx import edge_betweenness_centrality as betweenness
 from networkx.algorithms.community import label_propagation_communities, kernighan_lin_bisection, greedy_modularity_communities, asyn_fluidc, asyn_lpa_communities
@@ -25,18 +24,22 @@ from karateclub.node_embedding.attributed import BANE, TENE, TADW, FSCNMF, SINE,
 from karateclub.node_embedding.structural import GraphWave, Role2Vec
 from karateclub.node_embedding.meta import NEU
 
+from WeightType import WeightType
+from entities.Service import Service
+
 
 class Clustering:
 
     @staticmethod
-    def community_detection_louvain(g, weight_type=WeightType.ABSOLUTE):
+    def community_detection_louvain(graph, weight_type=WeightType.ABSOLUTE):
         weight_type = str(weight_type)
-        g = g.to_undirected()
-        partition = community.best_partition(
-            g, weight=str(WeightType.ABSOLUTE))
-        values = [partition.get(node) for node in g.nodes()]
+        graph = graph.to_undirected()
 
-        nodes = list(g.nodes)
+        partition = community.best_partition(
+            graph, weight=str(WeightType.ABSOLUTE))
+        values = [partition.get(node) for node in graph.nodes()]
+
+        nodes = list(graph.nodes)
         clusters = {}
         for index, val in enumerate(values):
             if val not in clusters:
@@ -45,21 +48,18 @@ class Clustering:
             clusters[val].append(nodes[index])
 
         print(f"Total Clusters: {len(clusters)}")
-        print(
-            f"Total Clusters len>2: {len([cluster for cluster in clusters if len(clusters[cluster]) > 2])}")
-
-        Clustering.merge_clusters(g, clusters, weight_type)
 
         # TODO : refactor and move this section to Graph.draw()
         # Relabel nodes from qualified name (package+classname) to classname for better graph visibility
         # This can cause problems if there are 2 classes with the same name on different packages
         # eg. com.blog.controllers.PostController and com.blog.admin.PostController
-        h = g.copy()
+        h = graph.copy()
         mappings = {}
 
         for index, node in enumerate(h.nodes()):
-            curr_class_name = re.search(r'\.(\w*)$', node)[1]
-            mappings[node] = f"{curr_class_name}_{index}"
+            curr_class_name = re.search(r'\.(\w*)$', str(node))
+            if curr_class_name:
+                mappings[node] = f"{curr_class_name[1]}_{index}"
         h = nx.relabel_nodes(h, mappings)
 
         # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
@@ -75,7 +75,7 @@ class Clustering:
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
-        print(f"Modularity: {community.modularity(partition, g)}")
+        print(f"Modularity: {community.modularity(partition, graph)}")
         plt.show()
 
         return clusters
@@ -358,10 +358,44 @@ class Clustering:
         return graph
 
     @staticmethod
-    def merge_clusters(g, clusters, weight_type):
-        # TODO : Implement this
-        print(f"\nMerging clusters {clusters}")
-        print(f"Graph Nodes: {g.nodes()}")
+    def create_service_graph(clusters, classes, graph):
+        services = Service.extract_services_from_clusters(
+            clusters)  # service_id, service
+        class_service = Service.get_map_class_service_id(clusters)
+
+        service_graph = nx.DiGraph()
+        for service_id in services.keys():
+            service_graph.add_node(service_id)
+
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+            # TODO: consider add both connections, structural and method call
+            src_service_id = class_service[src]
+            dst_service_id = class_service[dst]
+            print(f"{src} -> {dst} {src_service_id} {dst_service_id}  -- {service_graph.get_edge_data(src_service_id, dst_service_id)}")
+            if src_service_id != dst_service_id:  # 'method_call_weight' in edge_data and
+
+                service_edge_data = service_graph.get_edge_data(
+                    src_service_id, dst_service_id)
+                print("methodcall")
+
+                if service_edge_data:
+                    service_edge_data[str(WeightType.STRUCTURAL)] += 1
+                    print(
+                        f"ADDING ONE MORE {service_edge_data[str(WeightType.STRUCTURAL)]}")
+                else:
+                    service_graph.add_edge(
+                        src_service_id, dst_service_id, weight_structural=1)  # TODO: Rework, use **dict to expand dict as arguments
+
+        Graph.draw(service_graph, clear=False,
+                   weight_type=str(WeightType.STRUCTURAL))
+        plt.show()
+
+        for service in services.values():
+            print(
+                f"Service external dependencies: {service.get_external_classes_dependencies()}")
+
+        return service_graph, services
 
     @staticmethod
     def test_clustering_algorithms(graph):

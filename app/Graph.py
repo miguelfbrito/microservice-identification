@@ -57,14 +57,26 @@ class Graph:
 
                 # TODO: Think about this
                 if edge_data:
+
+                    # Always incremenent the structural component which represents an accumulative sum of all dependencies
                     graph[qualified_name][dependency_name][str(
                         WeightType.STRUCTURAL)] = edge_data[str(WeightType.STRUCTURAL)] + 1
+
+                    if dependency_type == 'METHOD_CALL':
+                        graph[qualified_name][dependency_name][str(
+                            WeightType.METHOD_CALL)] = edge_data.get(str(WeightType.METHOD_CALL), 0) + 1
+
                     # TODO : reconsider this due to new changes
                     # We will not update the type because the first time we set it, it will be set for
                     # EXTENDS or IMPLEMENTs which have higher priority
                 else:
+                    args = {'structural_weight': 1,
+                            'dependency_type': dependency_type}
+                    if dependency_type == 'METHOD_CALL':
+                        args['method_call_weight'] = 1
+
                     graph.add_edge(qualified_name,
-                                   dependency_name, weight_structural=1, dependency_type=dependency_type)
+                                   dependency_name, **args)
 
             except KeyError:
                 # This should only happen when looking for classes that aren't explicly definied in the project
@@ -90,24 +102,29 @@ class Graph:
                 print("Node not found while removing")
 
     @staticmethod
-    def draw(graph, colors=[], weight_type=WeightType.ABSOLUTE):
+    def draw(graph, colors=[], weight_type=WeightType.ABSOLUTE, clear=True):
 
         # Truncate qualified name to simple name
         h = graph.copy()
-        mappings = {}
-        for node in h.nodes():
-            mappings[node] = re.search(r'\.(\w*)$', node)[1]
-        h = nx.relabel_nodes(h, mappings)
+        if clear:
+            mappings = {}
+            for node in h.nodes():
+                mappings[node] = re.search(r'\.(\w*)$', node)[1]
+            h = nx.relabel_nodes(h, mappings)
 
+        print(f"DRAWING TYPE {weight_type}")
         sp = nx.spring_layout(h, weight=str(weight_type))
-        print(h.nodes())
+        edge_weight_labels = dict(map(lambda x: (
+            (x[0], x[1]),  round(x[2][weight_type], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+        nx.draw_networkx_edge_labels(
+            h, sp, edge_labels=edge_weight_labels, font_size=8)
 
-        # if(colors):
-        #     [cluster+1 for cluster in h.nodes()]
+        if len(colors) == 0:
+            [0 for cluster in h.nodes()]
 
-        print(f"Values:  {colors}")
+        for src, dst in h.edges():
+            print(f"EDGE: {src} -> {dst} {h.get_edge_data(src, dst)}")
 
-        # node_color=values,
         nx.draw_networkx(h, pos=sp, with_labels=True,
-                         node_size=250, node_color=colors, font_size=6, label_color="red")
+                         node_size=250, node_colors=colors, font_size=8)
         plt.show()

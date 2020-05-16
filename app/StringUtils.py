@@ -58,9 +58,11 @@ class StringUtils:
             "new", "null", "package", "private", "protected", "public",
             "return", "short", "static", "strictfp", "super", "switch",
             "synchronized", "this", "throw", "throws", "transient", "true",
-            "try", "void", "volatile", "while", "repository", "annotation", "string", "int",
-            "gaussic", "controller", "map", "request", "entity", "method", "integer", "system", "out", "println", "springframework", "beans",
-            "com", "request", "mapping", "value", "autowired", "list", "hash", "set", "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array"
+            "try", "void", "volatile", "while", "string", "int",
+            "gaussic", "controller", "map", "request", "method", "integer", "system", "out", "println", "springframework", "beans",
+            "com", "request", "mapping", "value", "autowired", "list", "hash",  "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array",
+
+            "service", "entity", "repository", "annotation", "base", "model"
         }
 
         result_words = []

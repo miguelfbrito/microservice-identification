@@ -50,7 +50,7 @@ def parse_files_to_ast(read_files):
     class_visitors = {}
 
     for file_name, values in read_files.items():
-        logging.info(f"Parsing file {values['fullpath']}")
+        logging.info(f"Pagraphsing file {values['fullpath']}")
         try:
             tree = javalang.parse.parse(values["text"])
         except javalang.parser.JavaSyntaxError:
@@ -70,8 +70,6 @@ def parse_files_to_ast(read_files):
 def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-    total_structural_weight = 0
-    structural_weight_distribution = {}
     for src, dst in graph.edges():
 
         edge_data = graph[src][dst]
@@ -79,9 +77,6 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
         # If the dependency is of type EXTENDS, IMPLEMENTS or STATIC (less common than NORMAL)
         primary_types = {'EXTENDS', 'IMPLEMENTS', 'STATIC'}
         # secondary_types = {'STATIC'}
-        total_structural_weight += edge_data[str(WeightType.STRUCTURAL)]
-        structural_weight_distribution[edge_data[str(WeightType.STRUCTURAL)]] = structural_weight_distribution.get(
-            edge_data[str(WeightType.STRUCTURAL)], 0) + 1
 
         print(f"EDGEDATA {src} -> {dst}  {edge_data}")
 
@@ -99,9 +94,6 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
             print(f"-- {edge_data}")
 
         # print(f"{src} -> {dst} : {edge_data}")
-
-    print(f"Total structural weight: {total_structural_weight}")
-    print(f"Structural weight distribution: {structural_weight_distribution}")
 
 
 def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
@@ -282,15 +274,31 @@ def identify_clusters_in_project(project):
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
 
     clusters = Clustering.community_detection_louvain(graph)
+    service_graph, services = Clustering.create_service_graph(
+        clusters, classes, graph)
 
-    print(f"CLUSTERSHERE {clusters}")
+    service_clusters = Clustering.community_detection_louvain(
+        service_graph, weight_type=str(WeightType.STRUCTURAL))
+
+    print(f"SERVICE CLUSTERS {service_clusters}")
+
+    final_services = []
+    with open('./services.txt', 'w') as f:
+        for service_id, service in service_clusters.items():
+            service_classes = []
+            for class_name in services[service_id].get_classes():
+                f.write(f"{class_name}\n")
+                service_classes.append(class_name)
+            final_services.append(service_classes)
+            f.write("\n\n")
 
     with open('./clusters.txt', 'w') as f:
         for cluster in clusters.values():
             for class_name in cluster:
                 f.write(f"{class_name}\n")
             f.write("\n\n")
-    return [cluster for cluster in clusters.values()]
+
+    return final_services
 
 
 def main():

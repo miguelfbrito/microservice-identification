@@ -7,6 +7,7 @@ class WeightType(Enum):
     TF_IDF = 'weight_tf_idf'
     LDA = 'weight_lda'
     ABSOLUTE = 'weight'
+    METHOD_CALL = 'weight_method_call'
 
     def __str__(self):
         return str(self.value)
