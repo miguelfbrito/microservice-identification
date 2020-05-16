@@ -55,8 +55,6 @@ public class Parse {
                     if (!m.find()) {
                         MyClass myClass = new MyClass(node);
                         classes.put(name, myClass);
-                        System.out.println("Adding class of name " + name);
-
                         addExtendAndImplementTypes(myClass, node);
                     }
                 });
@@ -168,9 +166,13 @@ public class Parse {
 
         Map<String, MyClassDTO> myClassDTOS = new HashMap<>();
         try {
+            int total = 0;
             for (MyClass myClass : myClasses.values()) {
-                myClassDTOS.put(myClass.getQualifiedName(), new MyClassDTO(myClass, myClasses.keySet()));
+                MyClassDTO myClassDTO = new MyClassDTO(myClass, myClasses.keySet());
+                myClassDTOS.put(myClass.getQualifiedName(), myClassDTO);
+                total += myClassDTO.getMethodInvocations().size();
             }
+            System.out.println("METHOD INVOCATIONS TOTAL: " + total);
             FileUtils.jsonDump(myClassDTOS);
         } catch (IOException e) {
             e.printStackTrace();

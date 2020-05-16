@@ -7,7 +7,10 @@ import graph.MyGraph;
 import graph.entities.MyClass;
 import parser.ParseResultServices;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ByMethodCallInvocation extends MyGraph {
 
@@ -25,6 +28,7 @@ public class ByMethodCallInvocation extends MyGraph {
     @Override
     public void addEdges() {
         Map<String, MyClass> classes = parseResultServices.getClasses();
+        Set<String> validClasses = new HashSet<String>(classes.values().stream().map(MyClass::getQualifiedName).collect(Collectors.toList()));
 
         for (MyClass source : classes.values()) {
             for (MethodCallExpr methodCall : source.getVisitor().findAll(MethodCallExpr.class)) {
@@ -34,10 +38,12 @@ public class ByMethodCallInvocation extends MyGraph {
                         MyClass target = classes.get(resolvedType.asReferenceType().getQualifiedName());
 
                         DependencyEdge edge = getGraph().getEdge(source, target);
-                        if (edge == null) {
-                            getGraph().addEdge(source, target, new DependencyEdge(""));
-                        } else {
-                            edge.setValue(edge.getValue() + 1);
+                        if (isValidClass(target.getQualifiedName(), validClasses)) {
+                            if (edge == null) {
+                                getGraph().addEdge(source, target, new DependencyEdge(""));
+                            } else {
+                                edge.setValue(edge.getValue() + 1);
+                            }
                         }
 
                     } catch (Exception e) {
@@ -47,5 +53,10 @@ public class ByMethodCallInvocation extends MyGraph {
             }
         }
 
+    }
+
+
+    private boolean isValidClass(String qualifiedName, Set<String> validClasses) {
+        return validClasses.contains(qualifiedName);
     }
 }

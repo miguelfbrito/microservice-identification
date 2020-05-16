@@ -26,9 +26,6 @@ public class MyGraph {
         for(MyClass myClass : classes.values()){
             graph.addVertex(myClass);
         }
-
-        System.out.println("\nGraph:");
-        System.out.println(graph.toString());
     }
 
     public void addEdges() {

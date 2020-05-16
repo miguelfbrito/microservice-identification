@@ -3,8 +3,10 @@ package graph.entities;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.gson.annotations.Expose;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 public class MyMethod {
     private MyClass myClass;
@@ -24,14 +26,14 @@ public class MyMethod {
 
     public MyMethod(String name, List<String> parametersDataType, String returnDataType) {
         this.name = name;
-        this.parametersDataType = parametersDataType;
-        this.returnDataType.add(returnDataType);
+        this.setParametersDataType(parametersDataType);
+        this.setReturnDataType(Collections.singletonList(returnDataType));
     }
 
     public MyMethod(String name, List<String> parametersDataType, List<String> returnDataType) {
         this.name = name;
-        this.parametersDataType = parametersDataType;
-        this.returnDataType = returnDataType;
+        this.setParametersDataType(parametersDataType);
+        this.setReturnDataType(returnDataType);
     }
 
     public String getName() {
@@ -47,7 +49,7 @@ public class MyMethod {
     }
 
     public void setParametersDataType(List<String> parametersDataType) {
-        this.parametersDataType = parametersDataType;
+        this.parametersDataType = parametersDataType.stream().filter(s -> !Constants.STOP_WORDS_DATA_TYPES.contains(s.toLowerCase())).collect(Collectors.toList());
     }
 
     public List<String> getReturnDataType() {
@@ -55,12 +57,12 @@ public class MyMethod {
     }
 
     public void setReturnDataType(List<String> returnDataType) {
-        this.returnDataType = returnDataType;
+        this.returnDataType = parametersDataType.stream().filter(s -> !Constants.STOP_WORDS_DATA_TYPES.contains(s.toLowerCase())).collect(Collectors.toList());
     }
 
     public MyClass getMyClass() {
         return myClass;
-   }
+    }
 
     public void setVisitor(MethodDeclaration visitor) {
         this.visitor = visitor;
@@ -71,7 +73,7 @@ public class MyMethod {
     }
 
     public void setMyClass(MyClass myClass) {
-        if(myClass.getMethods().containsKey(name)){
+        if (myClass.getMethods().containsKey(name)) {
             this.myClass = myClass;
         }
     }

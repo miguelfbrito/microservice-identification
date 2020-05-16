@@ -5,7 +5,12 @@ import graph.entities.MyClass;
 import graph.MyGraph;
 import graph.entities.Service;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import parser.ParseResultServices;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Coupling Metric
@@ -29,10 +34,12 @@ public class IRN implements Metric {
 
         System.out.println("\nGraph total nodes: " + graph.vertexSet().size());
         System.out.println("Graph total edges: " + graph.edgeSet().size());
-        System.out.println("Total services size: "  + parseResultServices.getServices().size());
-        System.out.println("Total classes size: "  + parseResultServices.getClasses().size());
+        System.out.println("Total services size: " + parseResultServices.getServices().size());
+        System.out.println("Total classes size: " + parseResultServices.getClasses().size());
 
         double totalIrn = 0;
+
+        Graph<Service, DependencyEdge> serviceGraph = new DefaultUndirectedGraph<>(DependencyEdge.class);
 
         for (DependencyEdge edge : graph.edgeSet()) {
             MyClass source = graph.getEdgeSource(edge);
@@ -42,12 +49,56 @@ public class IRN implements Metric {
             Service serviceOfSource = parseResultServices.getClasses().get(source.getQualifiedName()).getService();
             Service serviceOfTarget = parseResultServices.getClasses().get(target.getQualifiedName()).getService();
 
+
+
             if (serviceOfSource != null && serviceOfTarget != null &&
                     serviceOfSource.getId() != serviceOfTarget.getId()) {
+                System.out.println("Call to other service from " + source.getQualifiedName() + " -> " + target.getQualifiedName() + " -> " + edge.getValue());
                 totalIrn += edge.getValue();
+
+                if (!serviceGraph.containsVertex(serviceOfSource)) {
+                    serviceGraph.addVertex(serviceOfSource);
+                }
+
+                if (!serviceGraph.containsVertex(serviceOfTarget)) {
+                    serviceGraph.addVertex(serviceOfTarget);
+                }
+
+                DependencyEdge serviceEdge = serviceGraph.getEdge(serviceOfSource, serviceOfTarget);
+                if (serviceEdge != null) {
+                    serviceEdge.setValue(serviceEdge.getValue() + edge.getValue());
+                } else {
+                    serviceGraph.addEdge(serviceOfSource, serviceOfTarget, new DependencyEdge("label", edge.getValue()));
+                }
+
+
             }
 
         }
+
+        // TODO: Refactor
+        System.out.println("\n\n-------> Print edges");
+        int min = Integer.MAX_VALUE;
+        int max = -1;
+        for(DependencyEdge e : serviceGraph.edgeSet()){
+            min = (int) Math.min(min, e.getValue());
+            max = (int) Math.max(max, e.getValue());
+        }
+        int total = 0;
+        for(DependencyEdge e : serviceGraph.edgeSet()){
+            System.out.println("");
+            System.out.println(serviceGraph.getEdgeSource(e));
+            System.out.println(serviceGraph.getEdgeTarget(e));
+            System.out.println("Calls: " + e.getValue());
+            System.out.println("Calls weight: " + (e.getValue() - min) / (max - min));
+
+            total += e.getValue();
+        }
+
+        System.out.println("Min: " + min);
+        System.out.println("Max: " + max);
+        System.out.println("Total: " + total);
+
         return totalIrn;
     }
 

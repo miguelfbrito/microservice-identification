@@ -1,16 +1,13 @@
 package graph.entities;
 
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
 import com.google.gson.annotations.Expose;
 
 import java.util.*;
@@ -42,27 +39,33 @@ public class MyClassDTO {
         this.annotations = myClass.getAnnotations().stream().map(NodeWithName::getNameAsString).collect(Collectors.toList());
         this.variables = myClass.getVariables().stream().map(v -> v.getType().asString() + " " + v.getName().toString()).collect(Collectors.toList());
         this.methods = myClass.getMethods();
-        this.methodInvocations = getMethodInvocations(myClass.getMethodInvocations());
+        this.methodInvocations = extractMethodInvocations(myClass.getMethodInvocations());
         this.implementedTypes = new ArrayList<>(myClass.getImplementedTypes());
         this.extendedTypes = new ArrayList<>(myClass.getExtendedTypes());
         if (myClass.getQualifiedName().equals("org.springframework.samples.petclinic.vet.Vet")) {
             System.out.println("HI");
         }
-        this.dependencies = getDependencies(myClass.getVariables());
+        this.dependencies = extractDependencies(myClass.getVariables());
     }
 
 
-    public Map<String, String> getMethodInvocations(List<MethodCallExpr> methodInvocations) {
+    public Map<String, String> extractMethodInvocations(List<MethodCallExpr> methodInvocations) {
         Map<String, String> processedMethods = new HashMap<>();
-        Set<String> ignoredClasses = new HashSet<>(Collections.singletonList("java.lang.Class"));
+        int total = 0;
 
         for (MethodCallExpr methodCallExpr : methodInvocations) {
-            methodCallExpr.getScope().ifPresent(mc -> {
+            Optional<Expression> scope = methodCallExpr.getScope();
+
+            if (scope.isPresent()) {
+                Expression expression = scope.get();
                 try {
-                    ResolvedReferenceType resolvedReferenceType = mc.calculateResolvedType().asReferenceType();
+                    ResolvedReferenceType resolvedReferenceType = expression.calculateResolvedType().asReferenceType();
                     String targetClassName = resolvedReferenceType.getQualifiedName();
-                    if (isValidClass(targetClassName))
+                    if (isValidClass(targetClassName)) {
                         processedMethods.put(methodCallExpr.getNameAsString(), targetClassName); // TODO: handle method overloading causing conflicts and getting overwritten
+                        total++;
+                    }
+
                 } catch (UnsolvedSymbolException e) {
                     // When it tries to resolve a class not explicitly present in the project. We don't care about those.
                 } catch (UnsupportedOperationException e) {
@@ -70,12 +73,13 @@ public class MyClassDTO {
                 } catch (RuntimeException e) {
                     // TODO : reevaluate
                 }
-            });
+
+            }
         }
         return processedMethods;
     }
 
-    public List<String> getDependencies(List<VariableDeclarator> variableDeclarators) {
+    public List<String> extractDependencies(List<VariableDeclarator> variableDeclarators) {
         List<String> dependencyList = new ArrayList<>();
         for (VariableDeclarator variableDeclarator : variableDeclarators) {
             try {
@@ -116,7 +120,12 @@ public class MyClassDTO {
         return dependencyList;
     }
 
+    public Map<String, String> getMethodInvocations() {
+        return methodInvocations;
+    }
+
     private boolean isValidClass(String qualifiedName) {
         return this.validClasses.contains(qualifiedName);
     }
 }
+
