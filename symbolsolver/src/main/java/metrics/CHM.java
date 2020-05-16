@@ -6,6 +6,7 @@ import graph.entities.Service;
 import parser.ParseResultServices;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Calculate the CoHesion at Message level (CHM)
@@ -32,15 +33,18 @@ public class CHM implements Metric {
     }
 
     private double calculateJaccardCoefficient(MyMethod source, MyMethod target) {
-        Set<String> parametersUnion = Jaccard.getUnion(new HashSet<>(source.getParametersDataType()),
-                new HashSet<>(target.getParametersDataType()));
-        Set<String> parametersIntersection = Jaccard.getIntersection(new HashSet<>(source.getParametersDataType()),
-                new HashSet<>(target.getParametersDataType()));
 
-        Set<String> returnUnion = Jaccard.getUnion(new HashSet<>(source.getReturnDataType()),
-                new HashSet<>(target.getReturnDataType()));
-        Set<String> returnIntersection = Jaccard.getIntersection(new HashSet<>(source.getReturnDataType()),
-                new HashSet<>(target.getReturnDataType()));
+        List<String> sourceParameters = source.getParametersDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
+        List<String> targetParameters = target.getParametersDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
+
+        List<String> sourceReturn = source.getReturnDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
+        List<String> targetReturn = target.getReturnDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
+
+        Set<String> parametersUnion = Jaccard.getUnion(new HashSet<>(sourceParameters), new HashSet<>(targetParameters));
+        Set<String> parametersIntersection = Jaccard.getIntersection(new HashSet<>(sourceParameters), new HashSet<>(targetParameters));
+
+        Set<String> returnUnion = Jaccard.getUnion(new HashSet<>(sourceReturn), new HashSet<>(targetReturn));
+        Set<String> returnIntersection = Jaccard.getIntersection(new HashSet<>(sourceReturn), new HashSet<>(targetReturn));
 
         double paramCoefficent = computeEdge(parametersUnion, parametersIntersection);
         double returnCoefficient = computeEdge(returnUnion, returnIntersection);
@@ -83,7 +87,7 @@ public class CHM implements Metric {
             Map<String, String> operationsInOrder = service.getOperations();
 
 
-            if(operationsInOrder.isEmpty()){
+            if (operationsInOrder.isEmpty()) {
                 System.out.println("SKIPPING SERVICE");
                 continue;
             }

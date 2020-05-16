@@ -6,6 +6,7 @@ import graph.entities.Service;
 import parser.ParseResultServices;
 import utils.StringUtils;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,14 @@ public class CHD implements Metric {
         // TODO : Consider the commented approach on RS17 (tosc-interf-dom-cohesion) on handling empty sets?
         Set<String> sourceOperationTerms = new HashSet<>(StringUtils.extractCamelCaseLower(source.getName()));
         Set<String> targetOperationTerms = new HashSet<>(StringUtils.extractCamelCaseLower(target.getName()));
+
+
+        // Remove stop words TODO: add more
+        Set<String> stopWords = new HashSet<>(Arrays.asList("set", "add", "get"));
+        for (String word : stopWords) {
+            sourceOperationTerms.remove(word);
+            targetOperationTerms.remove(word);
+        }
 
         if (includeParameters) {
             for (String s : source.getParametersDataType()) {
@@ -112,7 +121,6 @@ public class CHD implements Metric {
             service.setChd(serviceJaccard);
             chd += serviceJaccard;
         }
-
 
 
         // TODO : chm / countedServices or services.size();
