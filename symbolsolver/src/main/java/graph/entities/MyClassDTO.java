@@ -6,6 +6,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.google.gson.annotations.Expose;
@@ -84,15 +85,7 @@ public class MyClassDTO {
         for (VariableDeclarator variableDeclarator : variableDeclarators) {
             try {
                 // This is a bit hacky but currently there's no support on javaparser to get directly the typeArguments of a Type
-                List<ClassOrInterfaceType> references = variableDeclarator.getType().findAll(ClassOrInterfaceType.class);
-                for (ClassOrInterfaceType ref : references) {
-                    try {
-                        String qualifiedName = ref.resolve().getQualifiedName();
-                        if (isValidClass(qualifiedName))
-                            dependencyList.add(qualifiedName);
-                    } catch (UnsolvedSymbolException | UnsupportedOperationException e) {
-                    }
-                }
+                resolveTargetClassFromSubTypes(dependencyList, variableDeclarator.getType());
             } catch (UnsolvedSymbolException | UnsupportedOperationException e) {
                 // When it tries to resolve a class not explicitly present in the project. We don't care about those.
                 e.printStackTrace();
@@ -100,24 +93,35 @@ public class MyClassDTO {
         }
 
         for (MyMethod method : methods.values()) {
-            try {
-                MethodDeclaration methodDeclaration = method.getVisitor();
-                String targetClassName = methodDeclaration.getType().resolve().asReferenceType().getQualifiedName();
-                dependencyList.add(targetClassName);
+            MethodDeclaration methodDeclaration = method.getVisitor();
+            resolveTargetClassFromSubTypes(dependencyList, methodDeclaration.getType());
 
-                methodDeclaration.getParameters().forEach(parameter -> {
-                    String paramTargetClassName = parameter.getType().resolve().asReferenceType().getQualifiedName();
-                    if (isValidClass(paramTargetClassName))
-                        dependencyList.add(paramTargetClassName);
-                });
+            methodDeclaration.getParameters().forEach(parameter -> {
+                List<ClassOrInterfaceType> referencesParametersType = parameter.getType().findAll(ClassOrInterfaceType.class);
+                try {
+                    for (ClassOrInterfaceType ref : referencesParametersType) {
+                        String paramTargetClassName = ref.resolve().getQualifiedName();
+                        if (isValidClass(paramTargetClassName))
+                            dependencyList.add(paramTargetClassName);
+                    }
+                } catch (UnsolvedSymbolException | UnsupportedOperationException e) {
 
-            } catch (UnsolvedSymbolException e) {
-                // When it tries to resolve a class not explicitly present in the project. We don't care about those.
-            } catch (UnsupportedOperationException e) {
-                //e.printStackTrace();
-            }
+                }
+            });
         }
         return dependencyList;
+    }
+
+    private void resolveTargetClassFromSubTypes(List<String> dependencyList, Type type) {
+        List<ClassOrInterfaceType> referencesReturnType = type.findAll(ClassOrInterfaceType.class);
+        for (ClassOrInterfaceType ref : referencesReturnType) {
+            try {
+                String targetClassName = ref.resolve().getQualifiedName();
+                if(isValidClass(targetClassName))
+                    dependencyList.add(targetClassName);
+            } catch (UnsolvedSymbolException | UnsupportedOperationException e) {
+            }
+        }
     }
 
     public Map<String, String> getMethodInvocations() {
