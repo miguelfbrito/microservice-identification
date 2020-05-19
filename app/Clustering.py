@@ -26,6 +26,7 @@ from karateclub.node_embedding.meta import NEU
 
 from WeightType import WeightType
 from entities.Service import Service
+from Settings import Settings
 
 
 class Clustering:
@@ -56,27 +57,30 @@ class Clustering:
         h = graph.copy()
         mappings = {}
 
-        for index, node in enumerate(h.nodes()):
-            curr_class_name = re.search(r'\.(\w*)$', str(node))
-            if curr_class_name:
-                mappings[node] = f"{curr_class_name[1]}_{index}"
-        h = nx.relabel_nodes(h, mappings)
-
-        # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-        sp = nx.spring_layout(h, weight=weight_type)
-        nx.draw_networkx(h, pos=sp, with_labels=True,
-                         node_size=350, font_size=6, node_color=values)
-
-        edge_weight_labels = dict(map(lambda x: (
-            (x[0], x[1]),  round(x[2][str(weight_type)], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
-
-        nx.draw_networkx_edge_labels(
-            h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
-
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
         print(f"Modularity: {community.modularity(partition, graph)}")
-        plt.show()
+
+        if Settings.DRAW:
+
+            for index, node in enumerate(h.nodes()):
+                curr_class_name = re.search(r'\.(\w*)$', str(node))
+                if curr_class_name:
+                    mappings[node] = f"{curr_class_name[1]}_{index}"
+            h = nx.relabel_nodes(h, mappings)
+
+            # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
+            sp = nx.spring_layout(h, weight=weight_type)
+            nx.draw_networkx(h, pos=sp, with_labels=True,
+                             node_size=350, font_size=6, node_color=values)
+
+            edge_weight_labels = dict(map(lambda x: (
+                (x[0], x[1]),  round(x[2][str(weight_type)], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+
+            nx.draw_networkx_edge_labels(
+                h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
+
+            plt.show()
 
         return clusters
 

@@ -5,6 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from WeightType import WeightType
+from Settings import Settings
 
 
 class Graph:
@@ -99,7 +100,9 @@ class Graph:
     @staticmethod
     def draw(graph, colors=[], weight_type=WeightType.ABSOLUTE, clear=True):
 
-        # Truncate qualified name to simple name
+        if not Settings.DRAW:
+            return
+
         h = graph.copy()
         if clear:
             mappings = {}

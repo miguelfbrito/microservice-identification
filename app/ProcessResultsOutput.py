@@ -1,5 +1,6 @@
 import json
 import subprocess
+from Settings import Settings
 
 
 class ProcessResultsOutput:
@@ -19,6 +20,7 @@ class ProcessResultsOutput:
 
     def add_project(self, project_name, cluster_string):
         project = {}
+        project["id"] = Settings.ID
         project["name"] = project_name
         project["rootPath"] = ProcessResultsOutput.ROOT_PATH
         project["relativePath"] = project_name

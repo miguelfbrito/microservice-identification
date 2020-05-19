@@ -12,6 +12,7 @@ from stop_words import get_stop_words
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
 from StringUtils import StringUtils
+from Settings import Settings
 
 
 def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
@@ -54,7 +55,7 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     set_weight_for_clustering(
         graph, classes, lda_result, num_topics)
 
-    with open("./services_lda.txt", "w") as f:
+    with open(f"{Settings.DIRECTORY}/services_lda.txt", "w") as f:
         for service in services:
             f.write(f"{service}\n")
             for classe in services[service]:
@@ -85,8 +86,13 @@ def apply_lda_to_text(docs, num_topics):
     # Create p_stemmer of class PorterStemmer
     p_stemmer = PorterStemmer()
 
-    # Clean text based on java stop words
+    with open(f"{Settings.DIRECTORY}/data/words/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
+        for d in docs:
+            f.write(d + "\n")
 
+        f.write("\n")
+
+    # Clean text based on java stop words
     docs = [StringUtils.clear_java_words(doc) for doc in docs]
     logging.info(docs)
 
@@ -110,10 +116,7 @@ def apply_lda_to_text(docs, num_topics):
         # add tokens to list
         texts.append(stemmed_tokens)
 
-        directory = f"../data/classes/"
-        pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
-
-        with open(f"{directory}/words", 'a+') as f:
+        with open(f"{Settings.DIRECTORY}/data/words/{Settings.PROJECT_NAME}_{Settings.ID}", 'a+') as f:
             for t in texts:
                 f.write((' ').join(t))
             f.write("\n")

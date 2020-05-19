@@ -49,6 +49,8 @@ class Class:
         # len_words = self.total_words(dependencies) + self.total_words(self.variables) + self.total_words(
         #     self.methods) + self.total_words(self.formal_parameters) + self.total_words(self.literals) + self.total_words(self.comments) + 1
 
+        pattern_match_class_name = r'\.(\w*)$'
+
         len_words = 0
         methods = []
         for m in self.methods:
@@ -57,8 +59,8 @@ class Class:
             len_words += self.total_words(method_string)
             methods.append(method_string)
 
-        method_invocations = [m['targetClassName']
-                              for m in self.method_invocations]
+        method_invocations = [re.search(pattern_match_class_name, m['targetClassName'])
+                              [1] for m in self.method_invocations]
 
         len_words += self.total_words(self.variables) + \
             self.total_words(method_invocations)
@@ -82,9 +84,12 @@ class Class:
 
         string = variables_weight * self.variables + methods_weight * \
             methods + method_invocations_weight * method_invocations
-
-        print(f"Final String {string}")
-        return " ".join(string) + class_name_weight * (" " + self.class_name)
+        class_name = re.search(pattern_match_class_name,
+                               self.qualified_name)[1]
+        string = " ".join(string) + 2 * (" " + class_name)
+        print(f"Final String hey {string}")
+        print(f"{self.variables} - {methods} - {self.class_name} + {class_name}")
+        return string
 
     def get_class_name(self):
         return self.class_name

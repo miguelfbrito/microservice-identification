@@ -8,6 +8,7 @@ from visitors.ClassVisitor import ClassVisitor
 from ProcessResultsOutput import ProcessResultsOutput
 from entities.Method import Method
 from entities.Class import Class
+from Settings import Settings
 
 import re
 import math
@@ -27,6 +28,7 @@ import matplotlib.pyplot as plt
 from random import random
 from random import randint
 from itertools import cycle
+from datetime import datetime
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import DBSCAN, FeatureAgglomeration, AffinityPropagation
 
@@ -212,7 +214,7 @@ def identify_clusters_in_project(project):
     num_topics = project[1]
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
 
-    temp_json_location = '../symbolsolver/target/output.json'
+    temp_json_location = f'{Settings.DIRECTORY}/symbolsolver/target/output.json'
 
     utils.execute_parser(project_name)
 
@@ -263,7 +265,8 @@ def identify_clusters_in_project(project):
     print(f"SERVICES {services}")
 
     final_services = []
-    with open('./services.txt', 'w') as f:
+    with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
+
         for cluster_id, service_ids in service_clusters.items():
             service_classes = []
             f.write(f"Service {cluster_id}\n")
@@ -299,10 +302,17 @@ def main():
                         help="Parse, cluster and execute metrics for a subset of projects", action="store_true")
     parser.add_argument("--metrics-full", "-mf",
                         help="Parse, cluster, and execute metrics for all defined projects", action="store_true")
+    parser.add_argument("--draw", "-d",
+                        help="Enable plotting of graphs", action="store_true")
     args = parser.parse_args()
+
+    Settings.DRAW = True if args.draw else False
 
     if args.metrics:
         result = ProcessResultsOutput()
+        Settings.PROJECT_NAME = args.metrics
+        Settings.K_TOPICS = int(args.k_topics)
+        Settings.create_id()
         project = (args.metrics, int(args.k_topics))
         clusters = identify_clusters_in_project(project)
         result.add_project(project[0], str(clusters))

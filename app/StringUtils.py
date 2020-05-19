@@ -63,7 +63,7 @@ class StringUtils:
             "com", "request", "mapping", "value", "autowired", "list", "hash",  "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array", "mapper"
 
             "service", "entity", "repository", "annotation", "base", "model", "dao", "dto", "beans", "bean", "statement", "global", "view"
-            "action", "http", "web", "jpa"
+            "action", "http", "web", "jpa", "raysmond"
         }
 
         result_words = []

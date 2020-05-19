@@ -11,6 +11,7 @@ import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.google.gson.annotations.Expose;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class MyClassDTO {
     @Expose
     private Map<String, MyMethod> methods; // method name, method reference
     @Expose
-    private Map<String, String> methodInvocations;
+    private List<MethodInvocationDTO> methodInvocations;
     @Expose
     private List<String> implementedTypes;
     @Expose
@@ -50,8 +51,9 @@ public class MyClassDTO {
     }
 
 
-    public Map<String, String> extractMethodInvocations(List<MethodCallExpr> methodInvocations) {
-        Map<String, String> processedMethods = new HashMap<>();
+    public List<MethodInvocationDTO> extractMethodInvocations(List<MethodCallExpr> methodInvocations) {
+
+        List<MethodInvocationDTO> processedMethods = new ArrayList<>();
         int total = 0;
 
         for (MethodCallExpr methodCallExpr : methodInvocations) {
@@ -61,9 +63,11 @@ public class MyClassDTO {
                 Expression expression = scope.get();
                 try {
                     ResolvedReferenceType resolvedReferenceType = expression.calculateResolvedType().asReferenceType();
+                    String methodName = methodCallExpr.getNameAsString();
                     String targetClassName = resolvedReferenceType.getQualifiedName();
                     if (isValidClass(targetClassName)) {
-                        processedMethods.put(methodCallExpr.getNameAsString(), targetClassName); // TODO: handle method overloading causing conflicts and getting overwritten
+                        // TODO: handle method overloading causing conflicts and getting overwritten
+                        processedMethods.add(new MethodInvocationDTO(methodName, targetClassName));
                         total++;
                     }
 
@@ -77,6 +81,9 @@ public class MyClassDTO {
 
             }
         }
+
+
+        System.out.println("Total extracted Method invocations: " + processedMethods.size());
         return processedMethods;
     }
 
@@ -112,19 +119,20 @@ public class MyClassDTO {
         return dependencyList;
     }
 
+
     private void resolveTargetClassFromSubTypes(List<String> dependencyList, Type type) {
         List<ClassOrInterfaceType> referencesReturnType = type.findAll(ClassOrInterfaceType.class);
         for (ClassOrInterfaceType ref : referencesReturnType) {
             try {
                 String targetClassName = ref.resolve().getQualifiedName();
-                if(isValidClass(targetClassName))
+                if (isValidClass(targetClassName))
                     dependencyList.add(targetClassName);
             } catch (UnsolvedSymbolException | UnsupportedOperationException e) {
             }
         }
     }
 
-    public Map<String, String> getMethodInvocations() {
+    public List<MethodInvocationDTO> getMethodInvocations() {
         return methodInvocations;
     }
 
@@ -133,3 +141,16 @@ public class MyClassDTO {
     }
 }
 
+
+class MethodInvocationDTO {
+
+    @Expose
+    private String methodName;
+    @Expose
+    private String targetClassName;
+
+    public MethodInvocationDTO(String methodName, String targetClassName) {
+        this.methodName = methodName;
+        this.targetClassName = targetClassName;
+    }
+}

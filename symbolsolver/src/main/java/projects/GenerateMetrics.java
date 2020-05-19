@@ -141,7 +141,7 @@ public class GenerateMetrics {
     }
 
     public void writeToFile(ProjectMetrics metrics) throws IOException {
-
+        // TODO : refactor
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String date = formatter.format(new Date());
 
@@ -188,6 +188,25 @@ public class GenerateMetrics {
         projectWriter.newLine();
         projectWriter.write(projectLine);
         projectWriter.close();
+
+        // WRITE TO SERVICE FILE
+        path = "/home/mbrito/git/thesis/data/services/" + metrics.getProject().getName() + "_" + metrics.getProject().getId();
+        file = new File(path);
+        writeHeader = !file.exists();
+        BufferedWriter projectWriterService = new BufferedWriter(new FileWriter(path, true));
+
+        if (writeHeader) {
+            projectWriterService.write(metrics.getProject().getName());
+            projectWriterService.newLine();
+            projectWriterService.write(header);
+        }
+
+        String content = "IRN: " + metrics.getIrn() + "\nOPN: " + metrics.getOpn() + "\nCHM: " + metrics.getChm() +
+                "\nCHD: " + metrics.getChd() + "\nCommit hash: " + metrics.getProject().getCommitHash();
+
+        projectWriterService.newLine();
+        projectWriterService.write(content);
+        projectWriterService.close();
     }
 
 }
