@@ -1,4 +1,5 @@
 import re
+import sys
 import logging
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -17,10 +18,6 @@ class Graph:
         """
         for classe in classes.values():
 
-            if classe.get_qualified_name() == 'org.springframework.samples.petclinic.vet.Specialty':
-                print(
-                    f"SPECIALTYDEPENDENCYCLASSE {classe.get_extended_types()}")
-
             # Add implement relationships
             Graph.add_edges_dependencies(
                 classe, classes, classe.get_implemented_types(), graph, 'IMPLEMENTS')
@@ -35,7 +32,7 @@ class Graph:
 
             # Add edges for method call invocations to other classes
             Graph.add_edges_dependencies(
-                classe, classes, classe.get_method_invocations().values(), graph, 'METHOD_CALL')
+                classe, classes, [m['targetClassName'] for m in classe.get_method_invocations()], graph, 'METHOD_CALL')
 
         return graph
 
@@ -55,12 +52,10 @@ class Graph:
                 edge_data = graph.get_edge_data(
                     qualified_name, dependency_name)
 
-                # TODO: Think about this
                 if edge_data:
-
                     # Always incremenent the structural component which represents an accumulative sum of all dependencies
                     graph[qualified_name][dependency_name][str(
-                        WeightType.STRUCTURAL)] = edge_data[str(WeightType.STRUCTURAL)] + 1
+                        WeightType.STRUCTURAL)] = edge_data.get(str(WeightType.STRUCTURAL), 0) + 1
 
                     if dependency_type == 'METHOD_CALL':
                         graph[qualified_name][dependency_name][str(
@@ -73,7 +68,7 @@ class Graph:
                     args = {'structural_weight': 1,
                             'dependency_type': dependency_type}
                     if dependency_type == 'METHOD_CALL':
-                        args['method_call_weight'] = 1
+                        args[str(WeightType.METHOD_CALL)] = 1
 
                     graph.add_edge(qualified_name,
                                    dependency_name, **args)
@@ -81,7 +76,7 @@ class Graph:
             except KeyError:
                 # This should only happen when looking for classes that aren't explicly definied in the project
                 # instead belong to framewors or external libraries
-                logging.warning(
+                logging.error(
                     f"Key not found for {dependency_name} at {qualified_name}")
 
                 # This exception can cause a node to not be added. Verify and add if needed
@@ -112,7 +107,6 @@ class Graph:
                 mappings[node] = re.search(r'\.(\w*)$', node)[1]
             h = nx.relabel_nodes(h, mappings)
 
-        print(f"DRAWING TYPE {weight_type}")
         sp = nx.spring_layout(h, weight=str(weight_type))
         edge_weight_labels = dict(map(lambda x: (
             (x[0], x[1]),  round(x[2][weight_type], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
@@ -128,3 +122,26 @@ class Graph:
         nx.draw_networkx(h, pos=sp, with_labels=True,
                          node_size=250, node_colors=colors, font_size=8)
         plt.show()
+
+    @staticmethod
+    def normalize_values(graph, dependency_type):
+        min = sys.maxsize
+        max = -sys.maxsize - 1
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+            if dependency_type in edge_data:
+                edge = edge_data[dependency_type]
+                if edge < min:
+                    min = edge
+                if edge > max:
+                    max = edge
+
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+
+            if dependency_type in edge_data:
+                edge = edge_data[dependency_type]
+                edge = (edge - min) / (max - min)
+
+                graph[src][dst][dependency_type] = edge
+        return graph
