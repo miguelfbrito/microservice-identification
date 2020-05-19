@@ -96,36 +96,6 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
         # print(f"{src} -> {dst} : {edge_data}")
 
 
-def draw_graph(graph, weight_type=WeightType.ABSOLUTE):
-
-    # for src, dst in graph.edges():
-    #     edge_data = graph.get_edge_data(src, dst)
-    #     if edge_data and edge_data[weight_type] < 0.3:
-    #         graph[src][dst][weight_type] = 0
-
-    # Edges can't have a weight of 0, resulting in a divide by 0 error on the kamada_kaway_kayout calculation
-    # for u, v in graph.edges():
-    #     data = graph.get_edge_data(u, v)
-    #     if data:
-    #         if data[weight_type] == 0:
-    #             graph[u][v][weight_type] = 0.001
-    # pos = nx.kamada_kawai_layout(graph, weight=weight_type)
-
-    pos = nx.spring_layout(graph, weight=weight_type)
-
-    # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-    new_labels = dict(map(lambda x: ((x[0], x[1]),  str(
-        x[2][str(weight_type)]) if x[2][str(weight_type)] > 0 else ""), graph.edges(data=True)))
-
-    nx.draw_networkx(graph, pos=pos, node_size=500, alpha=0.8,
-                     font_size=10)
-    nx.draw_networkx_edge_labels(
-        graph, pos, edge_labels=new_labels, font_size=7, alpha=0.9)
-    # nx.draw_networkx_edges(graph, pos, width=0, arrows=False)
-
-    plt.show()
-
-
 def apply_tfidf_to_connections(graph, class_visitors):
 
     edges = graph.edges()
@@ -194,13 +164,8 @@ def community_detection_by_affinity(graph, weight_type=WeightType.ABSOLUTE):
     pos = nx.spring_layout(graph)
     nx.draw_networkx(graph, pos=pos, edgelist=[], node_color=labels, with_labels=True,
                      node_size=250, font_size=8)
-    plt.show()
 
     return [cluster for cluster in clusters.values()]
-    # y_pos = np.arange(len(clusters.items()))
-    # plt.bar(y_pos, cluster_distribution)
-    # plt.ylabel("Cluster Size")
-    # plt.xlabel("Cluster Index")
 
 
 def visitors_to_qualified_name(visitors):
@@ -268,27 +233,45 @@ def identify_clusters_in_project(project):
     # Method 2. LDA
     # TODO : think about if the pre_processing should be done or not
     lda.apply_lda_to_classes(graph, classes, num_topics)
-
     calculate_absolute_weights(graph, weight_type=WeightType.LDA)
+
+    for src, dst in graph.edges():
+        print(f"EDGEEE: {graph.get_edge_data(src, dst)}")
     graph = Clustering.pre_process(
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
+    G = graph.copy()
 
+    # Cluster by LDA and structural dependencies
     clusters = Clustering.community_detection_louvain(graph)
-    service_graph, services = Clustering.create_service_graph(
-        clusters, classes, graph)
 
-    service_clusters = Clustering.community_detection_louvain(
-        service_graph, weight_type=str(WeightType.STRUCTURAL))
+    # Post-processeing
+    service_graph, services = Clustering.create_service_graph_method_invocation_based(
+        clusters, classes, G)
+
+    service_graph = Graph.normalize_values(
+        service_graph, dependency_type=str(WeightType.METHOD_CALL))
+
+    # Cluster by method call invocations
+    service_clusters = []
+    try:
+        service_clusters = Clustering.community_detection_louvain(
+            service_graph, weight_type=str(WeightType.METHOD_CALL))
+    except ValueError:
+        print(f"The graph add no method call invocations between nodes. Clustering will not be used")
 
     print(f"SERVICE CLUSTERS {service_clusters}")
+    print(f"SERVICES {services}")
 
     final_services = []
     with open('./services.txt', 'w') as f:
-        for service_id, service in service_clusters.items():
+        for cluster_id, service_ids in service_clusters.items():
             service_classes = []
-            for class_name in services[service_id].get_classes():
-                f.write(f"{class_name}\n")
-                service_classes.append(class_name)
+            f.write(f"Service {cluster_id}\n")
+            for service_id in service_ids:
+                print(f"Service: {service_id}")
+                for class_name in services[service_id].get_classes():
+                    f.write(f"{class_name}\n")
+                    service_classes.append(class_name)
             final_services.append(service_classes)
             f.write("\n\n")
 

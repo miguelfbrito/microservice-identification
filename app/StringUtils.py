@@ -50,7 +50,7 @@ class StringUtils:
             string = string[0]
 
         stopwords = {
-            "abstract", "assert", "boolean", "dao", "dto",
+            "abstract", "assert", "boolean",
             "break", "byte", "case", "catch", "char", "class", "const",
             "continue", "default", "do", "double", "else", "extends", "false",
             "final", "finally", "float", "for", "goto", "if", "implements",
@@ -59,10 +59,11 @@ class StringUtils:
             "return", "short", "static", "strictfp", "super", "switch",
             "synchronized", "this", "throw", "throws", "transient", "true",
             "try", "void", "volatile", "while", "string", "int",
-            "gaussic", "controller", "map", "request", "method", "integer", "system", "out", "println", "springframework", "beans",
-            "com", "request", "mapping", "value", "autowired", "list", "hash",  "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array",
+            "gaussic", "controller", "map", "request", "method", "integer", "system", "out", "println", "springframework",
+            "com", "request", "mapping", "value", "autowired", "list", "hash",  "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array", "mapper"
 
-            "service", "entity", "repository", "annotation", "base", "model"
+            "service", "entity", "repository", "annotation", "base", "model", "dao", "dto", "beans", "bean", "statement", "global", "view"
+            "action", "http", "web", "jpa"
         }
 
         result_words = []
@@ -71,10 +72,5 @@ class StringUtils:
         for word in words:
             if word.isalpha() and word.lower() not in stopwords and len(word) > 2:
                 result_words.append(word)
-
-        # directory = f"../data/classes/"
-        # pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
-        # with open(f"{directory}/{class_name}", 'w') as f:
-        #     f.write((' ').join(result_words))
 
         return (' ').join(result_words)

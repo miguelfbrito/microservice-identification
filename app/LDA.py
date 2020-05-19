@@ -1,6 +1,7 @@
 import re
 import gensim
 import logging
+import pathlib
 import numpy as np
 import pyLDAvis.gensim
 
@@ -108,6 +109,14 @@ def apply_lda_to_text(docs, num_topics):
 
         # add tokens to list
         texts.append(stemmed_tokens)
+
+        directory = f"../data/classes/"
+        pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
+
+        with open(f"{directory}/words", 'a+') as f:
+            for t in texts:
+                f.write((' ').join(t))
+            f.write("\n")
 
     # turn tokenized documents into a id <-> term dictionary
     dictionary = corpora.Dictionary(texts)

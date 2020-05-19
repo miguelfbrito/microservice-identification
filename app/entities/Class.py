@@ -57,8 +57,11 @@ class Class:
             len_words += self.total_words(method_string)
             methods.append(method_string)
 
+        method_invocations = [m['targetClassName']
+                              for m in self.method_invocations]
+
         len_words += self.total_words(self.variables) + \
-            self.total_words(self.method_invocations.keys())
+            self.total_words(method_invocations)
 
         # TODO: we could apply other heuristics to try to identify we're currently in an entity
         # TODO: search for the qualified name for Entitities. Entity, DAO, domain, (common name conventions representing strong domain concepts)
@@ -78,8 +81,7 @@ class Class:
         method_invocations_weight = 1
 
         string = variables_weight * self.variables + methods_weight * \
-            methods + method_invocations_weight * \
-            list(self.method_invocations.keys())
+            methods + method_invocations_weight * method_invocations
 
         print(f"Final String {string}")
         return " ".join(string) + class_name_weight * (" " + self.class_name)

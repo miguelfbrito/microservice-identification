@@ -68,7 +68,7 @@ class Clustering:
                          node_size=350, font_size=6, node_color=values)
 
         edge_weight_labels = dict(map(lambda x: (
-            (x[0], x[1]),  round(x[2][weight_type], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+            (x[0], x[1]),  round(x[2][str(weight_type)], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
 
         nx.draw_networkx_edge_labels(
             h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
@@ -358,7 +358,7 @@ class Clustering:
         return graph
 
     @staticmethod
-    def create_service_graph(clusters, classes, graph):
+    def create_service_graph_dependency_based(clusters, classes, graph):
         services = Service.extract_services_from_clusters(
             clusters)  # service_id, service
         class_service = Service.get_map_class_service_id(clusters)
@@ -389,7 +389,44 @@ class Clustering:
 
         Graph.draw(service_graph, clear=False,
                    weight_type=str(WeightType.STRUCTURAL))
-        plt.show()
+
+        for service in services.values():
+            print(
+                f"Service external dependencies: {service.get_external_classes_dependencies()}")
+
+        return service_graph, services
+
+    @staticmethod
+    def create_service_graph_method_invocation_based(clusters, classes, graph):
+        services = Service.extract_services_from_clusters(
+            clusters)  # service_id, service
+        class_service = Service.get_map_class_service_id(clusters)
+
+        service_graph = nx.DiGraph()
+        for service_id in services.keys():
+            service_graph.add_node(service_id)
+
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+            # TODO: consider add both connections, structural and method call
+            try:
+                src_service_id = class_service[src]
+                dst_service_id = class_service[dst]
+                if src_service_id != dst_service_id and str(WeightType.METHOD_CALL) in edge_data:
+                    service_edge_data = service_graph.get_edge_data(
+                        src_service_id, dst_service_id)
+
+                    if service_edge_data:
+                        service_edge_data[str(
+                            WeightType.METHOD_CALL)] += edge_data[str(WeightType.METHOD_CALL)]
+                    else:
+                        service_graph.add_edge(
+                            src_service_id, dst_service_id, weight_method_call=1)  # TODO: Rework, use **dict to expand dict as arguments
+            except KeyError as ke:
+                print(f"[KEYERROR] {ke}")
+
+        Graph.draw(service_graph, clear=False,
+                   weight_type=str(WeightType.METHOD_CALL))
 
         for service in services.values():
             print(
