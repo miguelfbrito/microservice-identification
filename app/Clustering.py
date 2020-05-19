@@ -26,7 +26,9 @@ from karateclub.node_embedding.meta import NEU
 
 from WeightType import WeightType
 from entities.Service import Service
+
 from Settings import Settings
+from sklearn import cluster
 
 
 class Clustering:
@@ -373,30 +375,23 @@ class Clustering:
 
         for src, dst in graph.edges():
             edge_data = graph.get_edge_data(src, dst)
+
             # TODO: consider add both connections, structural and method call
             src_service_id = class_service[src]
             dst_service_id = class_service[dst]
-            print(f"{src} -> {dst} {src_service_id} {dst_service_id}  -- {service_graph.get_edge_data(src_service_id, dst_service_id)}")
             if src_service_id != dst_service_id:  # 'method_call_weight' in edge_data and
 
                 service_edge_data = service_graph.get_edge_data(
                     src_service_id, dst_service_id)
-                print("methodcall")
 
                 if service_edge_data:
                     service_edge_data[str(WeightType.STRUCTURAL)] += 1
-                    print(
-                        f"ADDING ONE MORE {service_edge_data[str(WeightType.STRUCTURAL)]}")
                 else:
                     service_graph.add_edge(
                         src_service_id, dst_service_id, weight_structural=1)  # TODO: Rework, use **dict to expand dict as arguments
 
         Graph.draw(service_graph, clear=False,
                    weight_type=str(WeightType.STRUCTURAL))
-
-        for service in services.values():
-            print(
-                f"Service external dependencies: {service.get_external_classes_dependencies()}")
 
         return service_graph, services
 
@@ -437,6 +432,73 @@ class Clustering:
                 f"Service external dependencies: {service.get_external_classes_dependencies()}")
 
         return service_graph, services
+
+    @staticmethod
+    def merge_above_threshold(service_graph, dependency_type, threshold=0.5):
+        services_index = {}
+        index = 0
+        edges_for_removal = []
+        for src, dst in service_graph.edges():
+            edge_data = service_graph.get_edge_data(src, dst)
+            if dependency_type in edge_data:
+                if edge_data[str(dependency_type)] < threshold:
+                    edges_for_removal.append((src, dst))
+
+        for edge in edges_for_removal:
+            service_graph.remove_edge(edge[0], edge[1])
+
+        index = 0
+        visited = {}
+        for node in service_graph.nodes():
+            dfs_nodes = nx.dfs_preorder_nodes(service_graph, source=node)
+
+            if node in visited:
+                continue
+
+            visited[node] = True
+
+            for dfs_node in dfs_nodes:
+                if index in services_index:
+                    services_index[index].append(dfs_node)
+                else:
+                    services_index[index] = [dfs_node]
+
+            index += 1
+
+        print(f"Merge above threshold {services_index}")
+
+    @staticmethod
+    def k_means(G, k):
+        edge_mat = Clustering.graph_to_edge_matrix(G)
+        kmeans = cluster.KMeans(n_clusters=k, n_init=200).fit(edge_mat)
+
+        print(f"RESULTS: {kmeans.labels_}")
+
+        services = {}
+        # TODO : finish
+        for service in kmeans.labels_:
+            services.get(service, []).append(service)
+        print(f"KMEANS RESULTS: {services}")
+
+    @staticmethod
+    def graph_to_edge_matrix(G):
+        """Convert a networkx graph into an edge matrix.
+        See https://www.wikiwand.com/en/Incidence_matrix for a good explanation on edge matrices
+
+        Parameters
+        ----------
+        G : networkx graph
+        """
+        # Initialize edge matrix with zeros
+        edge_mat = np.zeros((len(G), len(G)), dtype=int)
+
+        # Loop to set 0 or 1 (diagonal elements are set to 1)
+        for node in G:
+            for neighbor in G.neighbors(node):
+                edge_mat[node][neighbor] = 1
+            edge_mat[node][node] = 1
+
+        return edge_mat
 
     @staticmethod
     def test_clustering_algorithms(graph):

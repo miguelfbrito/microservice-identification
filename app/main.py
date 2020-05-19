@@ -253,16 +253,19 @@ def identify_clusters_in_project(project):
     service_graph = Graph.normalize_values(
         service_graph, dependency_type=str(WeightType.METHOD_CALL))
 
+    Clustering.merge_above_threshold(
+        service_graph, dependency_type=str(WeightType.METHOD_CALL), threshold=0.4)
+
     # Cluster by method call invocations
     service_clusters = []
     try:
         service_clusters = Clustering.community_detection_louvain(
             service_graph, weight_type=str(WeightType.METHOD_CALL))
     except ValueError:
-        print(f"The graph add no method call invocations between nodes. Clustering will not be used")
+        print(f"The graph had no method call invocations between nodes. Clustering will not be used")
 
-    print(f"SERVICE CLUSTERS {service_clusters}")
-    print(f"SERVICES {services}")
+    print(f"Service Clusters {service_clusters}")
+    print(f"Services {services}")
 
     final_services = []
     with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
