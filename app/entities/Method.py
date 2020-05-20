@@ -6,9 +6,9 @@ class Method:
         self.return_data_type = return_data_type
 
     def get_merge_of_entities(self):
-        name_weight = 1
+        name_weight = 3
         parameters_weight = 1
-        return_weight = 1
+        return_weight = 3
 
         string = parameters_weight * self.parameters_data_type + \
             return_weight * self.return_data_type

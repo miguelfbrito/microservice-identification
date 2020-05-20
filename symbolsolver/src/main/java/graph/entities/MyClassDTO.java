@@ -11,7 +11,6 @@ import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.google.gson.annotations.Expose;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,10 +51,7 @@ public class MyClassDTO {
 
 
     public List<MethodInvocationDTO> extractMethodInvocations(List<MethodCallExpr> methodInvocations) {
-
         List<MethodInvocationDTO> processedMethods = new ArrayList<>();
-        int total = 0;
-
         for (MethodCallExpr methodCallExpr : methodInvocations) {
             Optional<Expression> scope = methodCallExpr.getScope();
 
@@ -67,8 +63,8 @@ public class MyClassDTO {
                     String targetClassName = resolvedReferenceType.getQualifiedName();
                     if (isValidClass(targetClassName)) {
                         // TODO: handle method overloading causing conflicts and getting overwritten
-                        processedMethods.add(new MethodInvocationDTO(methodName, targetClassName));
-                        total++;
+                        String scopeName = expression.toString();
+                        processedMethods.add(new MethodInvocationDTO(scopeName, methodName, targetClassName));
                     }
 
                 } catch (UnsolvedSymbolException e) {
@@ -76,14 +72,11 @@ public class MyClassDTO {
                 } catch (UnsupportedOperationException e) {
                     //e.printStackTrace();
                 } catch (RuntimeException e) {
-                    // TODO : reevaluate
+                    // TODO CRITICAL : reevaluate
                 }
 
             }
         }
-
-
-        System.out.println("Total extracted Method invocations: " + processedMethods.size());
         return processedMethods;
     }
 
@@ -145,11 +138,14 @@ public class MyClassDTO {
 class MethodInvocationDTO {
 
     @Expose
+    private String scopeName;
+    @Expose
     private String methodName;
     @Expose
     private String targetClassName;
 
-    public MethodInvocationDTO(String methodName, String targetClassName) {
+    public MethodInvocationDTO(String scopeName, String methodName, String targetClassName) {
+        this.scopeName = scopeName;
         this.methodName = methodName;
         this.targetClassName = targetClassName;
     }

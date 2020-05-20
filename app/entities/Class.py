@@ -61,9 +61,12 @@ class Class:
 
         method_invocations = [re.search(pattern_match_class_name, m['targetClassName'])
                               [1] for m in self.method_invocations]
+        method_invocations_variables = [m['scopeName']
+                                        for m in self.method_invocations]
 
         len_words += self.total_words(self.variables) + \
-            self.total_words(method_invocations)
+            self.total_words(method_invocations) + \
+            self.total_words(method_invocations_variables)
 
         # TODO: we could apply other heuristics to try to identify we're currently in an entity
         # TODO: search for the qualified name for Entitities. Entity, DAO, domain, (common name conventions representing strong domain concepts)
@@ -75,18 +78,24 @@ class Class:
                 is_entity = True
 
         class_name_weight = math.ceil(
-            len_words * 1) if is_entity else math.ceil(len_words * 0.25)
-        variables_weight = 1
-        methods_weight = 1
+            len_words * 0.5) if is_entity else math.ceil(len_words * 0.1)
+
+        if class_name_weight == 0:
+            class_name_weight = 1
+
+        variables_weight = 2
+        methods_weight = 2
+        method_invocations_weight = 1
+        method_invocations_variables_weight = 1
         literals_weight = 1
         comments_weight = 1
-        method_invocations_weight = 1
 
         string = variables_weight * self.variables + methods_weight * \
             methods + method_invocations_weight * method_invocations
+        method_invocations_variables_weight * method_invocations_variables
         class_name = re.search(pattern_match_class_name,
                                self.qualified_name)[1]
-        string = " ".join(string) + 2 * (" " + class_name)
+        string = " ".join(string) + class_name_weight * (" " + class_name)
         print(f"Final String hey {string}")
         print(f"{self.variables} - {methods} - {self.class_name} + {class_name}")
         return string

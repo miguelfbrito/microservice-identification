@@ -427,10 +427,6 @@ class Clustering:
         Graph.draw(service_graph, clear=False,
                    weight_type=str(WeightType.METHOD_CALL))
 
-        for service in services.values():
-            print(
-                f"Service external dependencies: {service.get_external_classes_dependencies()}")
-
         return service_graph, services
 
     @staticmethod

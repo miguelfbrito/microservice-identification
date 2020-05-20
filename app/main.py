@@ -1,3 +1,23 @@
+from sklearn.cluster import DBSCAN, FeatureAgglomeration, AffinityPropagation
+from sklearn.mixture import GaussianMixture
+from datetime import datetime
+from itertools import cycle
+from random import randint
+from random import random
+import matplotlib.pyplot as plt
+import Utils as utils
+import networkx as nx
+import javalang
+import logging
+import numpy as np
+import LDA as lda
+import collections
+import igraph as ig
+import community
+import argparse
+import json
+import math
+import re
 from StringUtils import StringUtils
 from Graph import Graph
 from operator import itemgetter
@@ -8,29 +28,8 @@ from visitors.ClassVisitor import ClassVisitor
 from ProcessResultsOutput import ProcessResultsOutput
 from entities.Method import Method
 from entities.Class import Class
+from entities.Service import Service
 from Settings import Settings
-
-import re
-import math
-import json
-import argparse
-import community
-import collections
-import LDA as lda
-import numpy as np
-
-import logging
-import javalang
-import networkx as nx
-import Utils as utils
-import matplotlib.pyplot as plt
-
-from random import random
-from random import randint
-from itertools import cycle
-from datetime import datetime
-from sklearn.mixture import GaussianMixture
-from sklearn.cluster import DBSCAN, FeatureAgglomeration, AffinityPropagation
 
 
 def read_files(files):
@@ -71,6 +70,8 @@ def parse_files_to_ast(read_files):
 
 def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
 
+    graph = Graph.normalize_values(graph, str(WeightType.STRUCTURAL))
+
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
     for src, dst in graph.edges():
 
@@ -80,22 +81,17 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
         primary_types = {'EXTENDS', 'IMPLEMENTS', 'STATIC'}
         # secondary_types = {'STATIC'}
 
-        print(f"EDGEDATA {src} -> {dst}  {edge_data}")
-
         # TODO : consider just removing the edge and adding it after clustering
         try:
             if edge_data["dependency_type"] in primary_types:
-                edge_data[str(WeightType.ABSOLUTE)] = 1
+                edge_data[str(WeightType.ABSOLUTE)] = float(0.5)
             else:
-                edge_data[str(WeightType.ABSOLUTE)] = round(
-                    edge_data[str(weight_type)], 2)  # * edge_data[str(WeightType.STRUCTURAL)], 2
+                edge_data[str(WeightType.ABSOLUTE)
+                          ] = float(edge_data[str(weight_type)])
         except KeyError as e:
             # TODO : review why does this only happens on a specific case
             edge_data[str(WeightType.ABSOLUTE)] = 0
             print(f"KEY ERROR {e} {src} {dst}")
-            print(f"-- {edge_data}")
-
-        # print(f"{src} -> {dst} : {edge_data}")
 
 
 def apply_tfidf_to_connections(graph, class_visitors):
@@ -237,14 +233,51 @@ def identify_clusters_in_project(project):
     lda.apply_lda_to_classes(graph, classes, num_topics)
     calculate_absolute_weights(graph, weight_type=WeightType.LDA)
 
-    for src, dst in graph.edges():
-        print(f"EDGEEE: {graph.get_edge_data(src, dst)}")
     graph = Clustering.pre_process(
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
-    G = graph.copy()
+    nx.write_graphml(graph, 'graph.graphml')
+
+    # Temporary, remove late
+    # nodes_removal = []
+    # for node in graph.nodes():
+    #     if node == 'org.mybatis.jpetstore.web.actions.AbstractActionBean':
+    #         nodes_removal.append(node)
+
+    # for node in nodes_removal:
+    #     graph.remove_node(node)
 
     # Cluster by LDA and structural dependencies
     clusters = Clustering.community_detection_louvain(graph)
+
+    with open('./clusters.txt', 'w') as f:
+        for cluster in clusters.values():
+            for class_name in cluster:
+                f.write(f"{class_name}\n")
+            f.write("\n\n")
+
+    # return post_processing(clusters, classes, graph.copy())
+
+    print(f"CLUSTERS hi{clusters}")
+
+    write_services_to_file(clusters, classes)
+
+    return clusters
+
+
+def write_services_to_file(clusters, classes):
+    # service_id, service
+    services = Service.extract_services_from_clusters(clusters)
+    class_service = Service.get_map_class_service_id(clusters)
+
+    with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
+        for service_id, service in services.items():
+            f.write(f"\nService {service_id}\n")
+            for class_name in service.get_classes():
+                f.write(f"{class_name}\n")
+            f.write("\n")
+
+
+def post_processing(clusters, classes, G):
 
     # Post-processeing
     service_graph, services = Clustering.create_service_graph_method_invocation_based(
@@ -252,9 +285,6 @@ def identify_clusters_in_project(project):
 
     service_graph = Graph.normalize_values(
         service_graph, dependency_type=str(WeightType.METHOD_CALL))
-
-    Clustering.merge_above_threshold(
-        service_graph, dependency_type=str(WeightType.METHOD_CALL), threshold=0.4)
 
     # Cluster by method call invocations
     service_clusters = []
@@ -279,12 +309,6 @@ def identify_clusters_in_project(project):
                     f.write(f"{class_name}\n")
                     service_classes.append(class_name)
             final_services.append(service_classes)
-            f.write("\n\n")
-
-    with open('./clusters.txt', 'w') as f:
-        for cluster in clusters.values():
-            for class_name in cluster:
-                f.write(f"{class_name}\n")
             f.write("\n\n")
 
     return final_services

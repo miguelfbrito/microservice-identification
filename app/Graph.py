@@ -66,7 +66,7 @@ class Graph:
                     # We will not update the type because the first time we set it, it will be set for
                     # EXTENDS or IMPLEMENTs which have higher priority
                 else:
-                    args = {'structural_weight': 1,
+                    args = {'weight_structural': 1,
                             'dependency_type': dependency_type}
                     if dependency_type == 'METHOD_CALL':
                         args[str(WeightType.METHOD_CALL)] = 1

@@ -30,8 +30,8 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
             classes.pop(cla, None)
 
     # (class_name, BOW)
-    docs = [cla.get_merge_of_entities()
-            for cla in classes.values()]
+    docs = [(class_name, cla.get_merge_of_entities())
+            for class_name, cla in classes.items()]
 
     lda_result = apply_lda_to_text(docs, num_topics)
     print(f"LDA Result: {lda_result}")
@@ -76,8 +76,15 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     return clusters
 
 
-def apply_lda_to_text(docs, num_topics):
+"""Applies Latent Dirichlet Allocation to a list of documents
+Parameters
+----------
+docs : [(doc_name, doc_content), ...]
+num_topics : K topics refered in LDA
+"""
 
+
+def apply_lda_to_text(docs, num_topics):
     tokenizer = RegexpTokenizer(r'\w+')
 
     # create English stop words list
@@ -86,18 +93,33 @@ def apply_lda_to_text(docs, num_topics):
     # Create p_stemmer of class PorterStemmer
     p_stemmer = PorterStemmer()
 
-    with open(f"{Settings.DIRECTORY}/data/words/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
-        for d in docs:
-            f.write(d + "\n")
+    # with open(f"{Settings.DIRECTORY}/data/words/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
+    #     for d in docs:
+    #         f.write(d + "\n")
 
-        f.write("\n")
+    #     f.write("\n")
 
     # Clean text based on java stop words
-    docs = [StringUtils.clear_java_words(doc) for doc in docs]
-    logging.info(docs)
+    docs_content = []
+    for doc in docs:
+        directory = f"/home/mbrito/git/thesis/data/words/{Settings.PROJECT_NAME}/{doc[0]}"
+        with open(directory, "w+") as f:
+            f.write(f"{doc[0]}\n")
+            f.write("Before processing:\n")
+            f.write(f"{doc[1]}\n")
+
+        doc_content = StringUtils.clear_java_words(doc[1])
+        docs_content.append(doc_content)
+
+        with open(directory, "a+") as f:
+            f.write("\nAfter processing:\n")
+            f.write(f"{doc_content}\n")
+
+    # docs = [StringUtils.clear_java_words(doc) for doc in docs]
+    # logging.info(docs)
 
     # compile sample documents into a list
-    doc_set = docs
+    doc_set = docs_content
 
     # list for tokenized documents in loop
     texts = []
