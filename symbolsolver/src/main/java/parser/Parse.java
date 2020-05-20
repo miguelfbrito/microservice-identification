@@ -33,12 +33,16 @@ public class Parse {
         return new ParseResultServices(classes, services);
     }
 
-    public void completeParse(List<CompilationUnit> compilationUnits) {
+    public Map<String, MyClass> parseClasses(List<CompilationUnit> compilationUnits) {
+        return extractClasses(compilationUnits);
+    }
+
+    public Map<String, MyClassDTO> completeParse(List<CompilationUnit> compilationUnits) {
         System.out.println("Method invocations");
         Map<String, MyClass> classes = extractClasses(compilationUnits);
         System.out.println("Classes: " + classes.toString());
         populateClassesWithMethodDeclarations(classes);
-        parseClasses(classes);
+        return parseClasses(classes);
     }
 
     public Map<String, MyClass> extractClasses(List<CompilationUnit> compilationUnits) {
@@ -142,7 +146,7 @@ public class Parse {
         }
     }
 
-    public void parseClasses(Map<String, MyClass> myClasses) {
+    public Map<String, MyClassDTO> parseClasses(Map<String, MyClass> myClasses) {
         // TODO : Method declarations are being identified elsewhere, consider refactoring it to a visitor and add it here.
 
         for (MyClass myClass : myClasses.values()) {
@@ -177,6 +181,8 @@ public class Parse {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return myClassDTOS;
     }
 
 }
