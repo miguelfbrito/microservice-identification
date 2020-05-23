@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,4 +32,13 @@ public class FileUtils {
         }
     }
 
+    public static void writeToFile(List<String> lines, String path, boolean append) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path, append));
+        for (String line : lines) {
+            writer.write(line);
+            writer.newLine();
+        }
+        writer.close();
+
+    }
 }

@@ -3,6 +3,7 @@ package projects;
 import com.github.javaparser.ast.CompilationUnit;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import graph.DependencyEdge;
 import graph.MyGraph;
 import graph.creation.ByMethodCallInvocation;
 import graph.entities.MyClass;
@@ -11,15 +12,13 @@ import metrics.*;
 import parser.Parse;
 import parser.ParseResultServices;
 import parser.Parser;
+import utils.FileUtils;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GenerateMetrics {
 
@@ -96,6 +95,7 @@ public class GenerateMetrics {
             List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(completePath));
             Parse parse = new Parse();
             ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, proj.getClusterString());
+            parseResultServices.setProject(proj);
             ProjectMetrics pm = new ProjectMetrics(proj);
 
             pm.setIrn(calculateIRN(parseResultServices));
@@ -116,6 +116,19 @@ public class GenerateMetrics {
         Metric IRN = new IRN(graphReference, parseResultServices);
         double irn = IRN.calculateService();
         System.out.println("IRN Project: " + irn);
+
+        // Write call invocations for each service to project
+        String path = "/home/mbrito/git/thesis/data/services/" + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
+        List<String> lines = new ArrayList<>(Collections.singletonList("\nMethod invocations between services:"));
+        for (DependencyEdge e : graphReference.getGraph().edgeSet()) {
+            MyClass src = graphReference.getGraph().getEdgeSource(e);
+            MyClass dst = graphReference.getGraph().getEdgeTarget(e);
+            if (src.getService().getId() != dst.getService().getId()) {
+                lines.add(src.getQualifiedName() + " -> " + dst.getQualifiedName() + " -> " + e.getValue());
+            }
+        }
+
+        FileUtils.writeToFile(lines, path, true);
         return irn;
     }
 
