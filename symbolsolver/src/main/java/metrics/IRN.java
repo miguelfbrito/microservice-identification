@@ -50,7 +50,6 @@ public class IRN implements Metric {
             Service serviceOfTarget = parseResultServices.getClasses().get(target.getQualifiedName()).getService();
 
 
-
             if (serviceOfSource != null && serviceOfTarget != null &&
                     serviceOfSource.getId() != serviceOfTarget.getId()) {
                 System.out.println("Call to other service from " + source.getQualifiedName() + " -> " + target.getQualifiedName() + " -> " + edge.getValue());

@@ -110,7 +110,7 @@ class Graph:
                 mappings[node] = re.search(r'\.(\w*)$', node)[1]
             h = nx.relabel_nodes(h, mappings)
 
-        sp = nx.spring_layout(h, weight=str(weight_type))
+        sp = nx.spring_layout(h, weight=str(weight_type), seed=1)
         edge_weight_labels = dict(map(lambda x: (
             (x[0], x[1]),  round(x[2][weight_type], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
         nx.draw_networkx_edge_labels(

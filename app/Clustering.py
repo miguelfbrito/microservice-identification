@@ -72,7 +72,7 @@ class Clustering:
             h = nx.relabel_nodes(h, mappings)
 
             # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
-            sp = nx.spring_layout(h, weight=weight_type)
+            sp = nx.spring_layout(h, weight=weight_type, seed=1)
             nx.draw_networkx(h, pos=sp, with_labels=True,
                              node_size=350, font_size=6, node_color=values)
 
@@ -80,7 +80,7 @@ class Clustering:
                 (x[0], x[1]),  round(x[2][str(weight_type)], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
 
             nx.draw_networkx_edge_labels(
-                h, sp, edge_labels=edge_weight_labels, font_size=6, alpha=1)
+                h, sp, edge_labels=edge_weight_labels, font_size=5, alpha=1)
 
             plt.show()
 
@@ -329,18 +329,16 @@ class Clustering:
         graph = graph.to_undirected()
 
         # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
-
         edges_remove = []
-
         if remove_weak_edges:
             for edge in graph.edges:
                 data = graph.get_edge_data(edge[0], edge[1])
-                if data and data[str(WeightType.ABSOLUTE)] < 0.1:
+                if data and data[str(WeightType.ABSOLUTE)] <= 0.3:
                     edges_remove.append((edge[0], edge[1]))
 
             for edge in edges_remove:
                 graph.remove_edge(edge[0], edge[1])
-                print("Removing edge")
+                print(f"Removing edge (=0) {edge}")
 
         # Remove nodes that belong to a disconnected section consisting of less than [node_depth] nodes
         nodes_remove = []
@@ -424,8 +422,8 @@ class Clustering:
             except KeyError as ke:
                 print(f"[KEYERROR] {ke}")
 
-        Graph.draw(service_graph, clear=False,
-                   weight_type=str(WeightType.METHOD_CALL))
+        # Graph.draw(service_graph, clear=False,
+        #            weight_type=str(WeightType.METHOD_CALL))
 
         return service_graph, services
 

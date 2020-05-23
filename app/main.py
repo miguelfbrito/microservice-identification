@@ -18,6 +18,8 @@ import argparse
 import json
 import math
 import re
+import PostProcessing
+
 from StringUtils import StringUtils
 from Graph import Graph
 from operator import itemgetter
@@ -68,7 +70,9 @@ def parse_files_to_ast(read_files):
     return class_visitors
 
 
-def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
+def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
+
+    print(f"CLASSESii: {classes}")
 
     graph = Graph.normalize_values(graph, str(WeightType.STRUCTURAL))
 
@@ -86,12 +90,31 @@ def calculate_absolute_weights(graph, weight_type=WeightType.TF_IDF):
             if edge_data["dependency_type"] in primary_types:
                 edge_data[str(WeightType.ABSOLUTE)] = float(0.5)
             else:
+                # edge_data[str(WeightType.ABSOLUTE)
+                #           ] = float(edge_data[str(weight_type)])
+
+                method_call_weight = 0
+                if src in classes:
+                    classe = classes[src]
+                    calls_to_dst = 0
+                    for method_call in classe.get_method_invocations():
+                        target_class = method_call['targetClassName']
+                        if dst == target_class:
+                            calls_to_dst += 1
+
+                    if len(classe.get_method_invocations()) > 0:
+                        method_call_weight = calls_to_dst / \
+                            len(classe.get_method_invocations())
+
                 edge_data[str(WeightType.ABSOLUTE)
-                          ] = float(edge_data[str(weight_type)])
+                          ] = max(float(edge_data[str(weight_type)]), method_call_weight)
         except KeyError as e:
             # TODO : review why does this only happens on a specific case
             edge_data[str(WeightType.ABSOLUTE)] = 0
             print(f"KEY ERROR {e} {src} {dst}")
+
+        print(
+            f"\t-> {src} -> {dst} -> {edge_data[str(WeightType.ABSOLUTE)]}")
 
 
 def apply_tfidf_to_connections(graph, class_visitors):
@@ -231,20 +254,10 @@ def identify_clusters_in_project(project):
     # Method 2. LDA
     # TODO : think about if the pre_processing should be done or not
     lda.apply_lda_to_classes(graph, classes, num_topics)
-    calculate_absolute_weights(graph, weight_type=WeightType.LDA)
+    calculate_absolute_weights(graph, classes, weight_type=WeightType.LDA)
 
     graph = Clustering.pre_process(
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
-    nx.write_graphml(graph, 'graph.graphml')
-
-    # Temporary, remove late
-    # nodes_removal = []
-    # for node in graph.nodes():
-    #     if node == 'org.mybatis.jpetstore.web.actions.AbstractActionBean':
-    #         nodes_removal.append(node)
-
-    # for node in nodes_removal:
-    #     graph.remove_node(node)
 
     # Cluster by LDA and structural dependencies
     clusters = Clustering.community_detection_louvain(graph)
@@ -254,11 +267,9 @@ def identify_clusters_in_project(project):
             for class_name in cluster:
                 f.write(f"{class_name}\n")
             f.write("\n\n")
-
-    # return post_processing(clusters, classes, graph.copy())
-
-    print(f"CLUSTERS hi{clusters}")
-
+    print(f"BEFORE CLUTERS {clusters}")
+    clusters = PostProcessing.process(clusters, classes, graph.copy())
+    print(f"FINAL CLUSTERS {clusters}")
     write_services_to_file(clusters, classes)
 
     return clusters
@@ -275,43 +286,6 @@ def write_services_to_file(clusters, classes):
             for class_name in service.get_classes():
                 f.write(f"{class_name}\n")
             f.write("\n")
-
-
-def post_processing(clusters, classes, G):
-
-    # Post-processeing
-    service_graph, services = Clustering.create_service_graph_method_invocation_based(
-        clusters, classes, G)
-
-    service_graph = Graph.normalize_values(
-        service_graph, dependency_type=str(WeightType.METHOD_CALL))
-
-    # Cluster by method call invocations
-    service_clusters = []
-    try:
-        service_clusters = Clustering.community_detection_louvain(
-            service_graph, weight_type=str(WeightType.METHOD_CALL))
-    except ValueError:
-        print(f"The graph had no method call invocations between nodes. Clustering will not be used")
-
-    print(f"Service Clusters {service_clusters}")
-    print(f"Services {services}")
-
-    final_services = []
-    with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
-
-        for cluster_id, service_ids in service_clusters.items():
-            service_classes = []
-            f.write(f"Service {cluster_id}\n")
-            for service_id in service_ids:
-                print(f"Service: {service_id}")
-                for class_name in services[service_id].get_classes():
-                    f.write(f"{class_name}\n")
-                    service_classes.append(class_name)
-            final_services.append(service_classes)
-            f.write("\n\n")
-
-    return final_services
 
 
 def main():
@@ -347,11 +321,14 @@ def main():
         result.run_java_metrics()
 
     if args.metrics_condensed:
-        projects = [('spring-blog', 4), ('jpetstore', 4),
+        projects = [('spring-blog', 7), ('jpetstore', 5),
                     ('monomusiccorp', 8), ('spring-petclinic', 3)]
 
         results = ProcessResultsOutput()
         for project in projects:
+            Settings.PROJECT_NAME = project[0]
+            Settings.K_TOPICS = int(project[1])
+            Settings.create_id()
             print(f"\n\nStarting project {project[0]}, {project[1]} topics")
             clusters = identify_clusters_in_project(project)
             clusters = [cluster for cluster in clusters.values()]
@@ -360,10 +337,14 @@ def main():
         results.run_java_metrics()
 
     if args.metrics_full:
-        projects = [('spring-blog', 4), ('jpetstore', 4),
-                    ('monomusiccorp', 8), ('spring-petclinic', 3), ('jforum', 13), ('agilefant', 14)]
+        projects = [('spring-blog', 7), ('jpetstore', 5),
+                    ('monomusiccorp', 8), ('spring-petclinic', 3), ('jforum', 15), ('agilefant', 25)]
         results = ProcessResultsOutput()
         for project in projects:
+            Settings.PROJECT_NAME = project[0]
+            Settings.K_TOPICS = int(project[1])
+            Settings.create_id()
+            print(f"\n\nStarting project {project[0]}, {project[1]} topics")
             print(f"\n\nStarting project {project}")
             clusters = identify_clusters_in_project(project)
             clusters = [cluster for cluster in clusters.values()]

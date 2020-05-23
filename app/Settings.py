@@ -11,4 +11,4 @@ class Settings:
     @staticmethod
     def create_id():
         Settings.ID = datetime.now().strftime(
-            f'%H_%M_%S-%d_%m__K{Settings.K_TOPICS}')
+            f'%d_%m_%H_%M_%S_K{Settings.K_TOPICS}')

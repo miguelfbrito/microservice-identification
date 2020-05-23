@@ -10,7 +10,7 @@ class Service:
             self.id = next(Service.new_id)
         else:
             self.id = service_id
-        self.classes = classes
+        self.classes = set(classes)
         self.external_classes_dependencies = {}
         self.service_dependencies = {}
 

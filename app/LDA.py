@@ -138,11 +138,6 @@ def apply_lda_to_text(docs, num_topics):
         # add tokens to list
         texts.append(stemmed_tokens)
 
-        with open(f"{Settings.DIRECTORY}/data/words/{Settings.PROJECT_NAME}_{Settings.ID}", 'a+') as f:
-            for t in texts:
-                f.write((' ').join(t))
-            f.write("\n")
-
     # turn tokenized documents into a id <-> term dictionary
     dictionary = corpora.Dictionary(texts)
 
