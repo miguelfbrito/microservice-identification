@@ -88,7 +88,7 @@ def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
         # TODO : consider just removing the edge and adding it after clustering
         try:
             if edge_data["dependency_type"] in primary_types:
-                edge_data[str(WeightType.ABSOLUTE)] = float(0.5)
+                edge_data[str(WeightType.ABSOLUTE)] = float(1)
             else:
                 # edge_data[str(WeightType.ABSOLUTE)
                 #           ] = float(edge_data[str(weight_type)])
@@ -107,7 +107,7 @@ def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
                             len(classe.get_method_invocations())
 
                 edge_data[str(WeightType.ABSOLUTE)
-                          ] = max(float(edge_data[str(weight_type)]), method_call_weight)
+                          ] = min(float(edge_data[str(weight_type)]), 1)
         except KeyError as e:
             # TODO : review why does this only happens on a specific case
             edge_data[str(WeightType.ABSOLUTE)] = 0
@@ -136,7 +136,7 @@ def prepare_matrix(graph, weight_type=WeightType.ABSOLUTE):
     # https://stackoverflow.com/questions/49064611/how-to-find-different-groups-in-networkx-using-python
     # X = nx.to_numpy_matrix(graph, weight=WEIGHT)
 
-    g = graph.to_undirected()
+    g = Graph.to_undirected(graph)
     nn = len(g.nodes)
 
     mat = np.empty((nn, nn), dtype=float)
@@ -163,7 +163,7 @@ def community_detection_by_affinity(graph, weight_type=WeightType.ABSOLUTE):
 
     # Has an high impact on Girvan Newman clustering
     graph = nx.algorithms.tree.mst.maximum_spanning_tree(
-        graph.to_undirected())
+        Graph.to_undirected(graph))
 
     mat, node_to_int = prepare_matrix(graph)
 
@@ -262,16 +262,8 @@ def identify_clusters_in_project(project):
     # Cluster by LDA and structural dependencies
     clusters = Clustering.community_detection_louvain(graph)
 
-    with open('./clusters.txt', 'w') as f:
-        for cluster in clusters.values():
-            for class_name in cluster:
-                f.write(f"{class_name}\n")
-            f.write("\n\n")
-    print(f"BEFORE CLUTERS {clusters}")
     clusters = PostProcessing.process(clusters, classes, graph.copy())
-    print(f"FINAL CLUSTERS {clusters}")
     write_services_to_file(clusters, classes)
-
     return clusters
 
 

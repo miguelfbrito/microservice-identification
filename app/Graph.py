@@ -4,6 +4,7 @@ import logging
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from entities.Service import Service
 from WeightType import WeightType
 from Settings import Settings
 
@@ -36,6 +37,51 @@ class Graph:
                 classe, classes, [m['targetClassName'] for m in classe.get_method_invocations()], graph, 'METHOD_CALL')
 
         return graph
+
+    @staticmethod
+    def to_undirected(graph):
+        """ Take into consideration the weighted edges and select the max.
+        nx.to_undirected() keeps the last weight """
+        G = nx.Graph()
+        new_edges = {}
+        for src, dst in graph.copy().edges():
+            if (src, dst) in new_edges or (dst, src) in new_edges:
+                continue
+
+            edge_data_1 = graph.get_edge_data(src, dst)
+            edge_data_2 = graph.get_edge_data(dst, src)
+
+            new_edges[(src, dst)] = []
+            for key, value in edge_data_1.items():
+                # If a given weight also exists in the opposite edge, store the max of both
+                dependency_types = {'EXTENDS': 4,
+                                    'IMPLEMENTS': 3, 'STATIC': 2, 'METHOD_CALL': 1, 'NORMAL': 0}
+
+                if key in edge_data_2:
+                    if key == 'dependency_type':
+                        dep_type_1 = dependency_types[value]
+                        dep_type_2 = dependency_types[edge_data_2[key]]
+                        new_edges[(src, dst)].append(
+                            (key, value if dep_type_1 > dep_type_2 else edge_data_2[key]))
+                    else:
+                        new_edges[(src, dst)].append(
+                            (key, max(value, edge_data_2[key])))
+                        # If the given weight only belongs to this key,
+                else:
+                    new_edges[(src, dst)].append((key, value))
+
+            # Add the remaining keys from edge_data_2 not present in edge_data_1
+            for key, value in edge_data_2.items():
+                if key not in edge_data_1.keys():
+                    new_edges[(src, dst)].append((key, value))
+
+        # Finally add all the edges to the graph
+        for (src, dst), weights in new_edges.items():
+            print(f"{src} {dst} -> {weights}")
+            G.add_edge(src, dst, **{weight[0]: weight[1]
+                                    for weight in weights})
+
+        return G
 
     @staticmethod
     def add_edges_dependencies(curr_classe, classes, dependencies, graph, dependency_type):
@@ -148,3 +194,113 @@ class Graph:
 
                 graph[src][dst][dependency_type] = edge
         return graph
+
+    @staticmethod
+    def create_service_graph_dependency_based(clusters, classes, graph):
+        services = Service.extract_services_from_clusters(
+            clusters)  # service_id, service
+        class_service = Service.get_map_class_service_id(clusters)
+
+        service_graph = nx.DiGraph()
+        for service_id in services.keys():
+            service_graph.add_node(service_id)
+
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+
+            # TODO: consider add both connections, structural and method call
+            src_service_id = class_service[src]
+            dst_service_id = class_service[dst]
+            if src_service_id != dst_service_id:  # 'method_call_weight' in edge_data and
+
+                service_edge_data = service_graph.get_edge_data(
+                    src_service_id, dst_service_id)
+
+                if service_edge_data:
+                    service_edge_data[str(WeightType.STRUCTURAL)] += 1
+                else:
+                    service_graph.add_edge(
+                        src_service_id, dst_service_id, weight_structural=1)  # TODO: Rework, use **dict to expand dict as arguments
+
+        Graph.draw(service_graph, clear=False,
+                   weight_type=str(WeightType.STRUCTURAL))
+
+        return service_graph, services
+
+    @staticmethod
+    def create_service_graph_method_invocation_based(clusters, classes, graph):
+        services = Service.extract_services_from_clusters(
+            clusters)  # service_id, service
+        class_service = Service.get_map_class_service_id(clusters)
+
+        service_graph = nx.DiGraph()
+        for service_id in services.keys():
+            service_graph.add_node(service_id)
+
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+            # TODO: consider adding both connections, structural and method call
+            try:
+                src_service_id = class_service[src]
+                dst_service_id = class_service[dst]
+                if src_service_id != dst_service_id and str(WeightType.METHOD_CALL) in edge_data:
+                    service_edge_data = service_graph.get_edge_data(
+                        src_service_id, dst_service_id)
+
+                    if service_edge_data:
+                        service_edge_data[str(
+                            WeightType.METHOD_CALL)] += 1  # edge_data[str(WeightType.METHOD_CALL)]
+                    else:
+                        service_graph.add_edge(
+                            src_service_id, dst_service_id, weight_method_call=1)  # TODO: Rework, use **dict to expand dict as arguments
+            except KeyError as ke:
+                print(f"[KEYERROR] {ke}")
+
+        # Graph.draw(service_graph, clear=False,
+        #            weight_type=str(WeightType.METHOD_CALL))
+
+        return service_graph, services
+
+    @staticmethod
+    def create_service_graph_dependency_and_call_based(clusters, classes, graph):
+        services = Service.extract_services_from_clusters(
+            clusters)  # service_id, service
+        class_service = Service.get_map_class_service_id(clusters)
+
+        service_graph = nx.DiGraph()
+        for service_id in services.keys():
+            service_graph.add_node(service_id)
+
+        for src, dst in graph.edges():
+            edge_data = graph.get_edge_data(src, dst)
+
+            try:
+                src_service_id = class_service[src]
+                dst_service_id = class_service[dst]
+                if src_service_id != dst_service_id:
+
+                    if str(WeightType.METHOD_CALL) in edge_data:
+                        service_edge_data = service_graph.get_edge_data(
+                            src_service_id, dst_service_id)
+
+                        if service_edge_data:
+                            service_edge_data[str(
+                                WeightType.METHOD_CALL)] += edge_data[str(WeightType.METHOD_CALL)]
+                        else:
+                            service_graph.add_edge(
+                                src_service_id, dst_service_id, weight_method_call=1)
+
+                    if str(WeightType.STRUCTURAL) in edge_data:
+                        if service_edge_data:
+                            service_edge_data[str(WeightType.STRUCTURAL)] += 1
+                        else:
+                            service_graph.add_edge(
+                                src_service_id, dst_service_id, weight_structural=1)
+
+            except KeyError as ke:
+                print(f"[KEYERROR] {ke}")
+
+        # Graph.draw(service_graph, clear=False,
+        #            weight_type=str(WeightType.METHOD_CALL))
+
+        return service_graph, services

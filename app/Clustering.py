@@ -36,7 +36,7 @@ class Clustering:
     @staticmethod
     def community_detection_louvain(graph, weight_type=WeightType.ABSOLUTE):
         weight_type = str(weight_type)
-        graph = graph.to_undirected()
+        graph = Graph.to_undirected(graph)
 
         partition = community.best_partition(
             graph, weight=str(WeightType.ABSOLUTE))
@@ -252,7 +252,7 @@ class Clustering:
         # memberships = model.get_memberships()
         # print(f"Memberships {memberships}")
 
-        g = g.to_undirected()
+        g = Graph.to_undirected(g)
         # TODO: rever que provavelmente não contem todos os componentes
 
         connected_components = nx.connected_components(g)
@@ -326,6 +326,10 @@ class Clustering:
     @staticmethod
     def pre_process(graph, remove_weak_edges=False, remove_disconnected_sections=False):
         # TODO: could be optimized by caching already traversed nodes
+
+        for src, dst in graph.edges():
+            print(f"pre {src} {dst} -> {graph.get_edge_data(src,dst)}")
+
         graph = graph.to_undirected()
 
         # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
@@ -360,72 +364,6 @@ class Clustering:
                 print(f"Removing node (<{node_depth} dfs) {node}")
 
         return graph
-
-    @staticmethod
-    def create_service_graph_dependency_based(clusters, classes, graph):
-        services = Service.extract_services_from_clusters(
-            clusters)  # service_id, service
-        class_service = Service.get_map_class_service_id(clusters)
-
-        service_graph = nx.DiGraph()
-        for service_id in services.keys():
-            service_graph.add_node(service_id)
-
-        for src, dst in graph.edges():
-            edge_data = graph.get_edge_data(src, dst)
-
-            # TODO: consider add both connections, structural and method call
-            src_service_id = class_service[src]
-            dst_service_id = class_service[dst]
-            if src_service_id != dst_service_id:  # 'method_call_weight' in edge_data and
-
-                service_edge_data = service_graph.get_edge_data(
-                    src_service_id, dst_service_id)
-
-                if service_edge_data:
-                    service_edge_data[str(WeightType.STRUCTURAL)] += 1
-                else:
-                    service_graph.add_edge(
-                        src_service_id, dst_service_id, weight_structural=1)  # TODO: Rework, use **dict to expand dict as arguments
-
-        Graph.draw(service_graph, clear=False,
-                   weight_type=str(WeightType.STRUCTURAL))
-
-        return service_graph, services
-
-    @staticmethod
-    def create_service_graph_method_invocation_based(clusters, classes, graph):
-        services = Service.extract_services_from_clusters(
-            clusters)  # service_id, service
-        class_service = Service.get_map_class_service_id(clusters)
-
-        service_graph = nx.DiGraph()
-        for service_id in services.keys():
-            service_graph.add_node(service_id)
-
-        for src, dst in graph.edges():
-            edge_data = graph.get_edge_data(src, dst)
-            # TODO: consider add both connections, structural and method call
-            try:
-                src_service_id = class_service[src]
-                dst_service_id = class_service[dst]
-                if src_service_id != dst_service_id and str(WeightType.METHOD_CALL) in edge_data:
-                    service_edge_data = service_graph.get_edge_data(
-                        src_service_id, dst_service_id)
-
-                    if service_edge_data:
-                        service_edge_data[str(
-                            WeightType.METHOD_CALL)] += edge_data[str(WeightType.METHOD_CALL)]
-                    else:
-                        service_graph.add_edge(
-                            src_service_id, dst_service_id, weight_method_call=1)  # TODO: Rework, use **dict to expand dict as arguments
-            except KeyError as ke:
-                print(f"[KEYERROR] {ke}")
-
-        # Graph.draw(service_graph, clear=False,
-        #            weight_type=str(WeightType.METHOD_CALL))
-
-        return service_graph, services
 
     @staticmethod
     def merge_above_threshold(service_graph, dependency_type, threshold=0.5):
