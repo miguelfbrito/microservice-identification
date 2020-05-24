@@ -68,8 +68,6 @@ class StringUtils:
         words = re.split(r"\W+", uncamel_words)
         with open('file', 'a+') as f:
             for word in words:
-                f.write(
-                    f"{word} {word.isalpha()} {word.lower()} {word.lower() not in stopwords} \naran")
                 if word.isalpha() and word.lower() not in stopwords and len(word) > 2:
                     result_words.append(word)
 

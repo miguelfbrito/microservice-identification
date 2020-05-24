@@ -37,7 +37,7 @@ public class GenerateMetrics {
     public static void extractClustersToFile(Map<Integer, Service> services, Project project) throws IOException {
 
         // WRITE TO GENERIC FILE
-        String path = "../data/clusters/" + project.getName();
+        String path = "../data/operations_per_service/" + project.getName();
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(path)  //Set true for append mode
         );
