@@ -123,8 +123,11 @@ public class GenerateMetrics {
         for (DependencyEdge e : graphReference.getGraph().edgeSet()) {
             MyClass src = graphReference.getGraph().getEdgeSource(e);
             MyClass dst = graphReference.getGraph().getEdgeTarget(e);
-            if (src.getService().getId() != dst.getService().getId()) {
-                lines.add(src.getQualifiedName() + " -> " + dst.getQualifiedName() + " -> " + e.getValue());
+            // TODO : getService() shouldn't be null here, but there's one occasion of it in jforum project
+            // not critical, review if necessary
+            if (src.getService() != null && dst.getService() != null &&
+                    src.getService().getId() != dst.getService().getId()) {
+                lines.add("  Method call: " + src.getQualifiedName() + " -> " + dst.getQualifiedName() + " -> " + e.getValue());
             }
         }
 

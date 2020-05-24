@@ -96,6 +96,8 @@ public class MyClassDTO {
             MethodDeclaration methodDeclaration = method.getVisitor();
             resolveTargetClassFromSubTypes(dependencyList, methodDeclaration.getType());
 
+
+
             methodDeclaration.getParameters().forEach(parameter -> {
                 List<ClassOrInterfaceType> referencesParametersType = parameter.getType().findAll(ClassOrInterfaceType.class);
                 try {
