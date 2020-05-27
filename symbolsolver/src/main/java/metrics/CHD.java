@@ -1,15 +1,13 @@
 package metrics;
 
 import extraction.ExtractOperations;
+import graph.entities.Constants;
 import graph.entities.MyMethod;
 import graph.entities.Service;
 import parser.ParseResultServices;
 import utils.StringUtils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Calculate the CoHesion at Message level (chd)
@@ -19,37 +17,40 @@ import java.util.Set;
 public class CHD implements Metric {
 
     private ParseResultServices parseResultServices;
+    private Set<String> interfaces;
     private boolean includeParameters;
 
-    public CHD(ParseResultServices parseResultServices) {
+    public CHD(ParseResultServices parseResultServices, Set<String> interfaces) {
         this.parseResultServices = parseResultServices;
+        this.interfaces = interfaces;
         this.includeParameters = true;
+    }
+
+    private List<String> preprocessText(String text, Set<String> stopWords) {
+        return StringUtils.lemmatize(String.join(" ", StringUtils.extractCamelCaseLower(text)));
     }
 
     private double calculateJaccardCoefficient(MyMethod source, MyMethod target) {
         // TODO : Consider the commented approach on RS17 (tosc-interf-dom-cohesion) on handling empty sets?
-        Set<String> sourceOperationTerms = new HashSet<>(StringUtils.extractCamelCaseLower(source.getName()));
-        Set<String> targetOperationTerms = new HashSet<>(StringUtils.extractCamelCaseLower(target.getName()));
+        Set<String> sourceOperationTerms = new HashSet<>(preprocessText(source.getName(), Constants.STOP_WORDS_METHODS));
+        Set<String> targetOperationTerms = new HashSet<>(preprocessText(target.getName(), Constants.STOP_WORDS_METHODS));
 
-
-        // Remove stop words TODO: add more
-        Set<String> stopWords = new HashSet<>(Arrays.asList("set", "add", "get"));
-        for (String word : stopWords) {
-            sourceOperationTerms.remove(word);
-            targetOperationTerms.remove(word);
-        }
 
         if (includeParameters) {
             for (String s : source.getParametersDataType()) {
-                sourceOperationTerms.addAll(StringUtils.extractVariableType(s));
+                sourceOperationTerms.addAll(preprocessText(s, Constants.STOP_WORDS_DATA_TYPES));
             }
             for (String s : source.getParametersDataType()) {
-                targetOperationTerms.addAll(StringUtils.extractVariableType(s));
+                targetOperationTerms.addAll(preprocessText(s, Constants.STOP_WORDS_DATA_TYPES));
             }
         }
 
         Set<String> union = Jaccard.getUnion(sourceOperationTerms, targetOperationTerms);
         Set<String> intersection = Jaccard.getIntersection(sourceOperationTerms, targetOperationTerms);
+
+
+        System.out.println("\tTerms:" + sourceOperationTerms.toString() + " - " + targetOperationTerms );
+        System.out.println("\t" + union.toString() + " -- " + intersection.toString()+ "\n");
 
         return union.isEmpty() ? 0 : intersection.size() / (double) union.size();
     }
@@ -57,8 +58,8 @@ public class CHD implements Metric {
 
     @Override
     public double calculateService() {
-        ExtractOperations.extractAtServiceLevel(parseResultServices);
-        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResultServices.getServices());
+        ExtractOperations.extractAtServiceLevelInterfaces(parseResultServices, interfaces);
+        ExtractOperations.mapServices(parseResultServices.getServices());
         Map<Integer, Service> services = parseResultServices.getServices();
 
         double chd = 0.0;
@@ -119,6 +120,7 @@ public class CHD implements Metric {
             }
 
             service.setChd(serviceJaccard);
+            System.out.println(service.getId() + " CHD: " + serviceJaccard);
             chd += serviceJaccard;
         }
 

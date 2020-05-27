@@ -74,6 +74,7 @@ public class GenerateMetrics {
             Type projectType = new TypeToken<ArrayList<Project>>() {
             }.getType();
 
+
             List<Project> projects = gson.fromJson(reader, projectType);
             projectMetrics = calculateMetrics(projects);
 
@@ -90,25 +91,63 @@ public class GenerateMetrics {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
 
-        for (Project proj : projects) {
-            String completePath = PROJECTS_ROOT + "/" + proj.getRelativePath();
+        for (Project project : projects) {
+            String completePath = PROJECTS_ROOT + "/" + project.getRelativePath();
             List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(completePath));
+            List<String> interfaces = new ArrayList<>();
+
+            try (BufferedReader reader = new BufferedReader(new FileReader("/home/mbrito/git/thesis/data/interfaces/" + project.getName()))) {
+                String line = reader.readLine();
+                while(line != null){
+                    interfaces.add(line);
+                    line = reader.readLine();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
             Parse parse = new Parse();
-            ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, proj.getClusterString());
-            parseResultServices.setProject(proj);
-            ProjectMetrics pm = new ProjectMetrics(proj);
+            ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, project.getClusterString());
+            parseResultServices.setProject(project);
+            ProjectMetrics pm = new ProjectMetrics(project);
 
             pm.setIrn(calculateIRN(parseResultServices));
-            pm.setOpn(calculateOPN(parseResultServices));
-            pm.setChm(calculateCHM(parseResultServices));
-            pm.setChd(calculateCHD(parseResultServices));
+            cleanUp(parseResultServices);
+
+            pm.setOpn(calculateOPN(parseResultServices, interfaces));
+            cleanUp(parseResultServices);
+
+            pm.setChm(calculateCHM(parseResultServices, interfaces));
+            cleanUp(parseResultServices);
+
+            pm.setChd(calculateCHD(parseResultServices, interfaces));
 
             projectMetrics.add(pm);
-            extractClustersToFile(parseResultServices.getServices(), proj);
+            extractClustersToFile(parseResultServices.getServices(), project);
             writeToFile(pm);
         }
 
         return projectMetrics;
+    }
+
+    /**
+     * Clean up operations mutated in previous calculations. A deep copy would be better but it's a lot of work
+     * to deep copy all the objects, and we're only changing the operations. A new instance of operations should be
+     * OK for now.
+     *
+     * @param parseResultServices
+     */
+    private void cleanUp(ParseResultServices parseResultServices) {
+
+        for (Service service : parseResultServices.getServices().values()) {
+            service.setOperations(new HashMap<>());
+        }
+        for (MyClass classe : parseResultServices.getClasses().values()) {
+            classe.setOperations(new HashSet<>());
+        }
+
     }
 
     public double calculateIRN(ParseResultServices parseResultServices) throws IOException {
@@ -135,22 +174,22 @@ public class GenerateMetrics {
         return irn;
     }
 
-    public double calculateOPN(ParseResultServices parseResultServices) throws IOException {
-        Metric OPN = new OPN(parseResultServices);
+    public double calculateOPN(ParseResultServices parseResultServices, List<String> interfaces) throws IOException {
+        Metric OPN = new OPN(parseResultServices, interfaces);
         double opn = OPN.calculateService();
         System.out.println("OPN Project: " + opn);
         return opn;
     }
 
-    public double calculateCHM(ParseResultServices parseResultServices) throws IOException {
-        Metric CHM = new CHM(parseResultServices);
+    public double calculateCHM(ParseResultServices parseResultServices, List<String> interfaces) throws IOException {
+        Metric CHM = new CHM(parseResultServices, interfaces);
         double chm = CHM.calculateService();
         System.out.println("CHM Project: " + chm);
         return chm;
     }
 
-    public double calculateCHD(ParseResultServices parseResultServices) throws IOException {
-        Metric CHD = new CHD(parseResultServices);
+    public double calculateCHD(ParseResultServices parseResultServices, List<String> interfaces) throws IOException {
+        Metric CHD = new CHD(parseResultServices, new HashSet<>(interfaces));
         double chd = CHD.calculateService();
         System.out.println("CHD Project: " + chd);
         return chd;

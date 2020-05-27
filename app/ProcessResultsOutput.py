@@ -33,9 +33,10 @@ class ProcessResultsOutput:
             f.write(json.dumps(self.projects, indent=4))
 
     def run_java_metrics(self):
+        pass
         # Runs java method responsible for calculating the metrics for the projects present in projects.json written above
-        subprocess.call("mvn -Dtest=GenerateMetricsTest test",
-                        cwd="/home/mbrito/git/thesis/symbolsolver/", shell=True)
+        # subprocess.call("mvn -Dtest=GenerateMetricsTest test",
+        # cwd="/home/mbrito/git/thesis/symbolsolver/", shell=True)
 
         # Opens the file where the metrics are saved
         # subprocess.call(

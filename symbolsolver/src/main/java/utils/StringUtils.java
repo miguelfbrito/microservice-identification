@@ -1,13 +1,50 @@
 package utils;
 
+import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.nodeTypes.*;
+import com.google.common.base.Strings;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.CoreDocument;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import graph.entities.MyClass;
 import graph.entities.Service;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class StringUtils {
+
+
+    private static StanfordCoreNLP pipeline;
+
+    static {
+        Properties props = new Properties();
+        //props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
+        pipeline = new StanfordCoreNLP(props);
+    }
+
+    public static List<String> lemmatize(String text) {
+        CoreDocument cd = new CoreDocument(String.join(" ", text));
+        pipeline.annotate(cd);
+
+        return cd.tokens().stream()
+                .map(CoreLabel::lemma)
+                .collect(Collectors.toList());
+    }
+
+    public static boolean isMethodCallGetterOrSetter(String name, int parametersSize) {
+        Matcher matchGet = Pattern.compile("^get").matcher(name);
+        Matcher matchSet = Pattern.compile("^set").matcher(name);
+        Matcher matchBoolean = Pattern.compile("^is").matcher(name);
+        return (matchGet.find() && parametersSize == 0) || (matchSet.find() && parametersSize == 1) || (matchBoolean.find() && parametersSize == 0);
+    }
+
+    public static List<String> filterStopWords(List<String> words, Set<String> stopWords){
+        return words.stream().filter(word -> !stopWords.contains(word)).collect(Collectors.toList());
+    }
 
     public static Map<String, Integer> readClustersFromString(String string) {
         String pattern = "'([\\w\\.]*)'";
@@ -75,8 +112,8 @@ public class StringUtils {
 
     }
 
-    public static Set<String> extractCamelCaseLower(String string) {
-        Set<String> extracted = new HashSet<>();
+    public static List<String> extractCamelCaseLower(String string) {
+        List<String> extracted = new ArrayList<>();
         for (String s : string.split("(?<=[a-z])(?=[A-Z])")) {
             extracted.add(s.toLowerCase());
         }

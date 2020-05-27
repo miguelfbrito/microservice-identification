@@ -4,9 +4,11 @@ import graph.entities.MyClass;
 import graph.entities.Service;
 import projects.Project;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
-public class ParseResultServices {
+public class ParseResultServices implements Serializable {
 
     private Project project;
     private Map<String, MyClass> classes;
@@ -21,6 +23,12 @@ public class ParseResultServices {
     public ParseResultServices(Map<String, MyClass> classes, Map<Integer, Service> services) {
         this.classes = classes;
         this.services = services;
+    }
+
+    public ParseResultServices(ParseResultServices parseResultServices){
+        this.project = parseResultServices.getProject();
+        this.classes = new HashMap<>(parseResultServices.getClasses());
+        this.services = new HashMap<>(parseResultServices.getServices());
     }
 
     public Project getProject() {

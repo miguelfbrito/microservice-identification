@@ -33,10 +33,13 @@ public class OPNProjectsTest {
         Parse parse = new Parse();
         ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
+/*
         Metric OPN = new OPN(parseResultServices);
         double opn = OPN.calculateService();
         System.out.println("OPN Project: " + opn);
         return opn;
+*/
+        return 0;
     }
 
     @Test

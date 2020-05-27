@@ -10,6 +10,8 @@ import parser.Parser;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +37,7 @@ public class CHDProjectsTest {
         Parse parse = new Parse();
         ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
-        Metric CHD = new CHD(parseResultServices);
+        Metric CHD = new CHD(parseResultServices, new HashSet<String>());
         double chd  = CHD.calculateService();
         System.out.println("chd Project: " + chd);
         return chd;

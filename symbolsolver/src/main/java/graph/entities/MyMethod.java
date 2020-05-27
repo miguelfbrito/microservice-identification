@@ -3,6 +3,7 @@ package graph.entities;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.gson.annotations.Expose;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

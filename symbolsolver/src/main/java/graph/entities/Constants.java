@@ -9,7 +9,7 @@ public class Constants {
     public static final Set<String> STOP_WORDS_DATA_TYPES = new HashSet<>(
             Arrays.asList()); // "int", "integer", "void", "long", "double", "float", "string", "char", "character"
 
-    public static final Set<String> STOP_WORDS_METHODS_NAMES = new HashSet<>(
-            Arrays.asList());  // "set", "get", "add", "create", "remove"
-
+    public static final Set<String> STOP_WORDS_METHODS = new HashSet<>(
+            Arrays.asList("set", "add", "get", "index", "archive", "update", "remove", "edit",
+                    "delete", "show", "save", "create", "view", "list", "new", "clear", "list", "insert", ""));
 }

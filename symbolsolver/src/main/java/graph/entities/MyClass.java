@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.google.gson.annotations.Expose;
 import javassist.expr.MethodCall;
 
+import java.io.Serializable;
 import java.util.*;
 
 public class MyClass {
@@ -150,5 +151,10 @@ public class MyClass {
     @Override
     public int hashCode() {
         return Objects.hash(qualifiedName);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

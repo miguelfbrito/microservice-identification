@@ -16,9 +16,11 @@ import java.util.stream.Collectors;
 public class CHM implements Metric {
 
     private ParseResultServices parseResultServices;
+    private List<String> interfaces;
 
-    public CHM(ParseResultServices parseResultServices) {
+    public CHM(ParseResultServices parseResultServices, List<String> interfaces) {
         this.parseResultServices = parseResultServices;
+        this.interfaces = interfaces;
     }
 
     private double computeEdge(Set<String> union, Set<String> intersection) {
@@ -73,10 +75,9 @@ public class CHM implements Metric {
              - Fazer bilateralmente
 
          */
-        ExtractOperations.extractAtServiceLevel(parseResultServices);
-        ExtractOperations.extractAllClassOperationsToServiceLevel(parseResultServices.getServices());
+        ExtractOperations.extractAtServiceLevelInterfaces(parseResultServices, new HashSet<>(interfaces));
+        ExtractOperations.mapServices(parseResultServices.getServices());
         Map<Integer, Service> services = parseResultServices.getServices();
-        Map<Integer, Service> positionedServices = new LinkedHashMap<>(services);
 
         double chm = 0.0;
         int countedServices = 0;
@@ -85,7 +86,6 @@ public class CHM implements Metric {
             double serviceJaccard = 0.0;
 
             Map<String, String> operationsInOrder = service.getOperations();
-
 
             if (operationsInOrder.isEmpty()) {
                 System.out.println("SKIPPING SERVICE");

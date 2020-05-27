@@ -37,10 +37,12 @@ public class CHMProjectsTest {
         ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, clusters);
 
      //   MyGraph graphReference = new ByMethodCallInvocation(parseResult);
+/*
         Metric CHM = new CHM(parseResultServices);
         double chm = CHM.calculateService();
         System.out.println("CHM Project: " + chm);
-        return chm;
+*/
+        return 0; //chm
     }
 
 
