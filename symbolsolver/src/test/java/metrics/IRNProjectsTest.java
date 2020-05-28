@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 
+@Disabled
 public class IRNProjectsTest {
 
     private static String PROJECTS_ROOT;

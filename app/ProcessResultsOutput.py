@@ -1,6 +1,8 @@
 import json
 import subprocess
 from Settings import Settings
+import metrics.CHD as CHD
+import metrics.CHM as CHM
 
 
 class ProcessResultsOutput:
@@ -32,12 +34,13 @@ class ProcessResultsOutput:
         with open(str(ProcessResultsOutput.PROJECTS_PATH), "w") as f:
             f.write(json.dumps(self.projects, indent=4))
 
-    def run_java_metrics(self):
-        pass
-        # Runs java method responsible for calculating the metrics for the projects present in projects.json written above
-        # subprocess.call("mvn -Dtest=GenerateMetricsTest test",
-        # cwd="/home/mbrito/git/thesis/symbolsolver/", shell=True)
+    def run_metrics(self):
+        # Runs java method responsible for calculating OPN and IRN and extracting method invocations in order to calculate
+        # CHM and CHD. Resorts to the projects.json written above as input.
+        subprocess.call("mvn -Dtest=GenerateMetricsTest test",
+                        cwd="/home/mbrito/git/thesis/symbolsolver/", shell=True)
 
-        # Opens the file where the metrics are saved
-        # subprocess.call(
-        #     "vim /home/mbrito/git/thesis/data/results.csv", shell=True)
+        # output_fosci.csv is obtained from the execution of the previous metrics on the symbolsolver
+        file_path = "/home/mbrito/git/thesis/app/metrics/output_fosci.csv"
+        CHM.calculate(file_path)
+        CHD.calculate(file_path)

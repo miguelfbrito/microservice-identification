@@ -142,19 +142,15 @@ def getAllAPIForCluster(clusterID):
     return apiIDList
 
 
-if __name__ == '__main__':
-    apiFileName = sys.argv[1]
-
+def calculate(apiFileName):
     global g_clusterID2Interf2APIDict  # [clusterID][interface] = [api id ....]
     global g_apiDict
 
-    [g_clusterID2Interf2APIDict, g_apiDict] = ReadAPIFile(
-        apiFileName)
+    [g_clusterID2Interf2APIDict, g_apiDict] = ReadAPIFile(apiFileName)
     msg_cohesion_wei_list = list()
     if len(g_clusterID2Interf2APIDict) == 0:
-        tmp = ['avg_msg_cohesion', str(1), 'interface_numb', str(
-            0), 'clusterHasinf', str(0)]
-        print(','.join(tmp))
+        print(str(1))
+        return 1
     else:
         for clusterID in g_clusterID2Interf2APIDict:
             msg_cohesion_wei = Metric_msg_cohesion(clusterID)
@@ -167,10 +163,18 @@ if __name__ == '__main__':
         for clusterID in g_clusterID2Interf2APIDict:
             interface_number += len(g_clusterID2Interf2APIDict[clusterID])
         #print ('interface number=', interface_number)
-        tmp = ['avg_msg_cohesion', str(msg_avg_wei), 'interface_numb', str(
-            interface_number), 'clusterHasinf', str(len(g_clusterID2Interf2APIDict))]
-        print(','.join(tmp))
+        # tmp = ['avg_msg_cohesion', str(msg_avg_wei), 'interface_numb', str(
+        #     interface_number), 'clusterHasinf', str(len(g_clusterID2Interf2APIDict))]
+        # print(','.join(tmp))
+
         # print apidetail, using do and m_cohesion_wei_list interface_number_list
         #print('\ninterface msg cohesion detail:')
         # for index in range(0, len(msg_cohesion_wei_list)):
         #    print(msg_cohesion_wei_list[index])
+        print(f"CHM: {msg_avg_wei}")
+        return msg_avg_wei
+
+
+if __name__ == '__main__':
+    apiFileName = sys.argv[1]
+    calculate(apiFileName)

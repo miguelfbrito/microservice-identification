@@ -131,19 +131,6 @@ class Graph:
                     graph.add_node(qualified_name)
 
     @staticmethod
-    def clean_irrelevant_dependencies(visitors, graph):
-        classes = list(visitors.keys())
-        nodes = list(graph.nodes)
-
-        # Iterate over nodes and remove the ones not present in classes
-        for node in nodes:
-            try:
-                if node not in classes:
-                    graph.remove_node(node)
-            except nx.exception.NetworkXError:
-                print("Node not found while removing")
-
-    @staticmethod
     def draw(graph, colors=[], weight_type=WeightType.ABSOLUTE, clear=True):
 
         if not Settings.DRAW:
@@ -164,9 +151,6 @@ class Graph:
 
         if len(colors) == 0:
             [0 for cluster in h.nodes()]
-
-        for src, dst in h.edges():
-            print(f"EDGE: {src} -> {dst} {h.get_edge_data(src, dst)}")
 
         nx.draw_networkx(h, pos=sp, with_labels=True,
                          node_size=250, node_colors=colors, font_size=8)

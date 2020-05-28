@@ -19,10 +19,8 @@ import java.util.stream.Collectors;
 public class ExtractOperations {
 
     public static void extractAtServiceLevelInterfaces(ParseResultServices parseResultServices, Set<String> interfaces) {
-        System.out.println("HELLO");
         Map<Integer, Service> services = parseResultServices.getServices();
         Map<String, MyClass> classes = parseResultServices.getClasses();
-
 
         for (Map.Entry<Integer, Service> service : services.entrySet()) {
             for (Map.Entry<String, MyClass> classe : service.getValue().getClasses().entrySet()) {
@@ -30,21 +28,15 @@ public class ExtractOperations {
                 if (interfaces.contains(classe.getKey())) {
                     for (MethodDeclaration md : classe.getValue().getVisitor().findAll(MethodDeclaration.class)) {
                         String methodName = md.getNameAsString();
-                        System.out.println("New OPN md: " + methodName);
 
+                        //if (!StringUtils.isMethodCallGetterOrSetter(methodName, md.getParameters().size())) {
+                        classe.getValue().getOperations().add(methodName);
+                        //}
 
-                        if (!StringUtils.isMethodCallGetterOrSetter(methodName, md.getParameters().size())) {
-                            classe.getValue().getOperations().add(methodName);
-                        } else {
-                            System.out.println("Filtered out " + md.getNameAsString());
-                        }
                     }
-
                 }
-
             }
         }
-
     }
 
     /**

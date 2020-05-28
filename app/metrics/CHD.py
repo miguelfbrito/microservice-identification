@@ -82,8 +82,6 @@ def GetItems(nameSet):
     for item in itemList:
         if IsIgnored(item) == False and item != '':
             newItemList.append(item)
-    #print ('before=', set(nameSet))
-    #print ('after =', set(newItemList))
     return set(newItemList)
 
 
@@ -110,13 +108,9 @@ def ReadAPIFile(fileName):
             nameSet.add(apiName)
             itemSet = GetItems(nameSet)
             oneObejct = APIObject(clusterID, interface, apiName, itemSet)
-            # print nameSet
-            # print oneObejct.itemSet
             apiDict[apiID] = oneObejct
             clusterID2Interf2ApiDict[clusterID][interface].append(apiID)
             apiID += 1
-    # print clusterID2Interf2ApiDict
-    # print apiDict
     return clusterID2Interf2ApiDict, apiDict
 
 # domain-level edge weight
@@ -179,8 +173,7 @@ def Metric_dom_cohesion(clusterID):
     return dom_cohesion_wei
 
 
-if __name__ == '__main__':
-    apiFileName = sys.argv[1]
+def calculate(apiFileName):
     global g_ignore_items
     global g_clusterID2Interf2APIDict
     global g_apiDict
@@ -214,9 +207,8 @@ if __name__ == '__main__':
         apiFileName)
 
     if len(g_clusterID2Interf2APIDict) == 0:
-        tmp = ['avg_dom_cohesion', str(1.0), 'interface_number', str(
-            0), 'clusterHasinterface', '0']
-        print(','.join(tmp))
+        print("CHD: 1")
+        return 1
     else:
         dom_cohesion_wei_list = list()
         for clusterID in g_clusterID2Interf2APIDict:
@@ -232,9 +224,11 @@ if __name__ == '__main__':
             interface_number += len(g_clusterID2Interf2APIDict[clusterID])
             interface_number_list.append(
                 len(g_clusterID2Interf2APIDict[clusterID]))
-        tmp = ['avg_dom_cohesion', str(avg_dom_cohesion_wei), 'interface_number', str(
-            interface_number), 'clusterHasinf', str(len(g_clusterID2Interf2APIDict))]
-        print(','.join(tmp))
+        # tmp = ['avg_dom_cohesion', str(avg_dom_cohesion_wei), 'interface_number', str(
+        #     interface_number), 'clusterHasinf', str(len(g_clusterID2Interf2APIDict))]
+        # print(','.join(tmp))
+        print(f"CHD: {avg_dom_cohesion_wei}")
+        return avg_dom_cohesion_wei
 
         '''
         #print apidetail, using do and m_cohesion_wei_list interface_number_list
@@ -245,3 +239,8 @@ if __name__ == '__main__':
         for index in range(0, len(dom_cohesion_wei_list)):
             print(interface_number_list[index])
         '''
+
+
+if __name__ == '__main__':
+    apiFileName = sys.argv[1]
+    calculate(apiFileName)

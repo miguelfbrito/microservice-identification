@@ -18,8 +18,6 @@ from Settings import Settings
 def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     # classes {class_name : Class}
     docs = []
-    print(f"CLASSESAPPLY {classes}")
-
     # Remove loose sections of the graph
     if pre_process:
         classes_to_remove = []
@@ -142,7 +140,7 @@ def apply_lda_to_text(docs, num_topics):
     dictionary = corpora.Dictionary(texts)
 
     # filter dictionary from outliers
-    dictionary.filter_extremes(no_below=3, no_above=0.8, keep_n=10000)
+    dictionary.filter_extremes(no_below=2, no_above=0.8, keep_n=10000)
 
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
@@ -153,12 +151,10 @@ def apply_lda_to_text(docs, num_topics):
     # ldamodel = LdaModel.load()
 
     ldamodel = gensim.models.ldamodel.LdaModel(
-        corpus, num_topics=num_topics, id2word=dictionary, passes=50)
+        corpus, num_topics=num_topics, id2word=dictionary, passes=100)
 
     topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
 
-    print("\n\n\nShowing topics")
-    print(ldamodel.show_topics(num_topics=num_topics, num_words=5, formatted=True))
     # print(ldamodel.show_topics())
     # data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
     # pyLDAvis.show(data)

@@ -2,6 +2,7 @@ package metrics;
 
 import com.github.javaparser.ast.CompilationUnit;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import parser.Parse;
 import parser.ParseResultServices;
@@ -14,6 +15,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
+@Disabled
 public class OPNProjectsTest {
 
     private static String PROJECTS_ROOT;

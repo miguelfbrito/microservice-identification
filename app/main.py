@@ -72,8 +72,6 @@ def parse_files_to_ast(read_files):
 
 def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
 
-    print(f"CLASSESii: {classes}")
-
     graph = Graph.normalize_values(graph, str(WeightType.STRUCTURAL))
 
     # Drawing of label explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
@@ -107,7 +105,7 @@ def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
                             len(classe.get_method_invocations())
 
                 edge_data[str(WeightType.ABSOLUTE)
-                          ] = min(float(edge_data[str(weight_type)]), 1)
+                          ] = max(float(edge_data[str(weight_type)]), method_call_weight)  # method_call_weight
         except KeyError as e:
             # TODO : review why does this only happens on a specific case
             edge_data[str(WeightType.ABSOLUTE)] = 0
@@ -227,7 +225,13 @@ def extract_classes_information_from_parsed_json(json_dict):
     return classes
 
 
+def create_logging_folders(project):
+    pass
+
+
 def identify_clusters_in_project(project):
+
+    # create_logging_folders(project)
 
     project_name = project[0]
     num_topics = project[1]
@@ -310,7 +314,7 @@ def main():
         clusters = identify_clusters_in_project(project)
         result.add_project(project[0], str(clusters))
         result.dump_to_json_file()
-        result.run_java_metrics()
+        result.run_metrics()
 
     if args.metrics_condensed:
         projects = [('spring-blog', 7), ('jpetstore', 5),
@@ -326,7 +330,7 @@ def main():
             clusters = [cluster for cluster in clusters.values()]
             results.add_project(project[0], str(clusters))
         results.dump_to_json_file()
-        results.run_java_metrics()
+        results.run_metrics()
 
     if args.metrics_full:
         projects = [('spring-blog', 7), ('jpetstore', 5),
@@ -342,7 +346,7 @@ def main():
             clusters = [cluster for cluster in clusters.values()]
             results.add_project(project[0], str(clusters))
         results.dump_to_json_file()
-        results.run_java_metrics()
+        results.run_metrics()
 
 
 main()

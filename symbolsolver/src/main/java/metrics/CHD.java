@@ -2,11 +2,15 @@ package metrics;
 
 import extraction.ExtractOperations;
 import graph.entities.Constants;
+import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
 import parser.ParseResultServices;
 import utils.StringUtils;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -19,52 +23,88 @@ public class CHD implements Metric {
     private ParseResultServices parseResultServices;
     private Set<String> interfaces;
     private boolean includeParameters;
+    private boolean includeReturn;
 
     public CHD(ParseResultServices parseResultServices, Set<String> interfaces) {
         this.parseResultServices = parseResultServices;
         this.interfaces = interfaces;
         this.includeParameters = true;
-    }
-
-    private List<String> preprocessText(String text, Set<String> stopWords) {
-        return StringUtils.lemmatize(String.join(" ", StringUtils.extractCamelCaseLower(text)));
+        this.includeReturn = true;
     }
 
     private double calculateJaccardCoefficient(MyMethod source, MyMethod target) {
         // TODO : Consider the commented approach on RS17 (tosc-interf-dom-cohesion) on handling empty sets?
-        Set<String> sourceOperationTerms = new HashSet<>(preprocessText(source.getName(), Constants.STOP_WORDS_METHODS));
-        Set<String> targetOperationTerms = new HashSet<>(preprocessText(target.getName(), Constants.STOP_WORDS_METHODS));
+        Set<String> sourceOperationTerms = new HashSet<>(StringUtils.filterAndCleanText(source.getName(), Constants.STOP_WORDS));
+        Set<String> targetOperationTerms = new HashSet<>(StringUtils.filterAndCleanText(target.getName(), Constants.STOP_WORDS));
 
 
         if (includeParameters) {
             for (String s : source.getParametersDataType()) {
-                sourceOperationTerms.addAll(preprocessText(s, Constants.STOP_WORDS_DATA_TYPES));
+                sourceOperationTerms.addAll(StringUtils.filterAndCleanText(s, Constants.STOP_WORDS));
             }
             for (String s : source.getParametersDataType()) {
-                targetOperationTerms.addAll(preprocessText(s, Constants.STOP_WORDS_DATA_TYPES));
+                targetOperationTerms.addAll(StringUtils.filterAndCleanText(s, Constants.STOP_WORDS));
             }
+        }
+
+        if (includeReturn) {
+            for (String s : StringUtils.extractVariableType(source.getVisitor().getTypeAsString())) {
+                sourceOperationTerms.addAll(StringUtils.filterAndCleanText(s.toLowerCase(), Constants.STOP_WORDS));
+            }
+
+            for (String s : StringUtils.extractVariableType(target.getVisitor().getTypeAsString())) {
+                targetOperationTerms.addAll(StringUtils.filterAndCleanText(s.toLowerCase(), Constants.STOP_WORDS));
+            }
+
         }
 
         Set<String> union = Jaccard.getUnion(sourceOperationTerms, targetOperationTerms);
         Set<String> intersection = Jaccard.getIntersection(sourceOperationTerms, targetOperationTerms);
 
+        if (union.size() == 0 && intersection.size() == 0)
+            return 1;
 
-        System.out.println("\tTerms:" + sourceOperationTerms.toString() + " - " + targetOperationTerms );
-        System.out.println("\t" + union.toString() + " -- " + intersection.toString()+ "\n");
+        System.out.println("\tTerms:" + sourceOperationTerms.toString() + " - " + targetOperationTerms);
+        System.out.println("\t" + union.toString() + " -- " + intersection.toString());
+        System.out.println("\torignal: " + source.getName() + " " + source.getParametersDataType().toString() + " - "
+                + target.getName() + " " + target.getParametersDataType().toString() + "\n");
 
         return union.isEmpty() ? 0 : intersection.size() / (double) union.size();
     }
 
 
     @Override
-    public double calculateService() {
+    public double calculateService() throws IOException {
         ExtractOperations.extractAtServiceLevelInterfaces(parseResultServices, interfaces);
         ExtractOperations.mapServices(parseResultServices.getServices());
         Map<Integer, Service> services = parseResultServices.getServices();
 
+/*
+        Map<String, Set<String>> testFosci = new HashMap<>();
+        testFosci.put("org.mybatis.jpetstore.web.actions.CatalogActionBean", new HashSet<>(Arrays.asList("viewCategory", "searchProducts", "viewProduct", "viewItem")));
+        testFosci.put("org.mybatis.jpetstore.web.actions.OrderActionBean", new HashSet<>(Arrays.asList("newOrder", "isConfirmed", "getOrder",
+                "newOrderForm", "clear", "setOrderId", "viewOrder", "listOrders")));
+        testFosci.put("org.mybatis.jpetstore.web.actions.CartActionBean", new HashSet<>(Arrays.asList("clear", "removeItemFromCart", "updateCartQuantities", "getCart",
+                "addItemToCart")));
+        testFosci.put("org.mybatis.jpetstore.web.actions.AccountActionBean", new HashSet<>(Arrays.asList("isAuthenticated", "getUsername", "setPassword", "setUsername",
+                "newAccount", "getAccount", "signoff", "clear")));
+
+
+        for(Service service: services.values()){
+            for(MyClass my : service.getClasses().values()){
+                if(testFosci.containsKey(my.getQualifiedName())){
+                    my.setOperations(testFosci.get(my.getQualifiedName()));
+                }
+
+            }
+        }
+*/
+
+
         double chd = 0.0;
         int countedServices = 0;
         for (Service service : services.values()) {
+
             int sourceIndex = -1;
             double serviceJaccard = 0.0;
 

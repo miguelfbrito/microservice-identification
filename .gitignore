@@ -359,3 +359,5 @@ services_lda.txt
 symbolsolver/clusters.txt
 
 file
+
+symbolsolver/output_fosci.csv

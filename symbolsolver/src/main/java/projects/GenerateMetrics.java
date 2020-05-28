@@ -6,13 +6,16 @@ import com.google.gson.Gson;
 import graph.DependencyEdge;
 import graph.MyGraph;
 import graph.creation.ByMethodCallInvocation;
+import graph.entities.Constants;
 import graph.entities.MyClass;
+import graph.entities.MyMethod;
 import graph.entities.Service;
 import metrics.*;
 import parser.Parse;
 import parser.ParseResultServices;
 import parser.Parser;
 import utils.FileUtils;
+import utils.StringUtils;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -98,7 +101,7 @@ public class GenerateMetrics {
 
             try (BufferedReader reader = new BufferedReader(new FileReader("/home/mbrito/git/thesis/data/interfaces/" + project.getName()))) {
                 String line = reader.readLine();
-                while(line != null){
+                while (line != null) {
                     interfaces.add(line);
                     line = reader.readLine();
                 }
@@ -117,12 +120,13 @@ public class GenerateMetrics {
             cleanUp(parseResultServices);
 
             pm.setOpn(calculateOPN(parseResultServices, interfaces));
-            cleanUp(parseResultServices);
 
-            pm.setChm(calculateCHM(parseResultServices, interfaces));
-            cleanUp(parseResultServices);
+            Map<Integer, Service> services = parseResultServices.getServices();
+            writeServiceOperationsToFile(services, "/home/mbrito/git/thesis/app/metrics/output_fosci.csv");
 
-            pm.setChd(calculateCHD(parseResultServices, interfaces));
+            // pm.setChm(calculateCHM(parseResultServices, interfaces));
+            // cleanUp(parseResultServices);
+            // pm.setChd(calculateCHD(parseResultServices, interfaces));
 
             projectMetrics.add(pm);
             extractClustersToFile(parseResultServices.getServices(), project);
@@ -130,6 +134,33 @@ public class GenerateMetrics {
         }
 
         return projectMetrics;
+    }
+
+    public void writeServiceOperationsToFile(Map<Integer, Service> services, String path) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+
+        for (Map.Entry<Integer, Service> service : services.entrySet()) {
+            for (Map.Entry<String, String> operations : service.getValue().getOperations().entrySet()) {
+                MyClass myClass = service.getValue().getClasses().get(operations.getValue());
+                MyMethod myMethod = myClass.getMethods().get(operations.getKey());
+
+                List<String> parameters = myMethod.getParametersDataType()
+                        .stream()
+                        .map(s -> StringUtils.filterAndCleanText(s, Constants.STOP_WORDS))
+                        .collect(ArrayList::new, List::addAll, List::addAll);
+
+                List<String> returns = StringUtils.extractVariableType(myMethod.getVisitor().getTypeAsString())
+                        .stream()
+                        .map(s -> StringUtils.filterAndCleanText(s, Constants.STOP_WORDS))
+                        .collect(ArrayList::new, List::addAll, List::addAll);
+                String line = service.getKey() + ",\"" + operations.getValue() + "\",\"" + operations.getKey() + "\",\"" + String.join(" ", parameters)
+                        + "\",\"" +  String.join(" ", returns) + "\"";
+
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+        writer.close();
     }
 
     /**
@@ -256,8 +287,11 @@ public class GenerateMetrics {
             projectWriterService.write(header);
         }
 
-        String content = "IRN: " + metrics.getIrn() + "\nOPN: " + metrics.getOpn() + "\nCHM: " + metrics.getChm() +
-                "\nCHD: " + metrics.getChd() + "\nCommit hash: " + metrics.getProject().getCommitHash();
+        String content = "Commit hash: " + metrics.getProject().getCommitHash() + "\nIRN: " + metrics.getIrn() + "\nOPN: " + metrics.getOpn();
+/*
+                + "\nCHM: " + metrics.getChm() +
+                "\nCHD: " + metrics.getChd()
+*/
 
         projectWriterService.newLine();
         projectWriterService.write(content);

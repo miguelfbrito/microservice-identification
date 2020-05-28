@@ -1,9 +1,11 @@
 package metrics;
 
 import extraction.ExtractOperations;
+import graph.entities.Constants;
 import graph.entities.MyMethod;
 import graph.entities.Service;
 import parser.ParseResultServices;
+import utils.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,8 +41,15 @@ public class CHM implements Metric {
         List<String> sourceParameters = source.getParametersDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
         List<String> targetParameters = target.getParametersDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
 
-        List<String> sourceReturn = source.getReturnDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
-        List<String> targetReturn = target.getReturnDataType().stream().map(String::toLowerCase).collect(Collectors.toList());
+        List<String> sourceReturn = StringUtils.extractVariableType(source.getVisitor().getTypeAsString())
+                .stream()
+                .map(s -> StringUtils.filterAndCleanText(s, Constants.STOP_WORDS))
+                .collect(ArrayList::new, List::addAll, List::addAll);
+
+        List<String> targetReturn = StringUtils.extractVariableType(target.getVisitor().getTypeAsString())
+                .stream()
+                .map(s -> StringUtils.filterAndCleanText(s, Constants.STOP_WORDS))
+                .collect(ArrayList::new, List::addAll, List::addAll);
 
         Set<String> parametersUnion = Jaccard.getUnion(new HashSet<>(sourceParameters), new HashSet<>(targetParameters));
         Set<String> parametersIntersection = Jaccard.getIntersection(new HashSet<>(sourceParameters), new HashSet<>(targetParameters));

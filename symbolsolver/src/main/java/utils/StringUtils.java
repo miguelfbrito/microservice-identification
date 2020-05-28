@@ -26,6 +26,10 @@ public class StringUtils {
         pipeline = new StanfordCoreNLP(props);
     }
 
+    public static List<String> filterAndCleanText(String text, Set<String> stopWords) {
+        return StringUtils.filterStopWords(StringUtils.lemmatize(String.join(" ", StringUtils.extractCamelCaseLower(text))), stopWords);
+    }
+
     public static List<String> lemmatize(String text) {
         CoreDocument cd = new CoreDocument(String.join(" ", text));
         pipeline.annotate(cd);
