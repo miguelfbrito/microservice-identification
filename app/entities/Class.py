@@ -24,7 +24,11 @@ class Class:
 
     def __init__(self, qualified_name="package.FailedToLoadClassName", annotations=[], variables=[], dependencies=[], methods=[], method_invocations={}, implemented_types=[], extended_types=[]):
         self.qualified_name = qualified_name
-        self.class_name = re.search(r'\.(\w*)$', qualified_name)[1]
+        search = re.search(r'\.(\w*)$', qualified_name)
+        if search:
+            self.class_name = search[1]
+        else:
+            self.class_name = qualified_name
         self.annotations = annotations
         self.variables = variables
         self.dependencies = dependencies
@@ -93,11 +97,9 @@ class Class:
         string = variables_weight * self.variables + methods_weight * \
             methods + method_invocations_weight * method_invocations
         method_invocations_variables_weight * method_invocations_variables
-        class_name = re.search(pattern_match_class_name,
-                               self.qualified_name)[1]
-        string = " ".join(string) + class_name_weight * (" " + class_name)
+        string = " ".join(string) + class_name_weight * (" " + self.class_name)
         print(f"Final String hey {string}")
-        print(f"{self.variables} - {methods} - {self.class_name} + {class_name}")
+        print(f"{self.variables} - {methods} - {self.class_name}")
         return string
 
     def get_class_name(self):

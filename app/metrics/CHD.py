@@ -124,9 +124,11 @@ def GetEdge(apiID1, apiID2):
     # print g_apiDict[apiID1].interface, g_apiDict[apiID1].apiName, itemSet1
     # print g_apiDict[apiID2].interface, g_apiDict[apiID2].apiName, itemSet2
 
+    '''
     if len(itemSet1) == 0 and len(itemSet2) == 0:  # not have domain items, then return 1
         edge_wei = 1
         edge_unwei = 1
+    '''
 
     interSet = itemSet1 & itemSet2
     unionSet = itemSet1 | itemSet2
@@ -201,7 +203,7 @@ def calculate(apiFileName):
                       'customiz', 'generator', 'load',  'build', 'listen', 'descriptor', 'script', 'repository', 'action',
                       'cache', 'type',  'resolve', 'convert', 'and', 'provid', 'of', 'in', 'list', 'from', 'impl', 'check',
                       'serializer', 'serialize', 'xwiki', 'wiki', 'context', 'reference', 'translation', 'configuration',
-                      'annotation', 'bridge', 'long']
+                      'annotation']
 
     [g_clusterID2Interf2APIDict, g_apiDict] = ReadAPIFile(
         apiFileName)

@@ -18,6 +18,7 @@ import argparse
 import json
 import math
 import re
+import os
 import PostProcessing
 
 from StringUtils import StringUtils
@@ -225,16 +226,22 @@ def extract_classes_information_from_parsed_json(json_dict):
     return classes
 
 
-def create_logging_folders(project):
-    pass
+def create_logging_folders(project_name):
+    words_dir = f"{Settings.DIRECTORY}/data/words/{project_name}"
+    services_dir = f"{Settings.DIRECTORY}/data/services/{project_name}"
+    directories = [words_dir, services_dir]
+
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
 
 def identify_clusters_in_project(project):
 
-    # create_logging_folders(project)
-
     project_name = project[0]
     num_topics = project[1]
+    create_logging_folders(project_name)
+
     directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
 
     temp_json_location = f'{Settings.DIRECTORY}/symbolsolver/target/output.json'
@@ -291,30 +298,37 @@ def main():
     # logging.getLogger().addHandler(logging.StreamHandler())
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--metrics", "-m",
-                        help="Parse, cluster and execute metrics for a given project name (relative path to set root path)")
+    parser.add_argument("--project", "-p",
+                        help="Project name (used for construction of relative paths)")
     parser.add_argument("--k_topics", "-k",
                         help="Number of topics for given project")
+    parser.add_argument("--metrics", "-m",
+                        help="Execute metrics for a given project name after normal parsing and execution (relative path to set root path)", action="store_true")
     parser.add_argument("--metrics-condensed", "-mc",
                         help="Parse, cluster and execute metrics for a subset of projects", action="store_true")
     parser.add_argument("--metrics-full", "-mf",
                         help="Parse, cluster, and execute metrics for all defined projects", action="store_true")
     parser.add_argument("--draw", "-d",
                         help="Enable plotting of graphs", action="store_true")
+    parser.add_argument("--lda-plotting", "-l",
+                        help="Enable plotting of LDA topics", action="store_true")
     args = parser.parse_args()
 
     Settings.DRAW = True if args.draw else False
+    Settings.LDA_PLOTTING = True if args.lda_plotting else False
 
-    if args.metrics:
+    if args.project:
         result = ProcessResultsOutput()
-        Settings.PROJECT_NAME = args.metrics
+        Settings.PROJECT_NAME = args.project
         Settings.K_TOPICS = int(args.k_topics)
         Settings.create_id()
-        project = (args.metrics, int(args.k_topics))
+        project = (args.project, int(args.k_topics))
         clusters = identify_clusters_in_project(project)
         result.add_project(project[0], str(clusters))
         result.dump_to_json_file()
-        result.run_metrics()
+
+        if args.metrics:
+            result.run_metrics()
 
     if args.metrics_condensed:
         projects = [('spring-blog', 7), ('jpetstore', 5),

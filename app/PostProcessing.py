@@ -20,10 +20,10 @@ def process(clusters, classes, G):
     #     print(
     #         f"The graph had no method call invocations between nodes. Clustering will not be used")
 
-    service_graph, services = merge_services_with_single_relationship_and_no_operations(
-        service_graph, services)
+    # service_graph, services = merge_services_with_single_relationship_and_no_operations(
+    #     service_graph, services)
 
-    merge_all_services_if_weak_connection(services, service_graph, )
+    # merge_all_services_if_weak_connection(services, service_graph, )
 
     return {service_id: list(service.get_classes()) for service_id, service in services.items()}
 

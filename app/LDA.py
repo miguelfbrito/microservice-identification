@@ -155,9 +155,9 @@ def apply_lda_to_text(docs, num_topics):
 
     topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
 
-    # print(ldamodel.show_topics())
-    # data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
-    # pyLDAvis.show(data)
+    if Settings.LDA_PLOTTING:
+        data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
+        pyLDAvis.show(data)
 
     return topics_per_doc
 

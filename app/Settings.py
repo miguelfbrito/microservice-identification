@@ -4,9 +4,10 @@ from datetime import datetime
 class Settings:
     PROJECT_NAME = ''
     K_TOPICS = 0
-    DRAW = True
+    DRAW = False
     DIRECTORY = "/home/mbrito/git/thesis/"
-    ID = ''
+    LDA_PLOTTING = False
+    METRIC_EVALUATION = False
 
     @staticmethod
     def create_id():

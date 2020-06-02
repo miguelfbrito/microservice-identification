@@ -26,9 +26,17 @@ public class ExtractIdentifiedClassesTest {
             jforum - > action, view?
             agilefant -> action
             monomusiccorp -> controller
-
+            flight-booking-system -> manager
+            greenhouse -> controller
+            jhipster-sample-app -> web.rest
+            library-application -> controller
+            library-management-spring -> controller
+            online-banking -> controller
+            opencms-core -> controller
+            shopping -> servlet
+            realworld -> api
          */
-        String projectName = "agilefant";
+        String projectName = "tntconcept";
         String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
 
         Parser parser = new Parser();
@@ -40,9 +48,8 @@ public class ExtractIdentifiedClassesTest {
 
         System.out.println(parseResult.keySet().toString());
 
-        List<String> filters = Arrays.asList("(?i)action?");
+        List<String> filters = Arrays.asList("(?i)manager");
         List<String> classes = ExtractIdentifiedClasses.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);
-
         classes.forEach(System.out::println);
     }
 

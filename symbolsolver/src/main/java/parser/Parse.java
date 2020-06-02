@@ -38,9 +38,11 @@ public class Parse {
     }
 
     public Map<String, MyClassDTO> completeParse(List<CompilationUnit> compilationUnits) {
-        System.out.println("Method invocations");
         Map<String, MyClass> classes = extractClasses(compilationUnits);
-        System.out.println("Classes: " + classes.toString());
+        System.out.println("Parsed classes");
+        for(MyClass classe : classes.values()){
+            System.out.println(classe.getQualifiedName());
+        }
         populateClassesWithMethodDeclarations(classes);
         return parseClasses(classes);
     }

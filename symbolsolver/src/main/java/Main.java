@@ -14,7 +14,7 @@ public class Main {
         final String PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/monoliths/";
 
         String project_name = System.getProperty("project");
-        //project_name = "jforum";
+        project_name = "mayocat-shop";
         if (project_name != null) {
             Parser parser = new Parser();
             List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(PROJECTS_ROOT + project_name));

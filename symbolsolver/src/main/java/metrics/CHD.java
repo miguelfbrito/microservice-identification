@@ -79,7 +79,6 @@ public class CHD implements Metric {
         ExtractOperations.mapServices(parseResultServices.getServices());
         Map<Integer, Service> services = parseResultServices.getServices();
 
-/*
         Map<String, Set<String>> testFosci = new HashMap<>();
         testFosci.put("org.mybatis.jpetstore.web.actions.CatalogActionBean", new HashSet<>(Arrays.asList("viewCategory", "searchProducts", "viewProduct", "viewItem")));
         testFosci.put("org.mybatis.jpetstore.web.actions.OrderActionBean", new HashSet<>(Arrays.asList("newOrder", "isConfirmed", "getOrder",
@@ -98,7 +97,6 @@ public class CHD implements Metric {
 
             }
         }
-*/
 
 
         double chd = 0.0;
