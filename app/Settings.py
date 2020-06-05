@@ -5,7 +5,9 @@ class Settings:
     PROJECT_NAME = ''
     K_TOPICS = 0
     DRAW = False
-    DIRECTORY = "/home/mbrito/git/thesis/"
+    DIRECTORY = "/home/mbrito/git/thesis"
+    DIRECTORY_APPLICATIONS = "/home/mbrito/git/thesis-web-applications/monoliths"
+    DIRECTORY_PROJECTS = "/home/mbrito/git/thesis/projects.json"
     LDA_PLOTTING = False
     METRIC_EVALUATION = False
 
