@@ -42,5 +42,10 @@ class ProcessResultsOutput:
 
         # output_fosci.csv is obtained from the execution of the previous metrics on the symbolsolver
         file_path = "/home/mbrito/git/thesis/app/metrics/output_fosci.csv"
-        CHM.calculate(file_path)
-        CHD.calculate(file_path)
+        chm = CHM.calculate(file_path)
+        chd = CHD.calculate(file_path)
+
+        path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}"
+        with open(path, "a+") as f:
+            f.write(f"\nCHM: {chm}")
+            f.write(f"\nCHD: {chd}")

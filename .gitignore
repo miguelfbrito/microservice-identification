@@ -361,3 +361,7 @@ symbolsolver/clusters.txt
 file
 
 symbolsolver/output_fosci.csv
+
+app/metrics/output_fosci.csv
+
+githubextraction/repos.txt

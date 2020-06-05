@@ -36,7 +36,7 @@ public class ExtractIdentifiedClassesTest {
             shopping -> servlet
             realworld -> api
          */
-        String projectName = "tntconcept";
+        String projectName = "sunrise";
         String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
 
         Parser parser = new Parser();
@@ -48,7 +48,7 @@ public class ExtractIdentifiedClassesTest {
 
         System.out.println(parseResult.keySet().toString());
 
-        List<String> filters = Arrays.asList("(?i)manager");
+        List<String> filters = Arrays.asList("(?i)controller");
         List<String> classes = ExtractIdentifiedClasses.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);
         classes.forEach(System.out::println);
     }

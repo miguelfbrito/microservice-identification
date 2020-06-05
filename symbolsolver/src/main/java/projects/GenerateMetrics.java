@@ -188,7 +188,7 @@ public class GenerateMetrics {
         System.out.println("IRN Project: " + irn);
 
         // Write call invocations for each service to project
-        String path = "/home/mbrito/git/thesis/data/services/" + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
+        String path = "/home/mbrito/git/thesis/data/services/" + parseResultServices.getProject().getName() + "/" + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
         List<String> lines = new ArrayList<>(Collections.singletonList("\nMethod invocations between services:"));
         for (DependencyEdge e : graphReference.getGraph().edgeSet()) {
             MyClass src = graphReference.getGraph().getEdgeSource(e);
@@ -276,7 +276,7 @@ public class GenerateMetrics {
         projectWriter.close();
 
         // WRITE TO SERVICE FILE
-        path = "/home/mbrito/git/thesis/data/services/" + metrics.getProject().getName() + "_" + metrics.getProject().getId();
+        path = "/home/mbrito/git/thesis/data/services/" + metrics.getProject().getName() + "/" + metrics.getProject().getName() + "_" + metrics.getProject().getId();
         file = new File(path);
         writeHeader = !file.exists();
         BufferedWriter projectWriterService = new BufferedWriter(new FileWriter(path, true));

@@ -283,7 +283,7 @@ def write_services_to_file(clusters, classes):
     services = Service.extract_services_from_clusters(clusters)
     class_service = Service.get_map_class_service_id(clusters)
 
-    with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
+    with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
         for service_id, service in services.items():
             f.write(f"\nService {service_id}\n")
             for class_name in service.get_classes():
