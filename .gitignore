@@ -365,3 +365,7 @@ symbolsolver/output_fosci.csv
 app/metrics/output_fosci.csv
 
 githubextraction/repos.txt
+
+githubextraction/projects_ready.csv
+
+githubextraction/projects_ready.csv.bck

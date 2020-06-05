@@ -30,7 +30,7 @@ def process(clusters, classes, G):
 
 def merge_services_with_single_relationship_and_no_operations(service_graph, services):
     # Read classe interfaces identified
-    interfaces_path = f"/home/mbrito/git/thesis/data/interfaces/{Settings.PROJECT_NAME}"
+    interfaces_path = f"{Settings.DIRECTORY}data/interfaces/{Settings.PROJECT_NAME}"
     interfaces = set()
     with open(interfaces_path, 'r') as f:
         while True:

@@ -100,7 +100,7 @@ def apply_lda_to_text(docs, num_topics):
     # Clean text based on java stop words
     docs_content = []
     for doc in docs:
-        directory = f"/home/mbrito/git/thesis/data/words/{Settings.PROJECT_NAME}/{doc[0]}"
+        directory = f"{Settings.DIRECTORY}/data/words/{Settings.PROJECT_NAME}/{doc[0]}"
         with open(directory, "w+") as f:
             f.write(f"{doc[0]}\n")
             f.write("Before processing:\n")

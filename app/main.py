@@ -242,7 +242,7 @@ def identify_clusters_in_project(project):
     num_topics = project[1]
     create_logging_folders(project_name)
 
-    directory = '/home/mbrito/git/thesis-web-applications/monoliths/' + project_name
+    directory = f"{Settings.DIRECTORY_APPLICATIONS}/{project_name}"
 
     temp_json_location = f'{Settings.DIRECTORY}/symbolsolver/target/output.json'
 
