@@ -17,10 +17,10 @@ public class ExtractIdentifiedClassesTest {
 
     @Test
     public void parseAndExtractBulk() throws IOException {
-        String path = "";
         Set<String> repos = new HashSet<>();
+        String path = "/home/mbrito/git/thesis/githubextraction/final_projects";
         // Get all the repos
-        try (BufferedReader reader = new BufferedReader(new FileReader("path"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line = reader.readLine();
             while (line != null) {
                 repos.add(line);
@@ -32,18 +32,22 @@ public class ExtractIdentifiedClassesTest {
         }
 
         for(String repo : repos){
+            repo = repo.split(",")[0];
+            System.out.println("Found repo: " + repo);
             parseAndExtract(repo);
         }
 
     }
 
 
-    @Test
+    //@Test
     public void parseAndExtract(String projectName) throws IOException {
         // String projectName = "sunrise";
-
-        String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
-        String dstFolder = "/home/mbrito/git/thesis-web-applications/interfaces";
+        
+        projectName = projectName.replace("/", "__");
+        String path = "/mnt/HC_Volume_5723285/githubextractor/" + projectName;
+        //String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
+        String dstFolder = "/home/mbrito/git/thesis/data/interfaces";
 
 
         Parser parser = new Parser();
@@ -66,7 +70,7 @@ public class ExtractIdentifiedClassesTest {
         bf.close();
     }
 
-    @Test
+    //@Test
     public void shouldExtractListOfControllers() {
         List<String> classes = Arrays.asList("com.controllers.Teste", "com.controllers.something.else.ClassA",
                 "org.another.one.ClassControllers", "com.something.else", "com", "org.teste.Teste",

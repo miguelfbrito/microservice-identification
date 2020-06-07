@@ -12,7 +12,6 @@ import logging
 import numpy as np
 import LDA as lda
 import collections
-import igraph as ig
 import community
 import argparse
 import json
