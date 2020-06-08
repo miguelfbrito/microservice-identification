@@ -23,13 +23,16 @@ project_data = {}
 for path in files:
     print(path)
     with open(path, 'r') as f:
-        proj_name = re.findall(r'\/([a-zA-Z0-9-_]*)\/', path)[0]
-        proj_id = re.findall(r'\/([a-zA-Z0-9-_]*)$', path)
+        proj_name = re.findall(r'\/([a-zA-Z0-9-_\.]*)\/', path)
+        proj_id = re.findall(r'\/([a-zA-Z0-9-_\.]*)$', path)
 
-        if type(proj_id) == list:
-            proj_id = proj_id[0]
+        if type(proj_id) == list and type(proj_name) == list:
+            print(f"Path: {path}")
             print(f"Project id {proj_id}")
             print(f"Project name {proj_name}")
+
+            proj_id = proj_id[0]
+            proj_name = proj_name[0]
 
             k_topics = re.findall(r'K(\d*)', path)[0]
 

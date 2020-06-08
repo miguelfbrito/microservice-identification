@@ -6,7 +6,7 @@ class Settings:
     K_TOPICS = 0
     DRAW = False
     DIRECTORY = "/home/mbrito/git/thesis"
-    DIRECTORY_APPLICATIONS = "/mnt/HC_Volume_5723285/githubextractor"
+    DIRECTORY_APPLICATIONS = "/home/mbrito/thesis-web-applications/monoliths"
     DIRECTORY_PROJECTS = "/home/mbrito/git/thesis/projects.json"
     LDA_PLOTTING = False
     METRIC_EVALUATION = False
