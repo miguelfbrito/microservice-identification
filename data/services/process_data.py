@@ -24,21 +24,27 @@ for path in files:
     print(path)
     with open(path, 'r') as f:
         proj_name = re.findall(r'\/([a-zA-Z0-9-_]*)\/', path)[0]
-        proj_id = re.findall(r'\/([a-zA-Z0-9-_]*)$', path)[0]
-        k_topics = re.findall(r'K(\d*)', path)[0]
+        proj_id = re.findall(r'\/([a-zA-Z0-9-_]*)$', path)
 
-        proj = (proj_name, proj_id)
-        for line in (f.readlines()[-N:]):
-            match = re.findall(r'^(\w*): (\d*\.\d*)', line)
+        if type(proj_id) == list:
+            proj_id = proj_id[0]
+            print(f"Project id {proj_id}")
+            print(f"Project name {proj_name}")
 
-            for m in match:
-                print(m[0] + "  " + m[1] + " " + str(proj_name))
-                if proj in project_data:
-                    project_data[proj].append(
-                        (k_topics, m[0], m[1], proj_id))
-                else:
-                    project_data[proj] = [
-                        (k_topics, m[0], m[1], proj_id)]
+            k_topics = re.findall(r'K(\d*)', path)[0]
+
+            proj = (proj_name, proj_id)
+            for line in (f.readlines()[-N:]):
+                match = re.findall(r'^(\w*): (\d*\.\d*)', line)
+
+                for m in match:
+                    print(m[0] + "  " + m[1] + " " + str(proj_name))
+                    if proj in project_data:
+                        project_data[proj].append(
+                            (k_topics, m[0], m[1], proj_id))
+                    else:
+                        project_data[proj] = [
+                            (k_topics, m[0], m[1], proj_id)]
 
 
 print("\n\n\nPROJECT DATA")
