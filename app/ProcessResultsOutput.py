@@ -3,6 +3,7 @@ import subprocess
 from Settings import Settings
 import metrics.CHD as CHD
 import metrics.CHM as CHM
+import metrics.IFN as IFN
 
 
 class ProcessResultsOutput:
@@ -41,8 +42,10 @@ class ProcessResultsOutput:
         file_path = f"{Settings.DIRECTORY}/app/metrics/output_fosci.csv"
         chm = CHM.calculate(file_path)
         chd = CHD.calculate(file_path)
+        ifn = IFN.calculate(file_path)
 
         path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}"
         with open(path, "a+") as f:
             f.write(f"\nCHM: {chm}")
             f.write(f"\nCHD: {chd}")
+            f.write(f"\nIFN: {ifn}")
