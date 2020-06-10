@@ -18,7 +18,7 @@ def calculate(api_file_name):
     ifn = 0
     for service in services:
         ifn += len(service)
-    return ifn
+    return ifn / len(services)
 
 
 if __name__ == "__main__":

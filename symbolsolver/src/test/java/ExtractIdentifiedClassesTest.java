@@ -40,12 +40,11 @@ public class ExtractIdentifiedClassesTest {
     }
 
 
-    //@Test
     public void parseAndExtract(String projectName) throws IOException {
         // String projectName = "sunrise";
         
         projectName = projectName.replace("/", "__");
-        String path = "/mnt/HC_Volume_5723285/githubextractor/" + projectName;
+        String path = "/home/mbrito/git/thesis-web-applications/" + projectName;
         //String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
         String dstFolder = "/home/mbrito/git/thesis/data/interfaces";
 
@@ -57,18 +56,29 @@ public class ExtractIdentifiedClassesTest {
         Map<String, MyClass> parseResult = parse.extractClasses(compilationUnits);
 
 
-        System.out.println(parseResult.keySet().toString());
+        //System.out.println(parseResult.keySet().toString());
 
         List<String> filters = Arrays.asList("(?i)\\.*controller$");
-        List<String> classes = ExtractIdentifiedClasses.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);
-        classes.forEach(System.out::println);
+        ExtractIdentifiedClasses extract = new ExtractIdentifiedClasses();
+        List<String> classes = extract.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);
+        // classes.forEach(System.out::println);
 
-        BufferedWriter bf = new BufferedWriter(new FileWriter(dstFolder + "/" + projectName));
-        for (String classe : classes) {
-            bf.write(classe + "\n");
+        try(BufferedWriter bf = new BufferedWriter(new FileWriter(dstFolder + "/" + projectName))){
+            for (String classe : classes) {
+                bf.write(classe + "\n");
+            }
+        } catch (IOException e){
+            e.printStackTrace();
         }
-        bf.close();
+
+        parser = null;
+        parse = null;
+        parseResult = null;
+        compilationUnits = null;
+        extract = null;
+
     }
+
 
     //@Test
     public void shouldExtractListOfControllers() {
@@ -76,7 +86,8 @@ public class ExtractIdentifiedClassesTest {
                 "org.another.one.ClassControllers", "com.something.else", "com", "org.teste.Teste",
                 "com.controllers.testeController", "com.Controllers.Class");
         List<String> patterns = Arrays.asList("(?i)controllers?");
-        List<String> matchingClasses = ExtractIdentifiedClasses.extractFilterBased(classes, patterns);
+        ExtractIdentifiedClasses extract = new ExtractIdentifiedClasses();
+        List<String> matchingClasses = extract.extractFilterBased(classes, patterns);
         List<String> expectedMatches = Arrays.asList("com.controllers.Teste", "com.controllers.something.else.ClassA",
                 "org.another.one.ClassControllers", "com.controllers.testeController", "com.Controllers.Class");
         assertEquals(matchingClasses, expectedMatches);

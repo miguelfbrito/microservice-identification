@@ -242,6 +242,7 @@ def identify_clusters_in_project(project):
     create_logging_folders(project_name)
 
     directory = f"{Settings.DIRECTORY_APPLICATIONS}/{project_name}"
+    print(f"APP DIR {directory}")
 
     temp_json_location = f'{Settings.DIRECTORY}/symbolsolver/target/output.json'
 
@@ -321,6 +322,7 @@ def main():
         Settings.PROJECT_NAME = args.project
         Settings.K_TOPICS = int(args.k_topics)
         Settings.create_id()
+        print(f"PROJETC NAME {Settings.PROJECT_NAME}")
         project = (args.project, int(args.k_topics))
         clusters = identify_clusters_in_project(project)
         result.add_project(project[0], str(clusters))
