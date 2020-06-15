@@ -4,6 +4,8 @@ import logging
 import pathlib
 import numpy as np
 import pyLDAvis.gensim
+import matplotlib.pyplot as plt
+
 
 from WeightType import WeightType
 from Clustering import Clustering
@@ -31,6 +33,8 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     # (class_name, BOW)
     docs = [(class_name, cla.get_merge_of_entities())
             for class_name, cla in classes.items()]
+
+    # compute_multiple_topics(docs)
 
     lda_result = apply_lda_to_text(docs, num_topics)
     print(f"LDA Result: {lda_result}")
@@ -83,7 +87,7 @@ num_topics : K topics refered in LDA
 """
 
 
-def apply_lda_to_text(docs, num_topics):
+def clean_documents(docs):
     tokenizer = RegexpTokenizer(r'\w+')
 
     # create English stop words list
@@ -146,6 +150,13 @@ def apply_lda_to_text(docs, num_topics):
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
 
+    return texts, corpus, dictionary
+
+
+def apply_lda_to_text(docs, num_topics):
+
+    texts, corpus, dictionary = clean_documents(docs)
+
     # generate LDA model
     # TODO : load a gensim model
     # https://radimrehurek.com/gensim/models/ldamodel.html
@@ -179,6 +190,42 @@ def apply_lda_to_text(docs, num_topics):
     print('\nCoherence Score: ', coherence_lda)
 
     return topics_per_doc
+
+
+def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
+    coherence_values = []
+    model_list = []
+    for num_topics in range(start, limit, step):
+        model = gensim.models.wrappers.LdaMallet(
+            Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary)
+        model_list.append(model)
+        coherencemodel = CoherenceModel(
+            model=model, texts=texts, dictionary=dictionary, coherence='c_v')
+        coherence_values.append(coherencemodel.get_coherence())
+
+    return model_list, coherence_values
+
+
+def compute_multiple_topics(docs):
+
+    limit = 100
+    start = 5
+    step = 2
+
+    texts, corpus, dictionary = clean_documents(docs)
+
+    model_list, coherence_values = compute_coherence_values(
+        dictionary=dictionary, corpus=corpus, texts=texts, start=start, limit=limit, step=step)
+
+    x = range(start, limit, step)
+    for k, coherence in zip(x, coherence_values):
+        print(f"K-Topics: {k}, coherence: {coherence}")
+
+    plt.plot(x, coherence_values)
+    plt.xlabel("Num Topics")
+    plt.ylabel("Coherence score")
+    plt.legend(("coherence_values"), loc='best')
+    plt.show()
 
 
 def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):
