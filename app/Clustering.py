@@ -1,4 +1,5 @@
 import re
+import random
 import itertools
 import community
 import matplotlib
@@ -8,7 +9,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from Graph import Graph
-from random import random
 from operator import itemgetter
 from networkx.drawing.nx_pydot import write_dot
 from networkx import edge_betweenness_centrality as betweenness
@@ -34,12 +34,67 @@ from sklearn import cluster
 class Clustering:
 
     @staticmethod
-    def community_detection_louvain(graph, weight_type=WeightType.ABSOLUTE):
+    def compute_multiple_resolutions(graph, weight_type=WeightType.ABSOLUTE):
+
+        start = 0.2
+        end = 1.5
+        step = 0.1
+
+        clusters_results = []
+
+        res_range = np.arange(start, end, step)
+        for resolution in res_range:
+            clusters, modularity = Clustering.community_detection_louvain(
+                graph, resolution=resolution)
+            clusters_results.append((clusters, modularity, resolution))
+
+        with open('./clustering.txt', 'w+') as f:
+            for clusters, modularity, resolution in clusters_results:
+                f.write(f"Modularity {modularity}\n")
+                f.write(f"Resolution {resolution}\n")
+
+                for service_id, classes in clusters.items():
+                    f.write(f"Service {service_id}\n")
+                    for classe in classes:
+                        f.write(f"{classe}\n")
+                    f.write("\n")
+
+                f.write(f"{100*'-'}\n")
+                f.write(f"{100*'-'}\n")
+                f.write(f"{100*'-'}\n\n")
+
+                Clustering.write_services_to_file(
+                    clusters, resolution, classes)
+
+     #   plt.plot(res_range, [len(m[0]) for m in clusters_results])
+     #   plt.xlabel("Resolution")
+     #   plt.ylabel("Modularity")
+     #   plt.show()
+
+        return clusters_results
+
+    @staticmethod
+    def write_services_to_file(clusters, resolution,  classes):
+        # service_id, service
+        services = Service.extract_services_from_clusters(clusters)
+
+        Settings.create_id()
+
+        with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_R{round(resolution,2)}", 'w+') as f:
+            for service_id, service in services.items():
+                f.write(f"\nService {service_id}\n")
+                for class_name in service.get_classes():
+                    f.write(f"{class_name}\n")
+                f.write("\n")
+
+    @staticmethod
+    def community_detection_louvain(graph, resolution=1, weight_type=WeightType.ABSOLUTE):
         weight_type = str(weight_type)
         graph = Graph.to_undirected(graph)
 
+        # Lower resolution results in more clusters (shouldn't it be the opposite?)
         partition = community.best_partition(
-            graph, weight=str(WeightType.ABSOLUTE))
+            graph, weight=str(WeightType.ABSOLUTE), resolution=resolution)
         values = [partition.get(node) for node in graph.nodes()]
 
         nodes = list(graph.nodes)
@@ -61,7 +116,9 @@ class Clustering:
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
-        print(f"Modularity: {community.modularity(partition, graph)}")
+
+        modularity = community.modularity(partition, graph)
+        print(f"Modularity: {modularity}")
 
         if Settings.DRAW:
 
@@ -84,7 +141,7 @@ class Clustering:
 
             plt.show()
 
-        return clusters
+        return clusters, modularity
 
     # Girvan Newman Implementations
 
@@ -127,7 +184,7 @@ class Clustering:
         # and add some random noise.
         centrality = {e: c / max_cent for e, c in centrality.items()}
         # Add some random noise.
-        centrality = {e: c + random() for e, c in centrality.items()}
+        centrality = {e: c + random.random() for e, c in centrality.items()}
         return max(centrality, key=centrality.get)
 
     @staticmethod

@@ -7,7 +7,7 @@ def execute_parser(project_name):
     symbol_solver_path = f"{Settings.DIRECTORY}/symbolsolver/target/"
 
     # command = f"mvn package -DskipTests && java -Dproject=\"{project_name}\" -cp target/symbolsolver-1.0.jar Main"
-    command = f"java -Dproject={project_name} -cp symbolsolver-1.0.jar Main"
+    command = f"java -Dparse -Dproject={project_name} -cp symbolsolver-1.0.jar Main"
 
     print(f"COMMAND {command}")
 

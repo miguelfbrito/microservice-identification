@@ -242,9 +242,8 @@ def identify_clusters_in_project(project):
     create_logging_folders(project_name)
 
     directory = f"{Settings.DIRECTORY_APPLICATIONS}/{project_name}"
-    print(f"APP DIR {directory}")
 
-    temp_json_location = f'{Settings.DIRECTORY}/symbolsolver/target/output.json'
+    temp_json_location = f'{Settings.DIRECTORY}/data/output.json'
 
     utils.execute_parser(project_name)
 
@@ -263,37 +262,25 @@ def identify_clusters_in_project(project):
     # apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
-    # TODO : think about if the pre_processing should be done or not
     lda.apply_lda_to_classes(graph, classes, num_topics)
     calculate_absolute_weights(graph, classes, weight_type=WeightType.LDA)
 
+    # TODO : think about if the pre_processing should be done or not
     graph = Clustering.pre_process(
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
 
+    # List of clusters. One for each execution.
+    clustering_results = Clustering.compute_multiple_resolutions(graph)
     # Cluster by LDA and structural dependencies
-    clusters = Clustering.community_detection_louvain(graph)
+    # clusters, modularity = Clustering.community_detection_louvain(graph)
 
-    clusters = PostProcessing.process(clusters, classes, graph.copy())
-    write_services_to_file(clusters, classes)
-    return clusters
-
-
-def write_services_to_file(clusters, classes):
-    # service_id, service
-    services = Service.extract_services_from_clusters(clusters)
-    class_service = Service.get_map_class_service_id(clusters)
-
-    with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}", 'w') as f:
-        for service_id, service in services.items():
-            f.write(f"\nService {service_id}\n")
-            for class_name in service.get_classes():
-                f.write(f"{class_name}\n")
-            f.write("\n")
+    # clusters = PostProcessing.process(clusters, classes, graph.copy())
+    return clustering_results
 
 
 def main():
     # logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
-    #       format="%(asctime)s:%(levelname)s: %(message)s")
+    #   format="%(asctime)s:%(levelname)s: %(message)s")
     # Enables printing of logs to stdout as well
     # logging.getLogger().addHandler(logging.StreamHandler())
 
@@ -312,24 +299,55 @@ def main():
                         help="Enable plotting of graphs", action="store_true")
     parser.add_argument("--lda-plotting", "-l",
                         help="Enable plotting of LDA topics", action="store_true")
+    parser.add_argument("--metric-based", "-mb",
+                        help="CHANGE LATER", action="store_true")
     args = parser.parse_args()
 
     Settings.DRAW = True if args.draw else False
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
 
     if args.project:
-        result = ProcessResultsOutput()
         Settings.PROJECT_NAME = args.project
         Settings.K_TOPICS = int(args.k_topics)
-        Settings.create_id()
-        print(f"PROJETC NAME {Settings.PROJECT_NAME}")
         project = (args.project, int(args.k_topics))
-        clusters = identify_clusters_in_project(project)
-        result.add_project(project[0], str(clusters))
-        result.dump_to_json_file()
+        clusters_results = identify_clusters_in_project(project)
 
-        if args.metrics:
-            result.run_metrics()
+        metrics = []
+        for cluster in clusters_results:
+            Settings.create_id()
+            result = ProcessResultsOutput()
+            result.add_project(project[0], str(cluster[0]))
+            result.dump_to_json_file()
+
+            if args.metrics:
+                chm, chd, ifn = result.run_metrics()
+                metrics.append((chm, chd, ifn))
+
+        chm = []
+        chd = []
+        ifn = []
+        resolution = []
+        for cluster_result, metric in zip(clusters_results, metrics):
+            chm.append(metric[0])
+            chd.append(metric[1])
+            ifn.append(metric[2])
+            resolution.append(round(cluster_result[2], 2))
+
+        # Plot
+        bar_width = 0.25
+        r1 = np.arange(len(chm))
+        r2 = [x + bar_width for x in r1]
+        r3 = [x + bar_width for x in r2]
+
+        plt.bar(r1, chm, width=bar_width, label='chm')
+        plt.bar(r2, chd, width=bar_width, label='chd')
+        plt.bar(r3, ifn, width=bar_width, label='ifn')
+
+        plt.xlabel('group', fontweight='bold')
+        plt.xticks([r + bar_width for r in range(len(chm))],
+                   resolution)
+        plt.legend()
+        plt.show()
 
     if args.metrics_condensed:
         projects = [('spring-blog', 7), ('jpetstore', 5),
@@ -341,9 +359,10 @@ def main():
             Settings.K_TOPICS = int(project[1])
             Settings.create_id()
             print(f"\n\nStarting project {project[0]}, {project[1]} topics")
-            clusters = identify_clusters_in_project(project)
-            clusters = [cluster for cluster in clusters.values()]
-            results.add_project(project[0], str(clusters))
+            clusters_results = identify_clusters_in_project(project)
+            clusters_results = [
+                cluster for cluster in clusters_results.values()]
+            results.add_project(project[0], str(clusters_results))
         results.dump_to_json_file()
         results.run_metrics()
 
@@ -355,11 +374,10 @@ def main():
             Settings.PROJECT_NAME = project[0]
             Settings.K_TOPICS = int(project[1])
             Settings.create_id()
-            print(f"\n\nStarting project {project[0]}, {project[1]} topics")
-            print(f"\n\nStarting project {project}")
-            clusters = identify_clusters_in_project(project)
-            clusters = [cluster for cluster in clusters.values()]
-            results.add_project(project[0], str(clusters))
+            clusters_results = identify_clusters_in_project(project)
+            clusters_results = [
+                cluster for cluster in clusters_results.values()]
+            results.add_project(project[0], str(clusters_results))
         results.dump_to_json_file()
         results.run_metrics()
 
