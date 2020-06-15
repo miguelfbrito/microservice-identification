@@ -18,7 +18,7 @@ for key, values in folders.items():
     for curr_file in values:
         files.append(f"{key}/{curr_file}")
 
-N = 4
+N = 6
 project_data = {}
 for path in files:
     print(path)
@@ -34,11 +34,11 @@ for path in files:
             proj_id = proj_id[0]
             proj_name = proj_name[0]
 
-            k_topics = re.findall(r'K(\d*)', path)[0]
+            k_topics = re.findall(r'K(\d+)', path)[0]
 
             proj = (proj_name, proj_id)
             for line in (f.readlines()[-N:]):
-                match = re.findall(r'^(\w*): (\d*\.\d*)', line)
+                match = re.findall(r'^(\w*): (\d*\.?\d*)', line)
 
                 for m in match:
                     print(m[0] + "  " + m[1] + " " + str(proj_name))
@@ -54,7 +54,7 @@ print("\n\n\nPROJECT DATA")
 print(project_data)
 
 with open('./results.csv', 'w') as f:
-    f.write(f"project;k_topics;IRN; OPN; CHM; CHD;;ID\n\n")
+    f.write(f"project;k_topics;IRN; OPN; CHM; CHD;IFN;ID\n\n")
     for project in project_data:
         data = project_data[project]
         head_line = f"{project[0]}"
@@ -62,7 +62,7 @@ with open('./results.csv', 'w') as f:
         line = f"{head_line};{data[0][0]}"
         for metric in data:
             line += f";{metric[2]}"
-            if metric[1] == 'CHD':
+            if metric[1] == 'IFN':
                 f.write(f"{line};;{project[1]}")
 
                 line = f"{head_line};{metric[0]}"

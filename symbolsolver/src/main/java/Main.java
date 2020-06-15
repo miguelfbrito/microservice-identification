@@ -11,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        final String PROJECTS_ROOT = "/mnt/HC_Volume_5723285/githubextractor/";
+        final String PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications/";
 
         String project_name = System.getProperty("project");
         if (project_name != null) {
