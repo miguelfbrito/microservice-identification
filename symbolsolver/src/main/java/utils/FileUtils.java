@@ -2,6 +2,7 @@ package utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import constants.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
@@ -18,7 +19,7 @@ public class FileUtils {
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         FileWriter file = null;
         try {
-            file = new FileWriter("./output.json");
+            file = new FileWriter(Constants.DIRECTORY + "/data/output.json");
             gson.toJson(data, file);
         } catch (IOException e) {
             e.printStackTrace();

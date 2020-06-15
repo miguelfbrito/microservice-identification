@@ -1,7 +1,7 @@
 package metrics;
 
+import constants.Constants;
 import extraction.ExtractOperations;
-import graph.entities.Constants;
 import graph.entities.MyMethod;
 import graph.entities.Service;
 import parser.ParseResultServices;

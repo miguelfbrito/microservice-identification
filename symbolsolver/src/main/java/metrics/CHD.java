@@ -1,15 +1,13 @@
 package metrics;
 
+import constants.Constants;
 import extraction.ExtractOperations;
-import graph.entities.Constants;
 import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
 import parser.ParseResultServices;
 import utils.StringUtils;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 

@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import graph.DependencyEdge;
 import graph.MyGraph;
 import graph.creation.ByMethodCallInvocation;
-import graph.entities.Constants;
+import constants.Constants;
 import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
@@ -16,6 +16,7 @@ import parser.ParseResultServices;
 import parser.Parser;
 import utils.FileUtils;
 import utils.StringUtils;
+
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -31,7 +32,7 @@ public class GenerateMetrics {
     public static void checkEnv() {
 
         if (System.getenv("CI") == null) {
-            PROJECTS_ROOT = "/home/mbrito/git/thesis-web-applications";
+            PROJECTS_ROOT = Constants.MONOLITHS_DIRECTORY;
         } else {
             PROJECTS_ROOT = System.getenv("GITHUB_WORKSPACE") + "/thesis-web-applications/monoliths";
         }
@@ -40,7 +41,7 @@ public class GenerateMetrics {
     public static void extractClustersToFile(Map<Integer, Service> services, Project project) throws IOException {
 
         // WRITE TO GENERIC FILE
-        String path = "../data/operations_per_service/" + project.getName();
+        String path = Constants.DIRECTORY + "/data/operations_per_service/" + project.getName();
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(path)  //Set true for append mode
         );
@@ -72,7 +73,7 @@ public class GenerateMetrics {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
         Gson gson = new Gson();
-        try (FileReader reader = new FileReader("../projects.json")) {
+        try (FileReader reader = new FileReader(Constants.DIRECTORY + "/projects.json")) {
             //Read JSON file
             Type projectType = new TypeToken<ArrayList<Project>>() {
             }.getType();
@@ -99,7 +100,7 @@ public class GenerateMetrics {
             List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(completePath));
             List<String> interfaces = new ArrayList<>();
 
-            try (BufferedReader reader = new BufferedReader(new FileReader("/home/mbrito/git/thesis/data/interfaces/" + project.getName()))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(Constants.DIRECTORY + "/data/interfaces/" + project.getName()))) {
                 String line = reader.readLine();
                 while (line != null) {
                     interfaces.add(line);
@@ -122,7 +123,7 @@ public class GenerateMetrics {
             pm.setOpn(calculateOPN(parseResultServices, interfaces));
 
             Map<Integer, Service> services = parseResultServices.getServices();
-            writeServiceOperationsToFile(services, "/home/mbrito/git/thesis/app/metrics/output_fosci.csv");
+            writeServiceOperationsToFile(services, Constants.DIRECTORY + "/app/metrics/output_fosci.csv");
 
             // pm.setChm(calculateCHM(parseResultServices, interfaces));
             // cleanUp(parseResultServices);
@@ -154,7 +155,7 @@ public class GenerateMetrics {
                         .map(s -> StringUtils.filterAndCleanText(s, Constants.STOP_WORDS))
                         .collect(ArrayList::new, List::addAll, List::addAll);
                 String line = service.getKey() + ",\"" + operations.getValue() + "\",\"" + operations.getKey() + "\",\"" + String.join(" ", parameters)
-                        + "\",\"" +  String.join(" ", returns) + "\"";
+                        + "\",\"" + String.join(" ", returns) + "\"";
 
                 writer.write(line);
                 writer.newLine();
@@ -188,7 +189,7 @@ public class GenerateMetrics {
         System.out.println("IRN Project: " + irn);
 
         // Write call invocations for each service to project
-        String path = "/home/mbrito/git/thesis/data/services/" + parseResultServices.getProject().getName() + "/" + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
+        String path = Constants.DIRECTORY + "/data/services/" + parseResultServices.getProject().getName() + "/" + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
         List<String> lines = new ArrayList<>(Collections.singletonList("\nMethod invocations between services:"));
         for (DependencyEdge e : graphReference.getGraph().edgeSet()) {
             MyClass src = graphReference.getGraph().getEdgeSource(e);
@@ -233,7 +234,7 @@ public class GenerateMetrics {
 
 
         // WRITE TO GENERIC FILE
-        String path = "../data/results.csv";
+        String path = Constants.DIRECTORY + "/data/results.csv";
         File file = new File(path);
         boolean writeHeader = !file.exists();
 
@@ -256,7 +257,7 @@ public class GenerateMetrics {
 
 
         // WRITE TO PROJECT SPECIFIC FILE
-        path = "../data/results_" + metrics.getProject().getName() + ".csv";
+        path = Constants.DIRECTORY + "/data/results_" + metrics.getProject().getName() + ".csv";
         file = new File(path);
         writeHeader = !file.exists();
         BufferedWriter projectWriter = new BufferedWriter(new FileWriter(path, true));
@@ -276,7 +277,7 @@ public class GenerateMetrics {
         projectWriter.close();
 
         // WRITE TO SERVICE FILE
-        path = "/home/mbrito/git/thesis/data/services/" + metrics.getProject().getName() + "/" + metrics.getProject().getName() + "_" + metrics.getProject().getId();
+        path = Constants.DIRECTORY + "/data/services/" + metrics.getProject().getName() + "/" + metrics.getProject().getName() + "_" + metrics.getProject().getId();
         file = new File(path);
         writeHeader = !file.exists();
         BufferedWriter projectWriterService = new BufferedWriter(new FileWriter(path, true));
