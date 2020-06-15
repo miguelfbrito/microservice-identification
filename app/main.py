@@ -291,8 +291,8 @@ def write_services_to_file(clusters, classes):
 
 
 def main():
-    logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
-                        format="%(asctime)s:%(levelname)s: %(message)s")
+    # logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
+    #       format="%(asctime)s:%(levelname)s: %(message)s")
     # Enables printing of logs to stdout as well
     # logging.getLogger().addHandler(logging.StreamHandler())
 

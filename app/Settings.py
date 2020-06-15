@@ -10,6 +10,7 @@ class Settings:
     DIRECTORY_PROJECTS = "/home/mbrito/git/thesis/projects.json"
     LDA_PLOTTING = False
     METRIC_EVALUATION = False
+    MALLET_PATH = "/home/mbrito/git/Mallet/bin/mallet"
 
     @staticmethod
     def create_id():

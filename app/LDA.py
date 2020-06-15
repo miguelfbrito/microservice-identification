@@ -11,6 +11,7 @@ from nltk.tokenize import RegexpTokenizer
 from stop_words import get_stop_words
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
+from gensim.models import CoherenceModel
 from StringUtils import StringUtils
 from Settings import Settings
 
@@ -150,14 +151,32 @@ def apply_lda_to_text(docs, num_topics):
     # https://radimrehurek.com/gensim/models/ldamodel.html
     # ldamodel = LdaModel.load()
 
-    ldamodel = gensim.models.ldamodel.LdaModel(
-        corpus, num_topics=num_topics, id2word=dictionary, passes=100)
+    # model = gensim.models.ldamodel.LdaModel(
+    # corpus, num_topics=num_topics, id2word=dictionary, passes=100)
 
-    topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
+    ldamodel = gensim.models.wrappers.LdaMallet(
+        Settings.MALLET_PATH, corpus=corpus, num_topics=20, id2word=dictionary)
+    # topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
+
+    topics_per_doc = []
+    for c in ldamodel[corpus]:
+        topics_per_doc.append(c)
 
     if Settings.LDA_PLOTTING:
         data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
         pyLDAvis.show(data)
+
+    # Compute Perplexity
+    # a measure of how good the model is. lower the better.
+    # Does not work for LDAMallet
+    # print('\nPerplexity: ', ldamodel.log_perplexity(corpus))
+
+    # Compute Coherence Score
+    # ranging from 0 to 1, the higher the better.
+    coherence_model_lda = CoherenceModel(
+        model=ldamodel, texts=texts, dictionary=dictionary, coherence='c_v')
+    coherence_lda = coherence_model_lda.get_coherence()
+    print('\nCoherence Score: ', coherence_lda)
 
     return topics_per_doc
 
