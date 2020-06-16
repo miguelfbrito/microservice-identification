@@ -37,7 +37,7 @@ def GetInterf(api):
 
 def IsIgnored(item):
     global g_ignore_items
-    if item in g_ignore_items:
+    if item in g_ignore_items or len(item) == 1:
         return True
     else:
         return False
@@ -80,8 +80,15 @@ def GetItems(nameSet):
         itemList.extend(tmpList)
     newItemList = list()
     for item in itemList:
-        if IsIgnored(item) == False and item != '':
-            newItemList.append(item)
+        split = item.split(' ')
+        if len(split) > 1:
+            for item2 in split:
+                if IsIgnored(item2) == False and item2 != '':
+                    newItemList.append(item2)
+        else:
+            if IsIgnored(item) == False and item != '':
+                newItemList.append(item)
+    # print(f"New item list {newItemList}")
     return set(newItemList)
 
 
@@ -124,17 +131,17 @@ def GetEdge(apiID1, apiID2):
     # print g_apiDict[apiID1].interface, g_apiDict[apiID1].apiName, itemSet1
     # print g_apiDict[apiID2].interface, g_apiDict[apiID2].apiName, itemSet2
 
-    '''
     if len(itemSet1) == 0 and len(itemSet2) == 0:  # not have domain items, then return 1
         edge_wei = 1
         edge_unwei = 1
-    '''
+        return edge_wei, edge_unwei
 
     interSet = itemSet1 & itemSet2
     unionSet = itemSet1 | itemSet2
-    #print('itemSet1', itemSet1)
-    #print('itemSet2', itemSet2)
-    #print('unionset', unionSet)
+    # print('itemSet1', itemSet1)
+    # print('itemSet2', itemSet2)
+    # print('intersect', interSet)
+    # print('unionset', unionSet)
     if len(unionSet) == 0:
         return -1, -1
     edge_wei = len(interSet) / float(len(unionSet))
@@ -142,6 +149,8 @@ def GetEdge(apiID1, apiID2):
         edge_unwei = 1.0
     else:
         edge_unwei = 0.0
+
+    # print(f"EDGE WEI: {edge_wei}\n")
     return edge_wei, edge_unwei
 
 # get api list for a cluster
@@ -172,6 +181,7 @@ def Metric_dom_cohesion(clusterID):
             if edge_wei != -1:
                 sim_wei_list.append(edge_wei)
         dom_cohesion_wei = sum(sim_wei_list) / float(len(sim_wei_list))
+
     return dom_cohesion_wei
 
 
@@ -181,7 +191,7 @@ def calculate(apiFileName):
     global g_apiDict
     g_clusterID2Interf2APIDict = dict()
     g_apiDict = dict()
-    g_ignore_items = ['jpetstore', 'jforum', 'xwiki', 'roller', 'agilefant', 'blog', 'raysmond',
+    g_ignore_items = {'jpetstore', 'jforum', 'xwiki', 'roller', 'agilefant', 'blog', 'raysmond',
                       'b3log', 'solo', 'fi', 'hut', 'soberit', 'agilefant', 'servlets', 'javax',
                       'java', 'net', 'org', 'util', 'lang', 'apache', 'roller', 'weblogger', 'int',
                       'math', 'string', 'int', 'void', 'date', 'object', 'list',
@@ -203,13 +213,17 @@ def calculate(apiFileName):
                       'customiz', 'generator', 'load',  'build', 'listen', 'descriptor', 'script', 'repository', 'action',
                       'cache', 'type',  'resolve', 'convert', 'and', 'provid', 'of', 'in', 'list', 'from', 'impl', 'check',
                       'serializer', 'serialize', 'xwiki', 'wiki', 'context', 'reference', 'translation', 'configuration',
-                      'annotation']
+                      'annotation', 'integer', 'number', 'collection', 'initialize', 'delete', 'add', 'remove', 'update',
+                      'edit', 'array', 'byte', 'is', 'new', 'create', 'generate', 'transfer', 'retrieve', 'all', 'by',
+                      'prefetched', 'hash', 'widget', 'stream', 'double', 'database', 'move', 'contents', 'collections', 'position',
+                      'zone', 'time', 'start', 'end', 'high', 'low', 'name', 'error', 'message', 'ids', 'only', 'input', 'clear', 'view', 'list',
+                      'select', 'selected', 'long', 'sum', 'only', 'search', 'my', 'enable', 'disable', 'handling', 'readonly', 'form', 'server'}
 
     [g_clusterID2Interf2APIDict, g_apiDict] = ReadAPIFile(
         apiFileName)
 
     if len(g_clusterID2Interf2APIDict) == 0:
-        print("CHD: 1")
+        # print("CHD: 1")
         return 1
     else:
         dom_cohesion_wei_list = list()
@@ -229,7 +243,7 @@ def calculate(apiFileName):
         # tmp = ['avg_dom_cohesion', str(avg_dom_cohesion_wei), 'interface_number', str(
         #     interface_number), 'clusterHasinf', str(len(g_clusterID2Interf2APIDict))]
         # print(','.join(tmp))
-        print(f"CHD: {avg_dom_cohesion_wei}")
+        # print(f"CHD: {avg_dom_cohesion_wei}")
         return avg_dom_cohesion_wei
 
         '''

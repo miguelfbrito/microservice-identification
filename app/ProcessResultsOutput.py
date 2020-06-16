@@ -1,3 +1,4 @@
+import re
 import json
 import subprocess
 from Settings import Settings
@@ -35,11 +36,27 @@ class ProcessResultsOutput:
     def run_metrics(self):
         # Runs java method responsible for calculating OPN and IRN and extracting method invocations in order to calculate
         # CHM and CHD. Resorts to the projects.json written above as input.
-        # subprocess.call("mvn -Dtest=GenerateMetricsTest test",
-        # cwd=f"{Settings.DIRECTORY}/symbolsolver/", shell=True)
 
-        subprocess.call(f"java -Dmetrics -cp symbolsolver-1.0.jar Main",
-                        cwd=f"{Settings.DIRECTORY}/symbolsolver/target/", shell=True)
+        # subprocess.call(f"java -Dmetrics -cp symbolsolver-1.0.jar Main",
+        # cwd=f"{Settings.DIRECTORY}/symbolsolver/target/", shell=True)
+
+        output = subprocess.check_output(f"java -Dmetrics -cp symbolsolver-1.0.jar Main",
+                                         cwd=f"{Settings.DIRECTORY}/symbolsolver/target/", shell=True)
+
+        output = str(output).replace("b'", "").split("\\n")
+
+        print("\n\n\n\n\nCHECKING IRN OPN PROJECT")
+        irn = 9999
+        opn = 9999
+        for line in output:
+            irn_match = re.search(r'IRN Project: (\d*(\.\d*)?)', line)
+            opn_match = re.search(r'OPN Project: (\d*(\.\d*)?)', line)
+
+            if irn_match:
+                irn = float(irn_match[1])
+
+            if opn_match:
+                opn = float(opn_match[1])
 
         # output_fosci.csv is obtained from the execution of the previous metrics on the symbolsolver
         file_path = f"{Settings.DIRECTORY}/app/metrics/output_fosci.csv"
@@ -57,4 +74,4 @@ class ProcessResultsOutput:
             f.write(f"\nCHD: {chd}")
             f.write(f"\nIFN: {ifn}")
 
-        return chm, chd, ifn
+        return chm, chd, ifn, irn, opn

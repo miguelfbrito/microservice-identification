@@ -7,6 +7,7 @@ import pyLDAvis.gensim
 import matplotlib.pyplot as plt
 
 
+from kneed import KneeLocator
 from WeightType import WeightType
 from Clustering import Clustering
 from nltk.tokenize import RegexpTokenizer
@@ -34,9 +35,10 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     docs = [(class_name, cla.get_merge_of_entities())
             for class_name, cla in classes.items()]
 
-    # compute_multiple_topics(docs)
+    lda_result = find_best_lda(docs)
+    # print(f"\n\nLDAS RESULT {ldas_result}\n\n")
 
-    lda_result = apply_lda_to_text(docs, num_topics)
+    # lda_result = apply_lda_to_text(docs, num_topics)
     print(f"LDA Result: {lda_result}")
 
     services = {}
@@ -145,7 +147,7 @@ def clean_documents(docs):
     dictionary = corpora.Dictionary(texts)
 
     # filter dictionary from outliers
-    dictionary.filter_extremes(no_below=2, no_above=0.8, keep_n=10000)
+    dictionary.filter_extremes(no_below=3, no_above=0.65, keep_n=10000)
 
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
@@ -195,37 +197,63 @@ def apply_lda_to_text(docs, num_topics):
 def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
     coherence_values = []
     model_list = []
+    num_topics_list = []
     for num_topics in range(start, limit, step):
         model = gensim.models.wrappers.LdaMallet(
-            Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary)
+            Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary, random_seed=1)
         model_list.append(model)
+
         coherencemodel = CoherenceModel(
             model=model, texts=texts, dictionary=dictionary, coherence='c_v')
         coherence_values.append(coherencemodel.get_coherence())
 
-    return model_list, coherence_values
+        num_topics_list.append(num_topics)
+
+    return model_list, coherence_values, num_topics_list
 
 
-def compute_multiple_topics(docs):
+def find_best_lda(docs):
 
-    limit = 100
+    limit = 35
     start = 5
-    step = 2
+    step = 1
 
     texts, corpus, dictionary = clean_documents(docs)
 
-    model_list, coherence_values = compute_coherence_values(
+    model_list, coherence_values, num_topics = compute_coherence_values(
         dictionary=dictionary, corpus=corpus, texts=texts, start=start, limit=limit, step=step)
 
     x = range(start, limit, step)
-    for k, coherence in zip(x, coherence_values):
-        print(f"K-Topics: {k}, coherence: {coherence}")
+    # for k, coherence in zip(x, coherence_values):
+    #    print(f"K-Topics: {k}, coherence: {coherence}")
+
+    for model, coherence, k in zip(model_list, coherence_values, num_topics):
+        print(f"k {k} - coherence {coherence} lda_model {model}")
+
+    knee_locator = KneeLocator(x, coherence_values, curve='concave',
+                               direction='increasing')
+
+    print(
+        f"The knee of topics/coherence is {knee_locator.knee}")
 
     plt.plot(x, coherence_values)
     plt.xlabel("Num Topics")
     plt.ylabel("Coherence score")
     plt.legend(("coherence_values"), loc='best')
     plt.show()
+
+    lda_model = None
+    for model, k_topic in zip(model_list, num_topics):
+        if k_topic == knee_locator.knee:
+            lda_model = model
+            break
+
+    topics_per_doc = []
+
+    for c in lda_model[corpus]:
+        topics_per_doc.append(c)
+
+    return topics_per_doc
 
 
 def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):
