@@ -19,7 +19,7 @@ from StringUtils import StringUtils
 from Settings import Settings
 
 
-def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
+def apply_lda_to_classes(graph, classes, num_topics=0, pre_process=False):
     # classes {class_name : Class}
     docs = []
     # Remove loose sections of the graph
@@ -35,7 +35,7 @@ def apply_lda_to_classes(graph, classes, num_topics, pre_process=False):
     docs = [(class_name, cla.get_merge_of_entities())
             for class_name, cla in classes.items()]
 
-    lda_result = find_best_lda(docs)
+    lda_result, num_topics = find_best_lda(docs)
     # print(f"\n\nLDAS RESULT {ldas_result}\n\n")
 
     # lda_result = apply_lda_to_text(docs, num_topics)
@@ -214,9 +214,9 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
 
 def find_best_lda(docs):
 
-    limit = 35
+    limit = 30
     start = 5
-    step = 1
+    step = 2
 
     texts, corpus, dictionary = clean_documents(docs)
 
@@ -232,9 +232,11 @@ def find_best_lda(docs):
 
     knee_locator = KneeLocator(x, coherence_values, curve='concave',
                                direction='increasing')
+    best_topic = knee_locator.knee
+    Settings.K_TOPICS = best_topic
 
     print(
-        f"The knee of topics/coherence is {knee_locator.knee}")
+        f"The knee of topics/coherence is {best_topic}")
 
     plt.plot(x, coherence_values)
     plt.xlabel("Num Topics")
@@ -253,7 +255,7 @@ def find_best_lda(docs):
     for c in lda_model[corpus]:
         topics_per_doc.append(c)
 
-    return topics_per_doc
+    return topics_per_doc, best_topic
 
 
 def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):

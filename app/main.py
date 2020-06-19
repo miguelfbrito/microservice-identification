@@ -235,10 +235,8 @@ def create_logging_folders(project_name):
             os.makedirs(directory)
 
 
-def identify_clusters_in_project(project):
+def identify_clusters_in_project(project_name):
 
-    project_name = project[0]
-    num_topics = project[1]
     create_logging_folders(project_name)
 
     directory = f"{Settings.DIRECTORY_APPLICATIONS}/{project_name}"
@@ -262,7 +260,7 @@ def identify_clusters_in_project(project):
     # apply_tfidf_to_connections(graph, qualified_visitors)
 
     # Method 2. LDA
-    lda.apply_lda_to_classes(graph, classes, num_topics)
+    lda.apply_lda_to_classes(graph, classes)
     calculate_absolute_weights(graph, classes, weight_type=WeightType.LDA)
 
     # TODO : think about if the pre_processing should be done or not
@@ -307,16 +305,15 @@ def main():
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
 
     if args.project:
-        Settings.PROJECT_NAME = args.project
-        Settings.K_TOPICS = int(args.k_topics)
-        project = (args.project, int(args.k_topics))
-        clusters_results = identify_clusters_in_project(project)
+        Settings.PROJECT_NAME = str(args.project)
+        project_name = str(args.project)
+        clusters_results = identify_clusters_in_project(project_name)
 
         metrics = []
         for cluster in clusters_results:
             Settings.create_id()
             result = ProcessResultsOutput()
-            result.add_project(project[0], str(cluster[0]))
+            result.add_project(project_name, str(cluster[0]))
             result.dump_to_json_file()
 
             if args.metrics:
@@ -339,7 +336,7 @@ def main():
 
         # Plot 1
         bar_width = 1/4
-        r1 = np.arange(len(chm))
+        r1 = np.arange(len(resolution))
         r2 = [x + bar_width for x in r1]
         r3 = [x + bar_width for x in r2]
 
@@ -347,9 +344,8 @@ def main():
         plt.bar(r1, chm, width=bar_width, label='chm')
         plt.bar(r2, chd, width=bar_width, label='chd')
         plt.bar(r3, ifn, width=bar_width, label='ifn')
-
         plt.xlabel('resolution', fontweight='bold')
-        plt.xticks([r + bar_width for r in range(len(chm))],
+        plt.xticks([r + bar_width for r in range(len(resolution))],
                    resolution)
         plt.legend()
 
@@ -362,7 +358,7 @@ def main():
         plt.bar(r4, irn, width=bar_width, label='irn')
         plt.bar(r5, opn, width=bar_width, label='opn')
         plt.xlabel('resolution', fontweight='bold')
-        plt.xticks([r + bar_width for r in range(len(chm))],
+        plt.xticks([r + bar_width for r in range(len(resolution))],
                    resolution)
         plt.legend()
 
@@ -373,15 +369,16 @@ def main():
                     ('monomusiccorp', 8), ('spring-petclinic', 3)]
 
         results = ProcessResultsOutput()
-        for project in projects:
-            Settings.PROJECT_NAME = project[0]
-            Settings.K_TOPICS = int(project[1])
+        for project_name in projects:
+            Settings.PROJECT_NAME = project_name[0]
+            Settings.K_TOPICS = int(project_name[1])
             Settings.create_id()
-            print(f"\n\nStarting project {project[0]}, {project[1]} topics")
-            clusters_results = identify_clusters_in_project(project)
+            print(
+                f"\n\nStarting project {project_name[0]}, {project_name[1]} topics")
+            clusters_results = identify_clusters_in_project(project_name)
             clusters_results = [
                 cluster for cluster in clusters_results.values()]
-            results.add_project(project[0], str(clusters_results))
+            results.add_project(project_name[0], str(clusters_results))
         results.dump_to_json_file()
         results.run_metrics()
 
@@ -389,14 +386,14 @@ def main():
         projects = [('spring-blog', 7), ('jpetstore', 5),
                     ('monomusiccorp', 8), ('spring-petclinic', 3), ('jforum', 15), ('agilefant', 25)]
         results = ProcessResultsOutput()
-        for project in projects:
-            Settings.PROJECT_NAME = project[0]
-            Settings.K_TOPICS = int(project[1])
+        for project_name in projects:
+            Settings.PROJECT_NAME = project_name[0]
+            Settings.K_TOPICS = int(project_name[1])
             Settings.create_id()
-            clusters_results = identify_clusters_in_project(project)
+            clusters_results = identify_clusters_in_project(project_name)
             clusters_results = [
                 cluster for cluster in clusters_results.values()]
-            results.add_project(project[0], str(clusters_results))
+            results.add_project(project_name[0], str(clusters_results))
         results.dump_to_json_file()
         results.run_metrics()
 
