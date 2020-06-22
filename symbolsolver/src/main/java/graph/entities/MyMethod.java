@@ -57,7 +57,7 @@ public class MyMethod {
     }
 
     public void setReturnDataType(List<String> returnDataType) {
-        this.returnDataType = parametersDataType.stream().filter(s -> !Constants.STOP_WORDS_DATA_TYPES.contains(s.toLowerCase())).collect(Collectors.toList());
+        this.returnDataType = returnDataType.stream().filter(s -> !Constants.STOP_WORDS_DATA_TYPES.contains(s.toLowerCase())).collect(Collectors.toList());
     }
 
     public MyClass getMyClass() {
