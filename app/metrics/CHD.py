@@ -229,6 +229,7 @@ def calculate(apiFileName):
         dom_cohesion_wei_list = list()
         for clusterID in g_clusterID2Interf2APIDict:
             dom_cohesion_wei = Metric_dom_cohesion(clusterID)
+
             dom_cohesion_wei_list.append(dom_cohesion_wei)
             #print('cluster,' + str(clusterID) + ',' + str(dom_cohesion_wei))
         avg_dom_cohesion_wei = sum(
@@ -243,7 +244,7 @@ def calculate(apiFileName):
         # tmp = ['avg_dom_cohesion', str(avg_dom_cohesion_wei), 'interface_number', str(
         #     interface_number), 'clusterHasinf', str(len(g_clusterID2Interf2APIDict))]
         # print(','.join(tmp))
-        # print(f"CHD: {avg_dom_cohesion_wei}")
+        print(f"CHD: {avg_dom_cohesion_wei}")
         return avg_dom_cohesion_wei
 
         '''

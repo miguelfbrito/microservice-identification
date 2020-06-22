@@ -1,4 +1,5 @@
 import re
+import time
 import gensim
 import logging
 import pathlib
@@ -14,13 +15,16 @@ from nltk.tokenize import RegexpTokenizer
 from stop_words import get_stop_words
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models
-from gensim.models import CoherenceModel
+from gensim.models import CoherenceModel, nmf
 from StringUtils import StringUtils
 from Settings import Settings
+from gensim.test.utils import datapath
 
 
 def apply_lda_to_classes(graph, classes, num_topics=0, pre_process=False):
     # classes {class_name : Class}
+
+    num_topics = 5
     docs = []
     # Remove loose sections of the graph
     if pre_process:
@@ -113,15 +117,12 @@ def clean_documents(docs):
             f.write("Before processing:\n")
             f.write(f"{doc[1]}\n")
 
-        doc_content = StringUtils.clear_java_words(doc[1])
+        doc_content = StringUtils.clear_text(doc[1])
         docs_content.append(doc_content)
 
         with open(directory, "a+") as f:
             f.write("\nAfter processing:\n")
             f.write(f"{doc_content}\n")
-
-    # docs = [StringUtils.clear_java_words(doc) for doc in docs]
-    # logging.info(docs)
 
     # compile sample documents into a list
     doc_set = docs_content
@@ -198,9 +199,16 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
     coherence_values = []
     model_list = []
     num_topics_list = []
+
     for num_topics in range(start, limit, step):
+        # model = nmf.Nmf(corpus=corpus, id2word=dictionary,
+        # num_topics = num_topics)
         model = gensim.models.wrappers.LdaMallet(
-            Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary, random_seed=1)
+            Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary)
+
+        # model = gensim.models.ldamodel.LdaModel(
+        #    corpus, num_topics=num_topics, id2word=dictionary, passes=100)
+
         model_list.append(model)
 
         coherencemodel = CoherenceModel(
@@ -215,7 +223,7 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
 def find_best_lda(docs):
 
     limit = 30
-    start = 5
+    start = 6
     step = 2
 
     texts, corpus, dictionary = clean_documents(docs)
@@ -237,23 +245,26 @@ def find_best_lda(docs):
 
     print(
         f"The knee of topics/coherence is {best_topic}")
-
-    plt.plot(x, coherence_values)
-    plt.xlabel("Num Topics")
-    plt.ylabel("Coherence score")
-    plt.legend(("coherence_values"), loc='best')
-    plt.show()
-
+#    plt.plot(x, coherence_values)
+#    plt.xlabel("Num Topics")
+#    plt.ylabel("Coherence score")
+#    plt.legend(("coherence_values"), loc='best')
+#    plt.show()
+#
     lda_model = None
     for model, k_topic in zip(model_list, num_topics):
         if k_topic == knee_locator.knee:
             lda_model = model
             break
-
     topics_per_doc = []
+
+    # topics_per_doc = [lda_model.get_document_topics(corp) for corp in corpus]
 
     for c in lda_model[corpus]:
         topics_per_doc.append(c)
+
+    print(f"\n\nTOPICS PER DOC {topics_per_doc}")
+    print(f"\n\nSHOW TOPICS: {lda_model.show_topics()}")
 
     return topics_per_doc, best_topic
 

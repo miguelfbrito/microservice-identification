@@ -5,6 +5,7 @@ from Settings import Settings
 import metrics.CHD as CHD
 import metrics.CHM as CHM
 import metrics.IFN as IFN
+import metrics.SMQ as SMQ
 
 
 class ProcessResultsOutput:
@@ -63,15 +64,20 @@ class ProcessResultsOutput:
         chm = CHM.calculate(file_path)
         chd = CHD.calculate(file_path)
         ifn = IFN.calculate(file_path)
-
-        print(f"FINAL CHM : {chm}")
-        print(f"FINAL CHD : {chd}")
-        print(f"FINAL IFN : {ifn}")
+        smq = SMQ.calculateWrapper()
 
         path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}"
         with open(path, "a+") as f:
             f.write(f"\nCHM: {chm}")
             f.write(f"\nCHD: {chd}")
             f.write(f"\nIFN: {ifn}")
+            f.write(f"\nSMQ: {smq}")
 
-        return chm, chd, ifn, irn, opn
+        print(f"FINAL CHM : {chm}")
+        print(f"FINAL CHD : {chd}")
+        print(f"FINAL IFN : {ifn}")
+        print(f"FINAL IRN : {irn}")
+        print(f"FINAL OPN : {opn}")
+        print(f"FINAL SMQ : {smq}")
+
+        return chm, chd, ifn, irn, opn, smq
