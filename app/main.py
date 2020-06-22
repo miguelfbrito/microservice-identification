@@ -317,8 +317,8 @@ def main():
             result.dump_to_json_file()
 
             if args.metrics:
-                chm, chd, ifn, irn, opn, smq = result.run_metrics()
-                metrics.append((chm, chd, ifn, irn, opn, smq))
+                chm, chd, ifn, irn, opn, smq, cmq = result.run_metrics()
+                metrics.append((chm, chd, ifn, irn, opn, smq, cmq))
 
         resolution = []
         chm = []
@@ -327,36 +327,32 @@ def main():
         irn = []
         opn = []
         smq = []
+        cmq = []
+
         for cluster_result, metric in zip(clusters_results, metrics):
-            print(f"MEtrics {metrics}")
             chm.append(metric[0])
             chd.append(metric[1])
             ifn.append(metric[2])
             irn.append(metric[3])
             opn.append(metric[4])
             smq.append(metric[5])
+            cmq.append(metric[6])
             resolution.append(round(cluster_result[2], 2))
 
-        print(f"LENGHTHS")
-        print(len(chm))
-        print(len(chd))
-        print(len(ifn))
-        print(len(irn))
-        print(len(opn))
-        print(len(resolution))
-
         # Plot 1
-        bar_width = 1/5
+        bar_width = 1/6
         r1 = np.arange(len(resolution))
         r2 = [x + bar_width for x in r1]
         r3 = [x + bar_width for x in r2]
         r4 = [x + bar_width for x in r3]
+        r5 = [x + bar_width for x in r4]
 
         plt.subplot(1, 2, 1)
         plt.bar(r1, chm, width=bar_width, label='chm')
         plt.bar(r2, chd, width=bar_width, label='chd')
         plt.bar(r3, ifn, width=bar_width, label='ifn')
         plt.bar(r4, smq, width=bar_width, label='smq')
+        plt.bar(r5, cmq, width=bar_width, label='cmq')
         plt.xlabel('resolution', fontweight='bold')
         plt.xticks([r + bar_width for r in range(len(resolution))],
                    resolution)
@@ -364,19 +360,19 @@ def main():
 
         # Plot 2
         bar_width = 1/3
-        r5 = np.arange(len(resolution))
-        r6 = [x + bar_width for x in r5]
+        r6 = np.arange(len(resolution))
+        r7 = [x + bar_width for x in r6]
 
         plt.subplot(1, 2, 2)
-        plt.bar(r5, irn, width=bar_width, label='irn')
-        plt.bar(r6, opn, width=bar_width, label='opn')
+        plt.bar(r6, irn, width=bar_width, label='irn')
+        plt.bar(r7, opn, width=bar_width, label='opn')
         plt.xlabel('resolution', fontweight='bold')
         plt.xticks([r + bar_width for r in range(len(resolution))],
                    resolution)
         plt.legend()
 
-        plt.show()
         plt.savefig(f"{Settings.ID}.png")
+        plt.show()
 
     if args.metrics_condensed:
         projects = [('spring-blog', 7), ('jpetstore', 5),

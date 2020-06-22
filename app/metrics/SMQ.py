@@ -8,22 +8,24 @@ def calculate(clusters, parsed_data):
         clusters: dict of arrays { 0 : ['classA'], ...}
     """
 
-    N = sum(len(classes) for classes in clusters.values())
-    print(f"Total Classes {N}")
+    classes_to_ignore = set()
+    for classes in clusters.values():
+        for classe in classes:
+            classe_data = parsed_data[classe]
+            for extend in classe_data['extendedTypes']:
+                classes_to_ignore.add(extend)
+
     total_scoh = 0
     for cluster in clusters.values():
-        total_scoh += scoh(cluster, parsed_data)
+        total_scoh += scoh(cluster, parsed_data, classes_to_ignore)
 
     total_scop = 0
     for src, dst in combinations(clusters.keys(), 2):
-        calc_scop = scop(src, dst, clusters, parsed_data)
+        calc_scop = scop(src, dst, clusters, parsed_data, classes_to_ignore)
 
         total_scop += calc_scop
-        print(f"Combination {src} {dst} -> {calc_scop}")
-        pass
 
-    print(f"Total scop {total_scop}")
-
+    N = len(clusters.keys())
     smq = 1 / N * total_scoh - 1 / (N * (N - 1) / 2) * total_scop
     print(f"SMQ {smq}")
 
@@ -32,14 +34,13 @@ def calculate(clusters, parsed_data):
 # structural cohesiveness inside a service
 
 
-def scoh(cluster, parsed_classes):
+def scoh(cluster, parsed_classes, classes_to_ignore):
     cluster = set(cluster)
 
     edges = 0
     for classe in cluster:
         try:
             classe_method_invocations = parsed_classes[classe]
-
             for method_invocation in classe_method_invocations['methodInvocations']:
                 if method_invocation['targetClassName'] in cluster:
                     edges += 1
@@ -51,69 +52,29 @@ def scoh(cluster, parsed_classes):
     return edges / (len(cluster) * len(cluster))
 
 
-# TODO : Remove after fixing the import from StringUtils
-def clear_text(string):
-
-    stopwords = {
-        "abstract", "assert", "boolean",
-        "break", "byte", "case", "catch", "char", "class", "const",
-        "continue", "default", "do", "double", "else", "extends", "false",
-        "final", "finally", "float", "for", "goto", "if", "implements",
-        "import", "instanceof", "int", "interface", "long", "native",
-        "new", "null", "package", "private", "protected", "public",
-        "return", "short", "static", "strictfp", "super", "switch",
-        "synchronized", "this", "throw", "throws", "transient", "true",
-        "try", "void", "volatile", "while", "string", "int", "collection",
-        "gaussic", "controller", "map", "request", "method", "integer", "system", "out", "println", "springframework",
-        "com", "request", "mapping", "value", "autowired", "list", "hash",  "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array", "mapper", "service", "entity", "repository", "annotation", "base", "model", "dao", "dto", "beans", "bean", "statement", "global", "view", "action", "http", "web", "jpa", "raysmond", "agilefant", "save", "insert", "delete", "update", "add", "remove", "search", "query", "factory", "context", "data", "form", "field", "router", "url", "database", "jdbc", "app",
-        "connect", "util", "utils", "create"
-    }
-
-    result_words = []
-    uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()
-    words = re.split(r"\W+", uncamel_words)
-    # with open('file', 'a+') as f:
-    for word in words:
-        if word.isalpha() and word.lower() not in stopwords and len(word) > 2:
-            result_words.append(word)
-
-    return result_words
-
-
-def process_text_terms(class_methods):
-    names = parameters = returns = []
-    for m in class_methods['name']:
-        names.extend(clear_text(m))
-
-
-def scop(cluster_i, cluster_j, clusters, parsed_data):
+def scop(cluster_i, cluster_j, clusters, parsed_data, classes_to_ignore):
     classes_i = set(clusters[cluster_i])
     classes_j = set(clusters[cluster_j])
 
     total_edges = 0
     # Counts the number of edges between I and J
     for classe in classes_i:
+        if classe in classes_to_ignore:
+            continue
         for method in parsed_data[classe]['methodInvocations']:
-            if method['targetClassName'] in classes_j:
-                print(f"Call from {classe} to {method['targetClassName']}")
+            if method['targetClassName'] in classes_j and method['targetClassName'] not in classes_to_ignore:
                 total_edges += 1
 
     # Same as above, but inverse order
     for classe in classes_j:
+        if classe in classes_to_ignore:
+            continue
         for method in parsed_data[classe]['methodInvocations']:
-            if method['targetClassName'] in classes_i:
-                print(f"Call from {classe} to {method['targetClassName']}")
+            if method['targetClassName'] in classes_i and method['targetClassName'] not in classes_to_ignore:
                 total_edges += 1
 
-    return total_edges / 2 * (len(classes_i) * len(classes_j))
-
-
-def ccop(cluster_i, cluster_j, clusters, parsed_classes):
-    class1_terms = parsed_classes[class1]['methodDeclarations']['methods']
-    class2_terms = parsed_classes[class2]['methodDeclarations']['methods']
-
-    process_text_terms(class1_terms)
-    process_text_terms(class2_terms)
+    # TODO : Review, formula states edges / 2 ( len i * len j) but FOSCI implementation doesn't include 2
+    return total_edges / (len(classes_i) * len(classes_j))
 
 
 def string_to_dict_arrays(string):
@@ -123,10 +84,8 @@ def string_to_dict_arrays(string):
         processed_clusters[index] = []
         arr = []
         c = c.strip()
-        # print(c)
         match = re.findall(r"'([a-zA-Z0-9._-]*)'", c)
         for m in match:
-            print(m)
             processed_clusters[index].append(m)
 
     return processed_clusters
@@ -150,7 +109,6 @@ def calculateWrapper():
     clusters = string_to_dict_arrays(clusters)
 
     smq = calculate(clusters, parsed_data)
-    print(f"smq: {smq}")
     return smq
 
 

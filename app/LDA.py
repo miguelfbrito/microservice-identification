@@ -222,16 +222,16 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
 
 def find_best_lda(docs):
 
-    limit = 30
-    start = 6
+    start = 4
+    end = 14
     step = 2
 
     texts, corpus, dictionary = clean_documents(docs)
 
     model_list, coherence_values, num_topics = compute_coherence_values(
-        dictionary=dictionary, corpus=corpus, texts=texts, start=start, limit=limit, step=step)
+        dictionary=dictionary, corpus=corpus, texts=texts, start=start, limit=end, step=step)
 
-    x = range(start, limit, step)
+    x = range(start, end, step)
     # for k, coherence in zip(x, coherence_values):
     #    print(f"K-Topics: {k}, coherence: {coherence}")
 
@@ -245,12 +245,12 @@ def find_best_lda(docs):
 
     print(
         f"The knee of topics/coherence is {best_topic}")
-#    plt.plot(x, coherence_values)
-#    plt.xlabel("Num Topics")
-#    plt.ylabel("Coherence score")
-#    plt.legend(("coherence_values"), loc='best')
-#    plt.show()
-#
+    # plt.plot(x, coherence_values)
+    # plt.xlabel("Num Topics")
+    # plt.ylabel("Coherence score")
+    # plt.legend(("coherence_values"), loc='best')
+    # plt.show()
+
     lda_model = None
     for model, k_topic in zip(model_list, num_topics):
         if k_topic == knee_locator.knee:
