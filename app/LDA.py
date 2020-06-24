@@ -239,8 +239,15 @@ def find_best_lda(docs):
         print(f"k {k} - coherence {coherence} lda_model {model}")
 
     knee_locator = KneeLocator(x, coherence_values, curve='concave',
-                               direction='increasing')
-    best_topic = knee_locator.knee
+
+    S = 5
+    best_topic = None
+    while(best_topic == None):
+        best_topic = KneeLocator(x, coherence_values, curve='concave',
+                                 direction='increasing', S=S).knee
+        S -= 1
+        print(f"Trying knee of S={S}")
+
     Settings.K_TOPICS = best_topic
 
     print(
@@ -253,7 +260,7 @@ def find_best_lda(docs):
 
     lda_model = None
     for model, k_topic in zip(model_list, num_topics):
-        if k_topic == knee_locator.knee:
+        if k_topic == best_topic:
             lda_model = model
             break
     topics_per_doc = []

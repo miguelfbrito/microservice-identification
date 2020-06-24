@@ -39,9 +39,9 @@ public class ByMethodCallInvocation extends MyGraph {
                         ResolvedType resolvedType = rs.calculateResolvedType();
                         MyClass target = classes.get(resolvedType.asReferenceType().getQualifiedName());
 
-                        if(isMethodCallGetterOrSetter(methodCall)) {
-                            return;
-                        }
+                        //if(isMethodCallGetterOrSetter(methodCall)) {
+                        // return;
+                        // }
 
                         DependencyEdge edge = getGraph().getEdge(source, target);
                         if (isValidClass(target.getQualifiedName(), validClasses)) {

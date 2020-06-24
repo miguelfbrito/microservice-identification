@@ -3,7 +3,7 @@ import json
 from itertools import combinations
 from nltk.stem.porter import PorterStemmer
 
-threshold = 0.0
+threshold = 0.25
 
 
 def calculate(clusters, parsed_data):
@@ -53,7 +53,12 @@ def calculate(clusters, parsed_data):
 def ccoh(cluster, parsed_classes, classes_to_ignore, class_terms):
     # An edge exists only if the intersection of the terms of both entities isn't empty
 
+    if len(cluster) <= 1:
+        return 1
+
     edges = 0
+    max_edges = 0
+    print(f"CLUSTER CCOH {cluster}")
     for idx1 in range(0, len(cluster) - 1):
         for idx2 in range(idx1 + 1, len(cluster)):
 
@@ -64,10 +69,11 @@ def ccoh(cluster, parsed_classes, classes_to_ignore, class_terms):
             union = terms_1.union(terms_2)
             if len(intersection) > len(union) * threshold:
                 edges += 1
+            max_edges += 1
 
     print(
         f"edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (len(cluster) * len(cluster))}")
-    return edges / (len(cluster) * len(cluster))
+    return edges / max_edges
 
 
 def get_terms_of_clusters(cluster_id, clusters, class_terms):
@@ -79,6 +85,7 @@ def get_terms_of_clusters(cluster_id, clusters, class_terms):
 
 def ccop(clusters, parsed_data, classes_to_ignore, class_terms):
     edges = 0
+    total_interactions = 0
     for idx1 in range(0, len(clusters) - 1):
         for idx2 in range(idx1 + 1, len(clusters)):
 
@@ -89,10 +96,11 @@ def ccop(clusters, parsed_data, classes_to_ignore, class_terms):
             intersection = terms_1.intersection(terms_2)
             if len(intersection) > len(union) * threshold:
                 edges += 1
+            total_interactions += 1
 
     print(
-        f"ccop edges {edges}, len cluster: {len(clusters)}, ccop: {edges / (len(clusters) * len(clusters))}")
-    return edges / (len(clusters) * len(clusters))
+        f"ccop edges {edges}, total clusters: {len(clusters)}, ccop: {edges / (len(clusters) * len(clusters))}")
+    return edges / len(clusters) * len(clusters)
 
 
 def clear_text(string):
