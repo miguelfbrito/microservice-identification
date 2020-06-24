@@ -4,6 +4,7 @@ from datetime import datetime
 from itertools import cycle
 from random import randint
 from random import random
+from kneed import KneeLocator
 import matplotlib.pyplot as plt
 import Utils as utils
 import networkx as nx
@@ -19,6 +20,8 @@ import math
 import re
 import os
 import PostProcessing
+import time
+from Utils import normalize
 
 from StringUtils import StringUtils
 from Graph import Graph
@@ -104,6 +107,8 @@ def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
                         method_call_weight = calls_to_dst / \
                             len(classe.get_method_invocations())
 
+                # TODO : REVIEW AND REMOVE, testing purposes only
+                method_call_weight = 0
                 edge_data[str(WeightType.ABSOLUTE)
                           ] = max(float(edge_data[str(weight_type)]), method_call_weight)  # method_call_weight
         except KeyError as e:
@@ -339,6 +344,37 @@ def main():
             cmq.append(metric[6])
             resolution.append(round(cluster_result[2], 2))
 
+            total = metric[0] + metric[1] + metric[5] + metric[6]
+            print(
+                f"Sum for resolution {round(cluster_result[2], 2)} -> {round(total,2)}")
+
+        print(f"PRE-NORM ifn {ifn}")
+        print(f"PRE-NORM irn {irn}")
+        print(f"PRE-NORM opn {opn}")
+        print(f"PRE-NORM smq {smq}")
+        print(f"PRE-NORM cmq {cmq}")
+
+        S = 8
+        knee = None
+        while(knee == None):
+            knee = KneeLocator(resolution, irn, curve='convex',
+                               direction='decreasing', S=S).knee
+            S -= 1
+            print(f"Trying knee of S={S}")
+        print(f"Found knee {knee}")
+
+        # ifn = normalize(ifn)
+        # irn = normalize(irn)
+        # opn = normalize(opn)
+        # smq = normalize(smq)
+        # cmq = normalize(cmq)
+
+        # print(f"NORM ifn {ifn}")
+        # print(f"NORM irn {irn}")
+        # print(f"NORM opn {opn}")
+        # print(f"NORM smq {smq}")
+        # print(f"NORM cmq {cmq}")
+
         # Plot 1
         bar_width = 1/6
         r1 = np.arange(len(resolution))
@@ -371,7 +407,7 @@ def main():
                    resolution)
         plt.legend()
 
-        plt.savefig(f"{Settings.ID}.png")
+        plt.savefig(f"{Settings.PROJECT_NAME}_{Settings.ID}.png")
         plt.show()
 
     if args.metrics_condensed:

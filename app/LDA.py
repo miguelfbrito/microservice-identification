@@ -222,8 +222,8 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
 
 def find_best_lda(docs):
 
-    start = 4
-    end = 14
+    start = 6
+    end = 25
     step = 2
 
     texts, corpus, dictionary = clean_documents(docs)
@@ -238,11 +238,9 @@ def find_best_lda(docs):
     for model, coherence, k in zip(model_list, coherence_values, num_topics):
         print(f"k {k} - coherence {coherence} lda_model {model}")
 
-    knee_locator = KneeLocator(x, coherence_values, curve='concave',
-
     S = 5
     best_topic = None
-    while(best_topic == None):
+    while best_topic == None:
         best_topic = KneeLocator(x, coherence_values, curve='concave',
                                  direction='increasing', S=S).knee
         S -= 1

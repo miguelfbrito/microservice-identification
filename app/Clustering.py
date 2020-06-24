@@ -36,9 +36,9 @@ class Clustering:
     @staticmethod
     def compute_multiple_resolutions(graph, weight_type=WeightType.ABSOLUTE):
 
-        start = 0.2
-        end = 1.5
-        step = 0.1
+        start = 0.25
+        end = 1.15
+        step = 0.05
 
         clusters_results = []
 
