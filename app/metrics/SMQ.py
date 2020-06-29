@@ -22,14 +22,14 @@ def calculate(clusters, parsed_data):
     total_scop = 0
     for src, dst in combinations(clusters.keys(), 2):
         calc_scop = scop(src, dst, clusters, parsed_data, classes_to_ignore)
-
         total_scop += calc_scop
 
     N = len(clusters.keys())
-    smq = 1 / N * total_scoh - 1 / (N * (N - 1) / 2) * total_scop
-    print(f"SMQ {smq}")
+    total_scoh = total_scoh / N
+    total_scop = total_scop / (N * (N - 1) / 2)
+    smq = total_scoh - total_scop
 
-    return smq
+    return smq, total_scoh, total_scop
 
 # structural cohesiveness inside a service
 
@@ -38,17 +38,30 @@ def scoh(cluster, parsed_classes, classes_to_ignore):
     cluster = set(cluster)
 
     edges = 0
-    for classe in cluster:
+
+    for src, dst in combinations(cluster, 2):
+
         try:
-            classe_method_invocations = parsed_classes[classe]
-            for method_invocation in classe_method_invocations['methodInvocations']:
-                if method_invocation['targetClassName'] in cluster:
-                    edges += 1
-        except:
-            print(f"[EXCEPTION KeyError] {classe} not found")
+            src_invocations = {method['targetClassName']
+                               for method in parsed_classes[src]['methodInvocations']}
+            dst_invocations = {method['targetClassName']
+                               for method in parsed_classes[dst]['methodInvocations']}
+
+            src_invocations = src_invocations | set(
+                parsed_classes[src]['dependencies'])
+            dst_invocations = dst_invocations | set(
+                parsed_classes[dst]['dependencies'])
+
+            # Check both directions
+            if src in dst_invocations:
+                edges += 1
+            if dst in src_invocations:
+                edges += 1
+        except KeyError:
+            print(f"[EXCEPTION KeyError] {src} or {dst} not found")
 
     print(
-        f"edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (len(cluster) * len(cluster))}")
+        f"SCOH: edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (len(cluster) * len(cluster))}")
     return edges / (len(cluster) * len(cluster))
 
 
@@ -73,8 +86,9 @@ def scop(cluster_i, cluster_j, clusters, parsed_data, classes_to_ignore):
             if method['targetClassName'] in classes_i and method['targetClassName'] not in classes_to_ignore:
                 total_edges += 1
 
-    # TODO : Review, formula states edges / 2 ( len i * len j) but FOSCI implementation doesn't include 2
-    return total_edges / (len(classes_i) * len(classes_j))
+    # print(
+    #     f"SCOP: edges {total_edges},  scop: {total_edges / (2 * (len(classes_i) * len(classes_j)))}")
+    return total_edges / (2 * (len(classes_i) * len(classes_j)))
 
 
 def string_to_dict_arrays(string):
@@ -108,8 +122,12 @@ def calculateWrapper():
 
     clusters = string_to_dict_arrays(clusters)
 
-    smq = calculate(clusters, parsed_data)
-    return smq
+    smq, scoh, scop = calculate(clusters, parsed_data)
+
+    print(f"Final SMQ: {smq}")
+    print(f"Final scoh: {scoh}")
+    print(f"Final scop: {scop}")
+    return smq, scoh, scop
 
 
 if __name__ == "__main__":
