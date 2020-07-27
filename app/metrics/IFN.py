@@ -16,9 +16,10 @@ def calculate(api_file_name):
             line = f.readline()
 
     ifn = 0
-    for service in services:
-        ifn += len(service)
-    return ifn / len(services)
+    for _, interfaces in services.items():
+        ifn += len(interfaces)
+
+    return ifn / len(services.keys())
 
 
 if __name__ == "__main__":
