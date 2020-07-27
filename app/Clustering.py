@@ -36,17 +36,18 @@ class Clustering:
     @staticmethod
     def compute_multiple_resolutions(graph, weight_type=WeightType.ABSOLUTE):
 
-        start = 0.25
-        end = 1.15
-        step = 0.05
+        start = 0.3
+        end = 1.1
+        step = 0.1
 
         clusters_results = []
-
         res_range = np.arange(start, end, step)
+
         for resolution in res_range:
-            clusters, modularity = Clustering.community_detection_louvain(
-                graph, resolution=resolution)
-            clusters_results.append((clusters, modularity, resolution))
+            for _ in range(3):
+                clusters, modularity = Clustering.community_detection_louvain(
+                    graph, resolution=resolution)
+                clusters_results.append((clusters, modularity, resolution))
 
         with open('./clustering.txt', 'w+') as f:
             for clusters, modularity, resolution in clusters_results:
@@ -66,10 +67,10 @@ class Clustering:
                 Clustering.write_services_to_file(
                     clusters, resolution, classes)
 
-     #   plt.plot(res_range, [len(m[0]) for m in clusters_results])
-     #   plt.xlabel("Resolution")
-     #   plt.ylabel("Modularity")
-     #   plt.show()
+            # plt.plot(res_range, [len(m[0]) for m in clusters_results])
+            # plt.xlabel("Resolution")
+            # plt.ylabel("Modularity")
+            # plt.show()
 
         return clusters_results
 
@@ -116,7 +117,6 @@ class Clustering:
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
         print(f"Cluster distribution: {cluster_distribution}")
-
         modularity = community.modularity(partition, graph)
         print(f"Modularity: {modularity}")
 
@@ -125,25 +125,24 @@ class Clustering:
             for index, node in enumerate(h.nodes()):
                 curr_class_name = re.search(r'\.(\w*)$', str(node))
                 if curr_class_name:
+                    # TODO : repôr mais tarde
                     mappings[node] = f"{curr_class_name[1]}_{index}"
             h = nx.relabel_nodes(h, mappings)
 
             # Drawing of labels explained here - https://stackoverflow.com/questions/31575634/problems-printing-weight-in-a-networkx-graph
             sp = nx.spring_layout(h, weight=weight_type, seed=1)
             nx.draw_networkx(h, pos=sp, with_labels=True,
-                             node_size=350, font_size=6, node_color=values)
+                             node_size=1000, font_size=12, node_color=values, cmap=plt.cm.tab10)
 
-            edge_weight_labels = dict(map(lambda x: (
-                (x[0], x[1]),  round(x[2][str(weight_type)], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
+            # edge_weight_labels = dict(map(lambda x: (
+            #     (x[0], x[1]),  round(x[2][str(weight_type)], 2) if x[2][weight_type] > 0 else ""), h.edges(data=True)))
 
-            nx.draw_networkx_edge_labels(
-                h, sp, edge_labels=edge_weight_labels, font_size=5, alpha=1)
+            # nx.draw_networkx_edge_labels(
+            #     h, sp, edge_labels=edge_weight_labels, font_size=7, alpha=1)
 
             plt.show()
 
         return clusters, modularity
-
-    # Girvan Newman Implementations
 
     @staticmethod
     def girvan_newman(graph):
