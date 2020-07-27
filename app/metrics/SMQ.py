@@ -38,9 +38,9 @@ def scoh(cluster, parsed_classes, classes_to_ignore):
     cluster = set(cluster)
 
     edges = 0
-
+    max_edges = 0
     for src, dst in combinations(cluster, 2):
-
+        max_edges += 2  # bidirectional
         try:
             src_invocations = {method['targetClassName']
                                for method in parsed_classes[src]['methodInvocations']}
@@ -57,33 +57,35 @@ def scoh(cluster, parsed_classes, classes_to_ignore):
                 edges += 1
             if dst in src_invocations:
                 edges += 1
+
         except KeyError:
             print(f"[EXCEPTION KeyError] {src} or {dst} not found")
 
+    if max_edges == 0:
+        return 0
     print(
-        f"SCOH: edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (len(cluster) * len(cluster))}")
-    return edges / (len(cluster) * len(cluster))
+        f"SCOH: edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (max_edges)}")
+    return edges / (max_edges)
 
 
 def scop(cluster_i, cluster_j, clusters, parsed_data, classes_to_ignore):
     classes_i = set(clusters[cluster_i])
     classes_j = set(clusters[cluster_j])
 
+    # print(f"Classe_i {cluster_i} {classes_i}")
+    # print(f"Classe_j {cluster_j} {classes_j}")
+
     total_edges = 0
     # Counts the number of edges between I and J
     for classe in classes_i:
-        if classe in classes_to_ignore:
-            continue
         for method in parsed_data[classe]['methodInvocations']:
-            if method['targetClassName'] in classes_j and method['targetClassName'] not in classes_to_ignore:
+            if method['targetClassName'] in classes_j:
                 total_edges += 1
 
     # Same as above, but inverse order
     for classe in classes_j:
-        if classe in classes_to_ignore:
-            continue
         for method in parsed_data[classe]['methodInvocations']:
-            if method['targetClassName'] in classes_i and method['targetClassName'] not in classes_to_ignore:
+            if method['targetClassName'] in classes_i:
                 total_edges += 1
 
     # print(
