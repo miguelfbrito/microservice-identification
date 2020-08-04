@@ -9,19 +9,6 @@ from multipledispatch import dispatch
 
 class Class:
 
-    # def __init__(self):
-    #     # TODO: refactor some of the lists to sets
-    #     self.class_name = "FailedToLoadClassName"
-    #     self.package_name = "FailedToLoadPackageName"
-    #     self.qualified_name = "FailedToLoadQualifiedName"
-    #     self.annotations = []
-    #     self.dependencies = []
-    #     self.variables = []
-    #     self.methods = []
-    #     self.formal_parameters = []
-    #     self.literals = []
-    #     self.comments = []
-
     def __init__(self, qualified_name="package.FailedToLoadClassName", annotations=[], variables=[], dependencies=[], methods=[], method_invocations={}, implemented_types=[], extended_types=[]):
         self.qualified_name = qualified_name
         search = re.search(r'\.(\w*)$', qualified_name)
@@ -93,8 +80,6 @@ class Class:
         variables_weight = 2
         methods_weight = 2
         method_invocations_weight = 1
-        literals_weight = 1
-        comments_weight = 1
 
         string = variables_weight * self.variables + \
             methods_weight * methods + \
@@ -103,7 +88,7 @@ class Class:
             method_invocations_weight * method_invocations_names
 
         string = " ".join(string) + class_name_weight * (" " + self.class_name)
-        print(f"Final String hey {string}")
+        print(f"Final String {string}")
         print(f"{self.variables} - {methods} - {self.class_name}")
         return string
 

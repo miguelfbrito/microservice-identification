@@ -1,24 +1,23 @@
 import subprocess
 import random
+import os.path
+from os import path
 
-runs = 3 
 # user/repo, classes_count, controllers_count
-with open('./final_projects', 'r') as f:
+with open('./merged_data_cortado_3.csv', 'r') as f:
     line = f.readline()
+    count = 0
     while line:
-        user_repo, class_count, controller_count = line.split(',')
+        user_repo, class_count, controller_count,_,_,_,_,_,_,_,_ = line.split(',')
         line = f.readline()
-        k = 0
         controller_count = int(controller_count)
-        if controller_count < 25:
-            k = random.randint(8,12)
-        elif controller_count < 100:
-            k = random.randint(12,18)
-        elif controller_count < 200:
-            k = random.randint(18,23)
-        else:
-            k = random.randint(22,27)
         
-        command = f"python3 /home/mbrito/git/thesis/app/main.py -p {user_repo.replace('/', '__')} -k {k} -m > /dev/null"
-        print(f"\n\nCMD: {command}")
-        subprocess.call(command, cwd="/home/mbrito/git/thesis/app", shell=True)
+        name = user_repo.replace('/', '__')
+        if path.exists(f"/home/mbrito/git/thesis-web-applications/monoliths/{name}"):
+            command = f"python3 /home/mbrito/git/thesis/app/main.py -p {name} -m" # > /dev/null
+            print(f"\n\nCMD: {command}")
+            subprocess.call(command, cwd="/home/mbrito/git/thesis/app", shell=True)
+        else:
+            print(f"Path for {name} doesn't exist")
+
+        count += 1

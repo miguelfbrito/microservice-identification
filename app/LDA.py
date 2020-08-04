@@ -1,8 +1,10 @@
 import re
+import operator
 import time
 import gensim
 import logging
 import pathlib
+import operator
 import numpy as np
 import pyLDAvis.gensim
 import matplotlib.pyplot as plt
@@ -19,6 +21,8 @@ from gensim.models import CoherenceModel, nmf
 from StringUtils import StringUtils
 from Settings import Settings
 from gensim.test.utils import datapath
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import NMF
 
 
 def apply_lda_to_classes(graph, classes, num_topics=0, pre_process=False):
@@ -40,10 +44,6 @@ def apply_lda_to_classes(graph, classes, num_topics=0, pre_process=False):
             for class_name, cla in classes.items()]
 
     lda_result, num_topics = find_best_lda(docs)
-    # print(f"\n\nLDAS RESULT {ldas_result}\n\n")
-
-    # lda_result = apply_lda_to_text(docs, num_topics)
-    print(f"LDA Result: {lda_result}")
 
     services = {}
     for class_name, topics in zip(classes.keys(), lda_result):
@@ -93,7 +93,7 @@ num_topics : K topics refered in LDA
 """
 
 
-def clean_documents(docs):
+def clear_documents(docs):
     tokenizer = RegexpTokenizer(r'\w+')
 
     # create English stop words list
@@ -148,7 +148,7 @@ def clean_documents(docs):
     dictionary = corpora.Dictionary(texts)
 
     # filter dictionary from outliers
-    dictionary.filter_extremes(no_below=3, no_above=0.65, keep_n=10000)
+    dictionary.filter_extremes(no_below=3, no_above=0.75, keep_n=1000)
 
     # convert tokenized documents into a document-term matrix
     corpus = [dictionary.doc2bow(text) for text in texts]
@@ -156,105 +156,142 @@ def clean_documents(docs):
     return texts, corpus, dictionary
 
 
-def apply_lda_to_text(docs, num_topics):
-
-    texts, corpus, dictionary = clean_documents(docs)
-
-    # generate LDA model
-    # TODO : load a gensim model
-    # https://radimrehurek.com/gensim/models/ldamodel.html
-    # ldamodel = LdaModel.load()
-
-    # model = gensim.models.ldamodel.LdaModel(
-    # corpus, num_topics=num_topics, id2word=dictionary, passes=100)
-
-    ldamodel = gensim.models.wrappers.LdaMallet(
-        Settings.MALLET_PATH, corpus=corpus, num_topics=20, id2word=dictionary)
-    # topics_per_doc = [ldamodel.get_document_topics(corp) for corp in corpus]
-
-    topics_per_doc = []
-    for c in ldamodel[corpus]:
-        topics_per_doc.append(c)
-
-    if Settings.LDA_PLOTTING:
-        data = pyLDAvis.gensim.prepare(ldamodel, corpus, dictionary)
-        pyLDAvis.show(data)
-
-    # Compute Perplexity
-    # a measure of how good the model is. lower the better.
-    # Does not work for LDAMallet
-    # print('\nPerplexity: ', ldamodel.log_perplexity(corpus))
-
-    # Compute Coherence Score
-    # ranging from 0 to 1, the higher the better.
-    coherence_model_lda = CoherenceModel(
-        model=ldamodel, texts=texts, dictionary=dictionary, coherence='c_v')
-    coherence_lda = coherence_model_lda.get_coherence()
-    print('\nCoherence Score: ', coherence_lda)
-
-    return topics_per_doc
-
-
 def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
     coherence_values = []
     model_list = []
     num_topics_list = []
 
+# Tf-idf
+ #   docs = [' '.join(word) for word in texts]
+ #   tfidf = TfidfVectorizer(max_df=0.9, stop_words='english')
+    # accepts a list of documents of strings
+ #   tf = tfidf.fit_transform(docs)
+
     for num_topics in range(start, limit, step):
-        # model = nmf.Nmf(corpus=corpus, id2word=dictionary,
-        # num_topics = num_topics)
-        model = gensim.models.wrappers.LdaMallet(
-            Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary)
 
-        # model = gensim.models.ldamodel.LdaModel(
-        #    corpus, num_topics=num_topics, id2word=dictionary, passes=100)
+        print(f"\n\nRunning LDA for {num_topics} topics")
 
-        model_list.append(model)
+        top_topics = [(0, 0)]
+        runs = 0
+        top_val = 0
+        top_model = None
+        temp_coherences = []
 
-        coherencemodel = CoherenceModel(
-            model=model, texts=texts, dictionary=dictionary, coherence='c_v')
-        coherence_values.append(coherencemodel.get_coherence())
+        # top_topics[0][1] < 0.9 and
+        while runs <= 3:
+            print(f"New loop")
 
+            lm = gensim.models.wrappers.LdaMallet(
+                Settings.MALLET_PATH, corpus=corpus, num_topics=num_topics, id2word=dictionary)
+
+            lda_model = gensim.models.wrappers.ldamallet.malletmodel2ldamodel(
+                lm)
+
+            if Settings.LDA_PLOTTING:
+                data = pyLDAvis.gensim.prepare(lda_model, corpus, dictionary)
+                pyLDAvis.show(data)
+
+           # lm = nmf.Nmf(corpus=corpus, id2word=dictionary,
+           #              num_topics=num_topics)
+
+            if top_topics[0][1] >= top_val:
+                top_model = lm
+
+            # coherence_values_dict = {}
+            # for n, topic in lm.show_topics(num_topics=-1, formatted=False):
+            #     topic = [word for word, _ in topic]
+            #     cm = CoherenceModel(
+            #         topics=[topic], texts=texts, dictionary=dictionary)
+            #     coherence_values_dict[n] = cm.get_coherence()
+            #     top_topics = sorted(coherence_values_dict.items(
+            #     ), key=operator.itemgetter(1), reverse=True)
+            coherencemodel = CoherenceModel(
+                model=lm, texts=texts, dictionary=dictionary, coherence='c_v')
+
+            print(f"Total coherence: {coherencemodel.get_coherence()}")
+            temp_coherences.append(coherencemodel.get_coherence())
+
+            runs += 1
+
+            top_val = top_topics[0][1]
+
+        # Same as before, duplicated above
+        model_list.append(top_model)
+        # coherencemodel = CoherenceModel(
+        # model=top_model, texts=texts, dictionary=dictionary, coherence='c_v')
+        # coherence_values.append(coherencemodel.get_coherence())
+        coherence_values.append(max(temp_coherences))
         num_topics_list.append(num_topics)
 
     return model_list, coherence_values, num_topics_list
 
 
 def find_best_lda(docs):
+    print(f"\n\nDocs length: {len(docs)}")
+    len_docs = len(docs)
 
-    start = 6
-    end = 25
-    step = 2
+    step = 1
+    if len_docs < 50:
+        start = 4
+        end = 12
+    elif len_docs < 100:
+        start = 4
+        end = 16
+        step = 1
+    elif len_docs < 200:
+        start = 10
+        end = 25
+        step = 3
+    elif len_docs < 500:
+        start = 12
+        end = 30
+        step = 3
+    elif len_docs < 1000:
+        start = 15
+        end = 35
+        step = 3
+    else:
+        start = 14
+        end = 40
+        step = 3
 
-    texts, corpus, dictionary = clean_documents(docs)
+    texts, corpus, dictionary = clear_documents(docs)
 
     model_list, coherence_values, num_topics = compute_coherence_values(
         dictionary=dictionary, corpus=corpus, texts=texts, start=start, limit=end, step=step)
 
     x = range(start, end, step)
-    # for k, coherence in zip(x, coherence_values):
-    #    print(f"K-Topics: {k}, coherence: {coherence}")
 
     for model, coherence, k in zip(model_list, coherence_values, num_topics):
         print(f"k {k} - coherence {coherence} lda_model {model}")
 
+    # plt.plot(x, coherence_values)
+    # plt.xlabel('number of topics')
+    # plt.ylabel('topic coherence')
+    # plt.show()
+
     S = 5
     best_topic = None
-    while best_topic == None:
-        best_topic = KneeLocator(x, coherence_values, curve='concave',
-                                 direction='increasing', S=S).knee
+    while best_topic == None and S > 0:
+        knee = KneeLocator(x, coherence_values, curve='concave',
+                           direction='increasing', S=S)
+        # knee.plot_knee()
+        # plt.xlabel('number of topics')
+        # plt.ylabel('topic coherence')
+        # plt.show()
+
+        best_topic = knee.knee
+
         S -= 1
         print(f"Trying knee of S={S}")
 
+    # In case the knee isn't found. Happens when the coherence values are very similar across topics
+    if best_topic == None:
+        coherence_list = list(coherence_values)
+        best_topic = x[coherence_list.index(max(coherence_list))]
     Settings.K_TOPICS = best_topic
-
     print(
         f"The knee of topics/coherence is {best_topic}")
-    # plt.plot(x, coherence_values)
-    # plt.xlabel("Num Topics")
-    # plt.ylabel("Coherence score")
-    # plt.legend(("coherence_values"), loc='best')
-    # plt.show()
 
     lda_model = None
     for model, k_topic in zip(model_list, num_topics):
@@ -280,12 +317,16 @@ def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):
                     for z in zip(class_visitors.keys(), topics_per_doc)}
 
     for src, dst in graph.edges():
+        similarity = 0
         try:
 
             src_vector = topics_vector(class_topics[src], k)
             dst_vector = topics_vector(class_topics[dst], k)
 
-            similarity = Clustering.cosine_similarity(src_vector, dst_vector)
+            if len(src_vector) != 0 and len(dst_vector) != 0:
+                similarity = Clustering.cosine_similarity(
+                    src_vector, dst_vector)
+
             graph[src][dst][str(WeightType.LDA)] = similarity
             print(f" {src} -> {dst} similarity of {similarity}")
         except KeyError:
@@ -295,10 +336,11 @@ def set_weight_for_clustering(graph, class_visitors, topics_per_doc, k):
 def topics_vector(topics, k):
     dict_topics = {t[0]: t[1] for t in topics}
     vector = []
+
     for i in range(0, k):
         if i in dict_topics:
             vector.append(dict_topics[i])
         else:
-            vector.append(0)
+            vector.append(0.000001)
 
     return np.array(vector)

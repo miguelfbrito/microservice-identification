@@ -65,10 +65,10 @@ class ProcessResultsOutput:
         chm = CHM.calculate(file_path)
         chd = CHD.calculate(file_path)
         ifn = IFN.calculate(file_path)
-        smq = SMQ.calculateWrapper()
-        cmq = CMQ.calculateWrapper()
+        smq, scoh, scop = SMQ.calculateWrapper()
+        cmq, ccoh, ccop = CMQ.calculateWrapper()
 
-        path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}"
+        path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv"
         with open(path, "a+") as f:
             f.write(f"\nCHM: {chm}")
             f.write(f"\nCHD: {chd}")
@@ -81,7 +81,7 @@ class ProcessResultsOutput:
         print(f"FINAL IFN : {ifn}")
         print(f"FINAL IRN : {irn}")
         print(f"FINAL OPN : {opn}")
-        print(f"FINAL SMQ : {smq}")
-        print(f"FINAL CMQ : {cmq}")
+        print(f"FINAL SMQ : {smq} {scoh} {scop}")
+        print(f"FINAL CMQ : {cmq} {ccoh} {ccop}")
 
-        return chm, chd, ifn, irn, opn, smq, cmq
+        return chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop

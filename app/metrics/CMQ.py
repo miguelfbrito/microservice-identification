@@ -3,7 +3,7 @@ import json
 from itertools import combinations
 from nltk.stem.porter import PorterStemmer
 
-threshold = 0.25
+threshold = 0.2
 
 
 def calculate(clusters, parsed_data):
@@ -39,13 +39,15 @@ def calculate(clusters, parsed_data):
                            classes_to_ignore, class_terms)
     print(f"Total ccoh {total_ccoh}")
 
-    calc_ccop = ccop(clusters, parsed_data, classes_to_ignore, class_terms)
-    print(f"Total ccop {calc_ccop}")
+    total_ccop = ccop(clusters, parsed_data, classes_to_ignore, class_terms)
+    print(f"Total ccop {total_ccop}")
 
     N = len(clusters)
-    cmq = 1 / N * total_ccoh - 1 / (N * (N - 1) / 2) * calc_ccop
+    total_ccoh = total_ccoh / N
+    total_ccop = total_ccop / (N * (N - 1) / 2)
+    cmq = total_ccoh - total_ccop
     print(f"CMQ {cmq}")
-    return cmq
+    return cmq, total_ccoh, total_ccop
 
 # structural cohesiveness inside a service
 
@@ -58,22 +60,23 @@ def ccoh(cluster, parsed_classes, classes_to_ignore, class_terms):
 
     edges = 0
     max_edges = 0
-    print(f"CLUSTER CCOH {cluster}")
-    for idx1 in range(0, len(cluster) - 1):
-        for idx2 in range(idx1 + 1, len(cluster)):
+    for src, dst in combinations(cluster, 2):
 
-            terms_1 = set(class_terms[cluster[idx1]])
-            terms_2 = set(class_terms[cluster[idx2]])
+        terms_1 = set(class_terms[src])
+        terms_2 = set(class_terms[dst])
 
-            intersection = terms_1.intersection(terms_2)
-            union = terms_1.union(terms_2)
-            if len(intersection) > len(union) * threshold:
-                edges += 1
-            max_edges += 1
+        intersection = terms_1.intersection(terms_2)
+        union = terms_1.union(terms_2)
+        if len(intersection) > len(union) * threshold:
+            edges += 1
+        max_edges += 1
+
+    if max_edges == 0:
+        return 0
 
     print(
-        f"edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (len(cluster) * len(cluster))}")
-    return edges / max_edges
+        f"edges {edges} , len cluster: {len(cluster)}, scoh: {edges / (max_edges)}")
+    return edges / (max_edges)
 
 
 def get_terms_of_clusters(cluster_id, clusters, class_terms):
@@ -85,22 +88,25 @@ def get_terms_of_clusters(cluster_id, clusters, class_terms):
 
 def ccop(clusters, parsed_data, classes_to_ignore, class_terms):
     edges = 0
-    total_interactions = 0
-    for idx1 in range(0, len(clusters) - 1):
-        for idx2 in range(idx1 + 1, len(clusters)):
+    max_edges = 0
 
-            terms_1 = set(get_terms_of_clusters(idx1, clusters, class_terms))
-            terms_2 = set(get_terms_of_clusters(idx2, clusters, class_terms))
+    print(f"CLSUTERS {clusters.keys()}")
+    for src, dst in combinations(clusters.keys(), 2):
+        terms_1 = set(get_terms_of_clusters(src, clusters, class_terms))
+        terms_2 = set(get_terms_of_clusters(dst, clusters, class_terms))
 
-            union = terms_1.union(terms_2)
-            intersection = terms_1.intersection(terms_2)
-            if len(intersection) > len(union) * threshold:
-                edges += 1
-            total_interactions += 1
+        union = terms_1.union(terms_2)
+        intersection = terms_1.intersection(terms_2)
+        if len(intersection) > len(union) * threshold:
+            edges += 1
+        max_edges += 1
+
+    if max_edges == 0:
+        return 0
 
     print(
-        f"ccop edges {edges}, total clusters: {len(clusters)}, ccop: {edges / (len(clusters) * len(clusters))}")
-    return edges / len(clusters) * len(clusters)
+        f"ccop edges {edges}, total clusters: {len(clusters)}, ccop: {edges / max_edges}")
+    return edges / max_edges
 
 
 def clear_text(string):
@@ -165,8 +171,8 @@ def calculateWrapper():
 
     clusters = string_to_dict_arrays(clusters)
 
-    cmq = calculate(clusters, parsed_data)
-    return cmq
+    cmq, ccoh, ccop = calculate(clusters, parsed_data)
+    return cmq, ccoh, ccop
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ import re
 global g_clusterID2Interf2APIDict  # [clusterID][interface] = list[api id ...]
 global g_apiDict  # [api id] = api object
 global g_ignore_items
-#api is operation
+# api is operation
 
 
 class APIObject:
@@ -131,20 +131,26 @@ def GetEdge(apiID1, apiID2):
     # print g_apiDict[apiID1].interface, g_apiDict[apiID1].apiName, itemSet1
     # print g_apiDict[apiID2].interface, g_apiDict[apiID2].apiName, itemSet2
 
+    '''
     if len(itemSet1) == 0 and len(itemSet2) == 0:  # not have domain items, then return 1
         edge_wei = 1
         edge_unwei = 1
         return edge_wei, edge_unwei
+   '''
 
     interSet = itemSet1 & itemSet2
     unionSet = itemSet1 | itemSet2
-    # print('itemSet1', itemSet1)
-    # print('itemSet2', itemSet2)
-    # print('intersect', interSet)
-    # print('unionset', unionSet)
+   # print('itemSet1', itemSet1)
+   # print('itemSet2', itemSet2)
+   # print('intersect', interSet)
+   # print('unionset', unionSet)
     if len(unionSet) == 0:
         return -1, -1
     edge_wei = len(interSet) / float(len(unionSet))
+
+    if edge_wei > 0.15:
+        edge_wei = 1
+
     if len(interSet) != 0:
         edge_unwei = 1.0
     else:
@@ -231,7 +237,7 @@ def calculate(apiFileName):
             dom_cohesion_wei = Metric_dom_cohesion(clusterID)
 
             dom_cohesion_wei_list.append(dom_cohesion_wei)
-            #print('cluster,' + str(clusterID) + ',' + str(dom_cohesion_wei))
+            # print('cluster,' + str(clusterID) + ',' + str(dom_cohesion_wei))
         avg_dom_cohesion_wei = sum(
             dom_cohesion_wei_list) / float(len(dom_cohesion_wei_list))
 
@@ -248,7 +254,7 @@ def calculate(apiFileName):
         return avg_dom_cohesion_wei
 
         '''
-        #print apidetail, using do and m_cohesion_wei_list interface_number_list
+        # print apidetail, using do and m_cohesion_wei_list interface_number_list
         print('\ninterface dom cohesion detail:')
         for index in range(0, len(dom_cohesion_wei_list)):
             print(dom_cohesion_wei_list[index])

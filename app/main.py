@@ -261,10 +261,6 @@ def identify_clusters_in_project(project_name):
     graph = nx.DiGraph()
     graph = Graph.create_dependencies(classes, graph)
 
-    # Method 1. TF-IDF
-    # apply_tfidf_to_connections(graph, qualified_visitors)
-
-    # Method 2. LDA
     lda.apply_lda_to_classes(graph, classes)
     calculate_absolute_weights(graph, classes, weight_type=WeightType.LDA)
 
@@ -274,9 +270,6 @@ def identify_clusters_in_project(project_name):
 
     # List of clusters. One for each execution.
     clustering_results = Clustering.compute_multiple_resolutions(graph)
-    # Cluster by LDA and structural dependencies
-    # clusters, modularity = Clustering.community_detection_louvain(graph)
-
     # clusters = PostProcessing.process(clusters, classes, graph.copy())
     return clustering_results
 
@@ -312,6 +305,7 @@ def main():
     if args.project:
         Settings.PROJECT_NAME = str(args.project)
         project_name = str(args.project)
+        # cluster_results = (clusters, modularity, resolution)
         clusters_results = identify_clusters_in_project(project_name)
 
         metrics = []
@@ -322,8 +316,9 @@ def main():
             result.dump_to_json_file()
 
             if args.metrics:
-                chm, chd, ifn, irn, opn, smq, cmq = result.run_metrics()
-                metrics.append((chm, chd, ifn, irn, opn, smq, cmq))
+                chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop = result.run_metrics()
+                metrics.append((chm, chd, ifn, irn, opn, smq,
+                                scoh, scop, cmq, ccoh, ccop))
 
         resolution = []
         chm = []
@@ -332,48 +327,55 @@ def main():
         irn = []
         opn = []
         smq = []
+        scoh = []
+        scop = []
         cmq = []
+        ccoh = []
+        ccop = []
+        services_length = []
 
-        for cluster_result, metric in zip(clusters_results, metrics):
-            chm.append(metric[0])
-            chd.append(metric[1])
-            ifn.append(metric[2])
-            irn.append(metric[3])
-            opn.append(metric[4])
-            smq.append(metric[5])
-            cmq.append(metric[6])
-            resolution.append(round(cluster_result[2], 2))
+        with open(f"{Settings.DIRECTORY}/data/metrics/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv", 'w+') as f:
+            for cluster_result, metric in zip(clusters_results, metrics):
+                chm.append(metric[0])
+                chd.append(metric[1])
+                ifn.append(metric[2])
+                irn.append(metric[3])
+                opn.append(metric[4])
+                smq.append(metric[5])
+                scoh.append(metric[6])
+                scop.append(metric[7])
+                cmq.append(metric[8])
+                ccoh.append(metric[9])
+                ccop.append(metric[10])
+                services_length.append(cluster_result)
 
-            total = metric[0] + metric[1] + metric[5] + metric[6]
-            print(
-                f"Sum for resolution {round(cluster_result[2], 2)} -> {round(total,2)}")
+                resolution.append(round(cluster_result[2], 2))
 
-        print(f"PRE-NORM ifn {ifn}")
-        print(f"PRE-NORM irn {irn}")
-        print(f"PRE-NORM opn {opn}")
-        print(f"PRE-NORM smq {smq}")
-        print(f"PRE-NORM cmq {cmq}")
+                print(f"CLUSTER RESULT:: {cluster_result}")
 
-        S = 8
-        knee = None
-        while(knee == None):
-            knee = KneeLocator(resolution, irn, curve='convex',
-                               direction='decreasing', S=S).knee
-            S -= 1
-            print(f"Trying knee of S={S}")
-        print(f"Found knee {knee}")
+                line = f"{round(cluster_result[2], 2)},{metric[0]},{metric[1]},{metric[2]},{metric[3]},{metric[4]},{metric[5]},{metric[6]},{metric[7]},{metric[8]},{metric[9]},{metric[10]}, {len(cluster_result[0])}"
+                f.write(f"{line}\n")
 
-        # ifn = normalize(ifn)
-        # irn = normalize(irn)
-        # opn = normalize(opn)
-        # smq = normalize(smq)
-        # cmq = normalize(cmq)
+                # average_cluster_len = sum(
+                # x for x in cluster_result.values()) / len(cluster_result[0])
+                # print(f"Average cluster len {average_cluster_len}")
 
-        # print(f"NORM ifn {ifn}")
-        # print(f"NORM irn {irn}")
-        # print(f"NORM opn {opn}")
-        # print(f"NORM smq {smq}")
-        # print(f"NORM cmq {cmq}")
+                total = metric[0] + metric[1] + metric[5] + metric[6]
+                print(
+                    f"Sum for resolution {round(cluster_result[2], 2)} -> {round(total,2)}")
+
+                total_2 = metric[5] + metric[6] * -metric[2] * metric[3]
+                print(
+                    f"Total2: {round(cluster_result[2], 2)} -> {round(total_2,2)}")
+
+        # S = 8
+        # knee = None
+        # while(knee == None):
+        #     knee = KneeLocator(resolution, irn, curve='convex',
+        #                        direction='decreasing', S=S).knee
+        #     S -= 1
+        #     print(f"Trying knee of S={S}")
+        # print(f"Found knee {knee}")
 
         # Plot 1
         bar_width = 1/6
@@ -407,41 +409,9 @@ def main():
                    resolution)
         plt.legend()
 
-        plt.savefig(f"{Settings.PROJECT_NAME}_{Settings.ID}.png")
-        plt.show()
-
-    if args.metrics_condensed:
-        projects = [('spring-blog', 7), ('jpetstore', 5),
-                    ('monomusiccorp', 8), ('spring-petclinic', 3)]
-
-        results = ProcessResultsOutput()
-        for project_name in projects:
-            Settings.PROJECT_NAME = project_name[0]
-            Settings.K_TOPICS = int(project_name[1])
-            Settings.create_id()
-            print(
-                f"\n\nStarting project {project_name[0]}, {project_name[1]} topics")
-            clusters_results = identify_clusters_in_project(project_name)
-            clusters_results = [
-                cluster for cluster in clusters_results.values()]
-            results.add_project(project_name[0], str(clusters_results))
-        results.dump_to_json_file()
-        results.run_metrics()
-
-    if args.metrics_full:
-        projects = [('spring-blog', 7), ('jpetstore', 5),
-                    ('monomusiccorp', 8), ('spring-petclinic', 3), ('jforum', 15), ('agilefant', 25)]
-        results = ProcessResultsOutput()
-        for project_name in projects:
-            Settings.PROJECT_NAME = project_name[0]
-            Settings.K_TOPICS = int(project_name[1])
-            Settings.create_id()
-            clusters_results = identify_clusters_in_project(project_name)
-            clusters_results = [
-                cluster for cluster in clusters_results.values()]
-            results.add_project(project_name[0], str(clusters_results))
-        results.dump_to_json_file()
-        results.run_metrics()
+        plt.savefig(
+            f"{Settings.DIRECTORY}/data/metrics/images/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.png")
+        # plt.show()
 
 
 main()
