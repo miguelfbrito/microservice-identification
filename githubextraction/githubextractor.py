@@ -10,16 +10,18 @@ from bs4 import BeautifulSoup
 ACCESS_TOKEN = "e0754d7bf67f3bb1da2e77b881740627b442aefb"
 
 def find_repositories_containing_keyword(keyword, language='java'):
-    for min_size in range(5000, 100000, 5000):
-        max_size = min_size + 5000
+    for min_size in range(1000, 100000, 250):
+        max_size = min_size + 250
         # 35 is the max number of pages for the limit of 1000 results for a search established by GitHub
         for i in range(1, 35):
             url = f"https://api.github.com/search/code?q={keyword}+language:{language}+size:{min_size}..{max_size}&access_token={ACCESS_TOKEN}&page={i}"
             req = requests.get(url)
+            print(f"Requesting {url}")
             if req.ok:
                 data = req.json()
-                print(f"Requesting {url}")
                 print(f"Request status code: {req.status_code}, page {i}")
+                if len(data['items']) == 0:
+                    break
                 yield req.json()
             else:
                 break
@@ -30,9 +32,9 @@ def get_repos():
     for data in find_repositories_containing_keyword('RequestMapping+Controller'):
         items = data['items']
         repositories = {item['repository']['full_name'] for item in items}
-        time.sleep(8)
+        time.sleep(3)
 
-        with open("repos.txt", "a+") as f:
+        with open("repos_new.txt", "a+") as f:
             for key in repositories:
                 print(f"Found repo: {key}")
                 f.write(key+"\n")
@@ -85,6 +87,42 @@ def get_stars_all_repos():
         print(i)
 
 
+def get_commit_count(user, repo): 
+
+    headers = {"Authorization": f"token {ACCESS_TOKEN}"} 
+    query = f"""
+        {{
+            repository(owner: "{user}", name: "{repo}") {{
+                name
+                refs(first:100, refPrefix: "refs/heads/", query:"master") {{
+                    edges {{
+                        node {{
+                            name
+                            target {{
+                                ... on Commit {{
+                                    history(first: 0) {{
+                                        totalCount
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }}"""
+
+    request = requests.post("https://api.github.com/graphql", json={"query":query}, headers=headers)
+    commit_count = 0
+    if request.ok:
+        data = json.loads(request.text)
+        commit_count = data['data']['repository']['refs']['edges'][0]['node']['target']['history']['totalCount']
+        print(f"Total Commits: {commit_count}")
+    else:
+        print("Failed to request commit data")
+
+    return commit_count
+
+
 def get_info_repo(repo_full_name):
     repository = {}
     user, repo = repo_full_name.split("/")
@@ -95,14 +133,25 @@ def get_info_repo(repo_full_name):
         repository['size'] = repo_info['size']
         repository['forks'] = repo_info['forks_count']
         repository['stars'] = repo_info['stargazers_count']
+        repository['open_issues'] = repo_info['open_issues']
+        repository['subscribers'] = repo_info['subscribers_count']
         repository['is_fork'] = True if repo_info['fork'] == 'true' else False
         repository['language'] = repo_info['language']
+
+    repository['commit_count'] = get_commit_count(user, repo) 
+
+    time.sleep(3)
+
+    req_contributors = requests.get(f"https://api.github.com/repos/{user}/{repo}/contributors?access_token={ACCESS_TOKEN}")
+    if (req_contributors.ok):
+        repository['contributors'] = len(json.loads(req_contributors.text or req_contributors.content))
+
     return repository
 
 
 def filter_found_projects(file_path):
     ignore_words = {'release', 'framework',
-                    'learn', 'source', 'spring', 'study'}
+                    'learn', 'source', 'spring', 'study', 'demo', 'test', 'practice', 'practise'}
     filtered_projects = set()
     with open(file_path, 'r') as f:
         line = f.readline()
@@ -135,8 +184,11 @@ def get_repos_info(file_path):
             print(f"{line} -> {info_repo}")
 
             with open(f"./repos_data.txt", 'a+') as fp:
-                write_line = f"{line}, {info_repo['size']}, {info_repo['stars']}, {info_repo['forks']}, {info_repo['is_fork']}, {info_repo['language']}\n"
-                fp.write(write_line)
+                try:
+                    write_line = f"{line}, {info_repo['size']}, {info_repo['stars']}, {info_repo['forks']}, {info_repo['contributors']}, {info_repo['is_fork']}, {info_repo['language']}, {info_repo['subscribers']}, {info_repo['commit_count']}, {info_repo['open_issues']}\n"
+                    fp.write(write_line)
+                except KeyError:
+                    print(f"Failed to fetch some data, ignoring this repo")
             
 
 
@@ -145,7 +197,7 @@ def get_repos_info(file_path):
             line = f.readline()
 
 if __name__ == "__main__":
-    # repos = get_repos()
+    #repos = get_repos()
     filter_found_projects('./repos.txt')
     get_repos_info('./repos.txt')
 

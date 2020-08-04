@@ -9,19 +9,6 @@ from multipledispatch import dispatch
 
 class Class:
 
-    # def __init__(self):
-    #     # TODO: refactor some of the lists to sets
-    #     self.class_name = "FailedToLoadClassName"
-    #     self.package_name = "FailedToLoadPackageName"
-    #     self.qualified_name = "FailedToLoadQualifiedName"
-    #     self.annotations = []
-    #     self.dependencies = []
-    #     self.variables = []
-    #     self.methods = []
-    #     self.formal_parameters = []
-    #     self.literals = []
-    #     self.comments = []
-
     def __init__(self, qualified_name="package.FailedToLoadClassName", annotations=[], variables=[], dependencies=[], methods=[], method_invocations={}, implemented_types=[], extended_types=[]):
         self.qualified_name = qualified_name
         search = re.search(r'\.(\w*)$', qualified_name)
@@ -67,10 +54,13 @@ class Class:
                               [1] for m in self.method_invocations]
         method_invocations_variables = [m['scopeName']
                                         for m in self.method_invocations]
+        method_invocations_names = [m['methodName']
+                                    for m in self.method_invocations]
 
         len_words += self.total_words(self.variables) + \
             self.total_words(method_invocations) + \
-            self.total_words(method_invocations_variables)
+            self.total_words(method_invocations_variables) + \
+            self.total_words(method_invocations_names)
 
         # TODO: we could apply other heuristics to try to identify we're currently in an entity
         # TODO: search for the qualified name for Entitities. Entity, DAO, domain, (common name conventions representing strong domain concepts)
@@ -90,15 +80,15 @@ class Class:
         variables_weight = 2
         methods_weight = 2
         method_invocations_weight = 1
-        method_invocations_variables_weight = 1
-        literals_weight = 1
-        comments_weight = 1
 
-        string = variables_weight * self.variables + methods_weight * \
-            methods + method_invocations_weight * method_invocations
-        method_invocations_variables_weight * method_invocations_variables
+        string = variables_weight * self.variables + \
+            methods_weight * methods + \
+            method_invocations_weight * method_invocations + \
+            method_invocations_weight * method_invocations_variables + \
+            method_invocations_weight * method_invocations_names
+
         string = " ".join(string) + class_name_weight * (" " + self.class_name)
-        print(f"Final String hey {string}")
+        print(f"Final String {string}")
         print(f"{self.variables} - {methods} - {self.class_name}")
         return string
 

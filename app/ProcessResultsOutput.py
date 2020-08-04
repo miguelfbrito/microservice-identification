@@ -5,6 +5,8 @@ from Settings import Settings
 import metrics.CHD as CHD
 import metrics.CHM as CHM
 import metrics.IFN as IFN
+import metrics.SMQ as SMQ
+import metrics.CMQ as CMQ
 
 
 class ProcessResultsOutput:
@@ -63,15 +65,23 @@ class ProcessResultsOutput:
         chm = CHM.calculate(file_path)
         chd = CHD.calculate(file_path)
         ifn = IFN.calculate(file_path)
+        smq, scoh, scop = SMQ.calculateWrapper()
+        cmq, ccoh, ccop = CMQ.calculateWrapper()
 
-        print(f"FINAL CHM : {chm}")
-        print(f"FINAL CHD : {chd}")
-        print(f"FINAL IFN : {ifn}")
-
-        path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}"
+        path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv"
         with open(path, "a+") as f:
             f.write(f"\nCHM: {chm}")
             f.write(f"\nCHD: {chd}")
             f.write(f"\nIFN: {ifn}")
+            f.write(f"\nSMQ: {smq}")
+            f.write(f"\nCMQ: {cmq}")
 
-        return chm, chd, ifn, irn, opn
+        print(f"FINAL CHM : {chm}")
+        print(f"FINAL CHD : {chd}")
+        print(f"FINAL IFN : {ifn}")
+        print(f"FINAL IRN : {irn}")
+        print(f"FINAL OPN : {opn}")
+        print(f"FINAL SMQ : {smq} {scoh} {scop}")
+        print(f"FINAL CMQ : {cmq} {ccoh} {ccop}")
+
+        return chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop

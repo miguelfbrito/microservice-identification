@@ -43,7 +43,7 @@ class StringUtils:
         return comments
 
     @staticmethod
-    def clear_java_words(string):
+    def clear_text(string):
 
         if isinstance(string, list):
             string = string[0]
@@ -66,9 +66,9 @@ class StringUtils:
         result_words = []
         uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()
         words = re.split(r"\W+", uncamel_words)
-        with open('file', 'a+') as f:
-            for word in words:
-                if word.isalpha() and word.lower() not in stopwords and len(word) > 2:
-                    result_words.append(word)
+        # with open('file', 'a+') as f:
+        for word in words:
+            if word.isalpha() and word.lower() not in stopwords and len(word) > 2:
+                result_words.append(word)
 
         return (' ').join(result_words)

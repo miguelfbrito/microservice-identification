@@ -4,6 +4,7 @@ from datetime import datetime
 from itertools import cycle
 from random import randint
 from random import random
+from kneed import KneeLocator
 import matplotlib.pyplot as plt
 import Utils as utils
 import networkx as nx
@@ -19,6 +20,8 @@ import math
 import re
 import os
 import PostProcessing
+import time
+from Utils import normalize
 
 from StringUtils import StringUtils
 from Graph import Graph
@@ -104,6 +107,8 @@ def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
                         method_call_weight = calls_to_dst / \
                             len(classe.get_method_invocations())
 
+                # TODO : REVIEW AND REMOVE, testing purposes only
+                method_call_weight = 0
                 edge_data[str(WeightType.ABSOLUTE)
                           ] = max(float(edge_data[str(weight_type)]), method_call_weight)  # method_call_weight
         except KeyError as e:
@@ -256,10 +261,6 @@ def identify_clusters_in_project(project_name):
     graph = nx.DiGraph()
     graph = Graph.create_dependencies(classes, graph)
 
-    # Method 1. TF-IDF
-    # apply_tfidf_to_connections(graph, qualified_visitors)
-
-    # Method 2. LDA
     lda.apply_lda_to_classes(graph, classes)
     calculate_absolute_weights(graph, classes, weight_type=WeightType.LDA)
 
@@ -269,9 +270,6 @@ def identify_clusters_in_project(project_name):
 
     # List of clusters. One for each execution.
     clustering_results = Clustering.compute_multiple_resolutions(graph)
-    # Cluster by LDA and structural dependencies
-    # clusters, modularity = Clustering.community_detection_louvain(graph)
-
     # clusters = PostProcessing.process(clusters, classes, graph.copy())
     return clustering_results
 
@@ -307,6 +305,7 @@ def main():
     if args.project:
         Settings.PROJECT_NAME = str(args.project)
         project_name = str(args.project)
+        # cluster_results = (clusters, modularity, resolution)
         clusters_results = identify_clusters_in_project(project_name)
 
         metrics = []
@@ -317,33 +316,81 @@ def main():
             result.dump_to_json_file()
 
             if args.metrics:
-                chm, chd, ifn, irn, opn = result.run_metrics()
-                metrics.append((chm, chd, ifn, irn, opn))
+                chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop = result.run_metrics()
+                metrics.append((chm, chd, ifn, irn, opn, smq,
+                                scoh, scop, cmq, ccoh, ccop))
 
+        resolution = []
         chm = []
         chd = []
         ifn = []
         irn = []
         opn = []
-        resolution = []
-        for cluster_result, metric in zip(clusters_results, metrics):
-            chm.append(metric[0])
-            chd.append(metric[1])
-            ifn.append(metric[2])
-            irn.append(metric[3])
-            opn.append(metric[4])
-            resolution.append(round(cluster_result[2], 2))
+        smq = []
+        scoh = []
+        scop = []
+        cmq = []
+        ccoh = []
+        ccop = []
+        services_length = []
+
+        with open(f"{Settings.DIRECTORY}/data/metrics/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv", 'w+') as f:
+            for cluster_result, metric in zip(clusters_results, metrics):
+                chm.append(metric[0])
+                chd.append(metric[1])
+                ifn.append(metric[2])
+                irn.append(metric[3])
+                opn.append(metric[4])
+                smq.append(metric[5])
+                scoh.append(metric[6])
+                scop.append(metric[7])
+                cmq.append(metric[8])
+                ccoh.append(metric[9])
+                ccop.append(metric[10])
+                services_length.append(cluster_result)
+
+                resolution.append(round(cluster_result[2], 2))
+
+                print(f"CLUSTER RESULT:: {cluster_result}")
+
+                line = f"{round(cluster_result[2], 2)},{metric[0]},{metric[1]},{metric[2]},{metric[3]},{metric[4]},{metric[5]},{metric[6]},{metric[7]},{metric[8]},{metric[9]},{metric[10]}, {len(cluster_result[0])}"
+                f.write(f"{line}\n")
+
+                # average_cluster_len = sum(
+                # x for x in cluster_result.values()) / len(cluster_result[0])
+                # print(f"Average cluster len {average_cluster_len}")
+
+                total = metric[0] + metric[1] + metric[5] + metric[6]
+                print(
+                    f"Sum for resolution {round(cluster_result[2], 2)} -> {round(total,2)}")
+
+                total_2 = metric[5] + metric[6] * -metric[2] * metric[3]
+                print(
+                    f"Total2: {round(cluster_result[2], 2)} -> {round(total_2,2)}")
+
+        # S = 8
+        # knee = None
+        # while(knee == None):
+        #     knee = KneeLocator(resolution, irn, curve='convex',
+        #                        direction='decreasing', S=S).knee
+        #     S -= 1
+        #     print(f"Trying knee of S={S}")
+        # print(f"Found knee {knee}")
 
         # Plot 1
-        bar_width = 1/4
+        bar_width = 1/6
         r1 = np.arange(len(resolution))
         r2 = [x + bar_width for x in r1]
         r3 = [x + bar_width for x in r2]
+        r4 = [x + bar_width for x in r3]
+        r5 = [x + bar_width for x in r4]
 
         plt.subplot(1, 2, 1)
         plt.bar(r1, chm, width=bar_width, label='chm')
         plt.bar(r2, chd, width=bar_width, label='chd')
         plt.bar(r3, ifn, width=bar_width, label='ifn')
+        plt.bar(r4, smq, width=bar_width, label='smq')
+        plt.bar(r5, cmq, width=bar_width, label='cmq')
         plt.xlabel('resolution', fontweight='bold')
         plt.xticks([r + bar_width for r in range(len(resolution))],
                    resolution)
@@ -351,51 +398,20 @@ def main():
 
         # Plot 2
         bar_width = 1/3
-        r4 = np.arange(len(resolution))
-        r5 = [x + bar_width for x in r4]
+        r6 = np.arange(len(resolution))
+        r7 = [x + bar_width for x in r6]
 
         plt.subplot(1, 2, 2)
-        plt.bar(r4, irn, width=bar_width, label='irn')
-        plt.bar(r5, opn, width=bar_width, label='opn')
+        plt.bar(r6, irn, width=bar_width, label='irn')
+        plt.bar(r7, opn, width=bar_width, label='opn')
         plt.xlabel('resolution', fontweight='bold')
         plt.xticks([r + bar_width for r in range(len(resolution))],
                    resolution)
         plt.legend()
 
-        plt.show()
-
-    if args.metrics_condensed:
-        projects = [('spring-blog', 7), ('jpetstore', 5),
-                    ('monomusiccorp', 8), ('spring-petclinic', 3)]
-
-        results = ProcessResultsOutput()
-        for project_name in projects:
-            Settings.PROJECT_NAME = project_name[0]
-            Settings.K_TOPICS = int(project_name[1])
-            Settings.create_id()
-            print(
-                f"\n\nStarting project {project_name[0]}, {project_name[1]} topics")
-            clusters_results = identify_clusters_in_project(project_name)
-            clusters_results = [
-                cluster for cluster in clusters_results.values()]
-            results.add_project(project_name[0], str(clusters_results))
-        results.dump_to_json_file()
-        results.run_metrics()
-
-    if args.metrics_full:
-        projects = [('spring-blog', 7), ('jpetstore', 5),
-                    ('monomusiccorp', 8), ('spring-petclinic', 3), ('jforum', 15), ('agilefant', 25)]
-        results = ProcessResultsOutput()
-        for project_name in projects:
-            Settings.PROJECT_NAME = project_name[0]
-            Settings.K_TOPICS = int(project_name[1])
-            Settings.create_id()
-            clusters_results = identify_clusters_in_project(project_name)
-            clusters_results = [
-                cluster for cluster in clusters_results.values()]
-            results.add_project(project_name[0], str(clusters_results))
-        results.dump_to_json_file()
-        results.run_metrics()
+        plt.savefig(
+            f"{Settings.DIRECTORY}/data/metrics/images/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.png")
+        # plt.show()
 
 
 main()
