@@ -321,6 +321,7 @@ def main():
                 metrics.append((chm, chd, ifn, irn, opn, smq,
                                 scoh, scop, cmq, ccoh, ccop))
 
+        # TODO: Refactor into cleaner approach
         resolution = []
         chm = []
         chd = []
@@ -369,50 +370,46 @@ def main():
                 print(
                     f"Total2: {round(cluster_result[2], 2)} -> {round(total_2,2)}")
 
-        # S = 8
-        # knee = None
-        # while(knee == None):
-        #     knee = KneeLocator(resolution, irn, curve='convex',
-        #                        direction='decreasing', S=S).knee
-        #     S -= 1
-        #     print(f"Trying knee of S={S}")
-        # print(f"Found knee {knee}")
-
-        # Plot 1
-        bar_width = 1/6
-        r1 = np.arange(len(resolution))
-        r2 = [x + bar_width for x in r1]
-        r3 = [x + bar_width for x in r2]
-        r4 = [x + bar_width for x in r3]
-        r5 = [x + bar_width for x in r4]
-
-        plt.subplot(1, 2, 1)
-        plt.bar(r1, chm, width=bar_width, label='chm')
-        plt.bar(r2, chd, width=bar_width, label='chd')
-        plt.bar(r3, ifn, width=bar_width, label='ifn')
-        plt.bar(r4, smq, width=bar_width, label='smq')
-        plt.bar(r5, cmq, width=bar_width, label='cmq')
-        plt.xlabel('resolution', fontweight='bold')
-        plt.xticks([r + bar_width for r in range(len(resolution))],
-                   resolution)
-        plt.legend()
-
-        # Plot 2
-        bar_width = 1/3
-        r6 = np.arange(len(resolution))
-        r7 = [x + bar_width for x in r6]
-
-        plt.subplot(1, 2, 2)
-        plt.bar(r6, irn, width=bar_width, label='irn')
-        plt.bar(r7, opn, width=bar_width, label='opn')
-        plt.xlabel('resolution', fontweight='bold')
-        plt.xticks([r + bar_width for r in range(len(resolution))],
-                   resolution)
-        plt.legend()
-
-        plt.savefig(
-            f"{Settings.DIRECTORY}/data/metrics/images/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.png")
+        # plt = build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn)
+        # plt.savefig(
+        #    f"{Settings.DIRECTORY}/data/metrics/images/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.png")
         # plt.show()
+
+
+def build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn):
+    # Plot 1
+    bar_width = 1/6
+    r1 = np.arange(len(resolution))
+    r2 = [x + bar_width for x in r1]
+    r3 = [x + bar_width for x in r2]
+    r4 = [x + bar_width for x in r3]
+    r5 = [x + bar_width for x in r4]
+
+    plt.subplot(1, 2, 1)
+    plt.bar(r1, chm, width=bar_width, label='chm')
+    plt.bar(r2, chd, width=bar_width, label='chd')
+    plt.bar(r3, ifn, width=bar_width, label='ifn')
+    plt.bar(r4, smq, width=bar_width, label='smq')
+    plt.bar(r5, cmq, width=bar_width, label='cmq')
+    plt.xlabel('resolution', fontweight='bold')
+    plt.xticks([r + bar_width for r in range(len(resolution))],
+               resolution)
+    plt.legend()
+
+    # Plot 2
+    bar_width = 1/3
+    r6 = np.arange(len(resolution))
+    r7 = [x + bar_width for x in r6]
+
+    plt.subplot(1, 2, 2)
+    plt.bar(r6, irn, width=bar_width, label='irn')
+    plt.bar(r7, opn, width=bar_width, label='opn')
+    plt.xlabel('resolution', fontweight='bold')
+    plt.xticks([r + bar_width for r in range(len(resolution))],
+               resolution)
+    plt.legend()
+
+    return plt
 
 
 main()
