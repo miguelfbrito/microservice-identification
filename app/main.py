@@ -240,15 +240,12 @@ def create_logging_folders(project_name):
             os.makedirs(directory)
 
 
-def identify_clusters_in_project(project_name):
+def identify_clusters_in_project(project_name, project_path):
 
     create_logging_folders(project_name)
-
-    directory = f"{Settings.DIRECTORY_APPLICATIONS}/{project_name}"
-
     temp_json_location = f'{Settings.DIRECTORY}/data/output.json'
 
-    utils.execute_parser(project_name)
+    utils.execute_parser(project_path)
 
     # 1. Read parsed document
     parsed_raw_json = {}
@@ -282,7 +279,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", "-p",
-                        help="Project name (used for construction of relative paths)")
+                        help="Project path")
     parser.add_argument("--k_topics", "-k",
                         help="Number of topics for given project")
     parser.add_argument("--metrics", "-m",
@@ -303,10 +300,14 @@ def main():
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
 
     if args.project:
-        Settings.PROJECT_NAME = str(args.project)
-        project_name = str(args.project)
+        project_name = str(args.project.split('/')[-1])
+        project_path = str(args.project)
+        Settings.PROJECT_PATH = project_path
+        Settings.PROJECT_NAME = project_name
+
         # cluster_results = (clusters, modularity, resolution)
-        clusters_results = identify_clusters_in_project(project_name)
+        clusters_results = identify_clusters_in_project(
+            project_name, project_path)
 
         metrics = []
         for cluster in clusters_results:

@@ -1,13 +1,10 @@
 package constants;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Constants {
-
-    public static final String DIRECTORY = "/home/mbrito/git/thesis";
-    public static final String MONOLITHS_DIRECTORY =  "/home/mbrito/git/thesis-web-applications/monoliths";
+    public static final String DIRECTORY = getRootPath();
+    // public static final String MONOLITHS_DIRECTORY =  "/home/mbrito/git/thesis-web-applications/monoliths";
 
     public static final Set<String> STOP_WORDS_DATA_TYPES = new HashSet<>(
             Arrays.asList()); // "int", "integer", "void", "long", "double", "float", "string", "char", "character"
@@ -43,4 +40,11 @@ public class Constants {
                     "serializer", "serialize", "xwiki", "wiki", "context", "reference", "translation", "configuration",
                     "annotation", "bridge", "new", "clear", "my", "signon", "signoff", "clear")
     );
+
+    public static String getRootPath(){
+        List<String> split = new ArrayList<>(Arrays.asList(System.getProperty("user.dir").toString().split("/")));
+        split.remove(0);
+        split.remove(split.size() - 1);
+        return split.stream().reduce("", (acc, string) -> acc + "/" +  string);
+    }
 }

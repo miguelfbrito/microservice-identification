@@ -14,8 +14,8 @@ class ProcessResultsOutput:
     def __init__(self):
         super().__init__()
         self.projects = []
-        self.commit_hash = str(subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"]))
+        self.commit_hash = ''
+        # self.commit_hash = str(subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]))
 
     def write_to_file(self, path, content, type="w"):
         with open(path, type) as f:

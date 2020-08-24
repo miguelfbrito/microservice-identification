@@ -3,6 +3,7 @@ from datetime import datetime
 
 class Settings:
     PROJECT_NAME = ''
+    PROJET_PATH = ''
     K_TOPICS = 0
     DRAW = False
     DIRECTORY = "/home/mbrito/git/thesis"
@@ -10,7 +11,8 @@ class Settings:
     DIRECTORY_PROJECTS = "/home/mbrito/git/thesis/projects.json"
     LDA_PLOTTING = False
     METRIC_EVALUATION = False
-    MALLET_PATH = "/home/mbrito/git/Mallet/bin/mallet"
+    # MALLET_PATH = "/home/mbrito/git/Mallet/bin/mallet"
+    MALLET_PATH = "~/.mallet/bin/mallet"
 
     @staticmethod
     def create_id():

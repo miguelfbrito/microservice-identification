@@ -41,11 +41,8 @@ public class ExtractIdentifiedClassesTest {
 
 
     public void parseAndExtract(String projectName) throws IOException {
-        // String projectName = "sunrise";
-        
         projectName = projectName.replace("/", "__");
         String path = "/home/mbrito/git/thesis-web-applications/" + projectName;
-        //String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
         String dstFolder = "/home/mbrito/git/thesis/data/interfaces";
 
 

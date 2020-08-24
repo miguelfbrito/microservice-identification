@@ -2,15 +2,12 @@ import subprocess
 from Settings import Settings
 
 
-def execute_parser(project_name):
+def execute_parser(project_path):
 
     symbol_solver_path = f"{Settings.DIRECTORY}/symbolsolver/target/"
+    command = f"java -Dparse -Dproject={project_path} -cp symbolsolver-1.0.jar Main"
 
-    # command = f"mvn package -DskipTests && java -Dproject=\"{project_name}\" -cp target/symbolsolver-1.0.jar Main"
-    command = f"java -Dparse -Dproject={project_name} -cp symbolsolver-1.0.jar Main"
-
-    print(f"COMMAND {command}")
-
+    print(f"Invoking parsing: {command}")
     subprocess.call(command, cwd=symbol_solver_path, shell=True)
 
 

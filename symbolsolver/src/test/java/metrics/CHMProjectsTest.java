@@ -25,7 +25,7 @@ public class CHMProjectsTest {
     @BeforeAll
     public static void checkEnv() {
         if (System.getenv("CI") == null) {
-            PROJECTS_ROOT = Constants.MONOLITHS_DIRECTORY;
+          //  PROJECTS_ROOT = Constants.MONOLITHS_DIRECTORY;
         } else {
             PROJECTS_ROOT = System.getenv("GITHUB_WORKSPACE") + "/thesis-web-applications/monoliths";
         }

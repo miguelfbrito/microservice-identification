@@ -8,6 +8,8 @@ import utils.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -21,18 +23,15 @@ public class Main {
             runMetrics();
         }
 
-
-
-
     }
 
 
     public static void parseProject() throws IOException {
-        String project_name = System.getProperty("project");
-        if (project_name != null) {
-            System.out.println("Found project name " + project_name);
+        String projectPath = System.getProperty("project");
+        if (projectPath != null) {
+            System.out.println("Found project path: " + projectPath);
             Parser parser = new Parser();
-            List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(Constants.MONOLITHS_DIRECTORY + "/" + project_name));
+            List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(projectPath));
             Parse parse = new Parse();
             parse.completeParse(compilationUnits);
         }
