@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 
 class Settings:
@@ -6,12 +7,12 @@ class Settings:
     PROJET_PATH = ''
     K_TOPICS = 0
     DRAW = False
-    DIRECTORY = "/home/mbrito/git/thesis"
+    DIRECTORY = "/"+"/".join(os.path.abspath(os.getcwd()
+                                             ).split("/")[1:-1])
     DIRECTORY_APPLICATIONS = "/home/mbrito/git/thesis-web-applications/monoliths"
-    DIRECTORY_PROJECTS = "/home/mbrito/git/thesis/projects.json"
+    DIRECTORY_PROJECTS = f"{DIRECTORY}/projects.json"
     LDA_PLOTTING = False
     METRIC_EVALUATION = False
-    # MALLET_PATH = "/home/mbrito/git/Mallet/bin/mallet"
     MALLET_PATH = "~/.mallet/bin/mallet"
 
     @staticmethod
