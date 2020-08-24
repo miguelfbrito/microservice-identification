@@ -17,6 +17,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
         System.out.println(System.getProperties());
 
+        System.out.println(Constants.DIRECTORY);
+
         if (System.getProperty("parse") != null) {
             parseProject();
         } else if (System.getProperty("metrics") != null) {

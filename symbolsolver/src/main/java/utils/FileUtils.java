@@ -6,6 +6,7 @@ import constants.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,16 +18,22 @@ public class FileUtils {
     @Test
     public static <T> void jsonDump(Object data) throws IOException {
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-        FileWriter file = null;
+        FileWriter fileWriter = null;
+        String filePath = Constants.DIRECTORY + "/data/output.json";
+        File file = new File(filePath);
+        System.out.println("FILE PATH : " + filePath);
         try {
-            file = new FileWriter(Constants.DIRECTORY + "/data/output.json");
-            gson.toJson(data, file);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            fileWriter = new FileWriter(file);
+            gson.toJson(data, fileWriter);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                file.flush();
-                file.close();
+                fileWriter.flush();
+                fileWriter.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

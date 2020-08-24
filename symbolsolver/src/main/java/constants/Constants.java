@@ -45,6 +45,7 @@ public class Constants {
         List<String> split = new ArrayList<>(Arrays.asList(System.getProperty("user.dir").toString().split("/")));
         split.remove(0);
         split.remove(split.size() - 1);
-        return split.stream().reduce("", (acc, string) -> acc + "/" +  string);
+
+        return split.stream().reduce("", (acc, string) -> acc + "/" +  string).replaceAll("/symbolsolver", "");
     }
 }
