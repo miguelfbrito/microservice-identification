@@ -279,7 +279,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", "-p",
-                        help="Project path")
+                        help="Project path", required=True)
     parser.add_argument("--k_topics", "-k",
                         help="Number of topics for given project")
     parser.add_argument("--metrics", "-m",
