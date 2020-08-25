@@ -6,7 +6,7 @@ sudo apt update -y
 sudo apt install software-properties-common -y
 sudo add-apt-repository ppa:deadsnakes/ppa -y
 sudo apt install python3.7 -y
-sudo apt install python3-pip
+sudo apt install python3-pip -y
 cd app
 pip3 install -r requirements.txt
 sudo apt-get install python3-sklearn python3-sklearn-lib python3-sklearn-doc -y
