@@ -34,11 +34,7 @@ from sklearn import cluster
 class Clustering:
 
     @staticmethod
-    def compute_multiple_resolutions(graph, weight_type=WeightType.ABSOLUTE):
-
-        start = 0.3
-        end = 1.1
-        step = 0.1
+    def compute_multiple_resolutions(graph, start, end, step, weight_type=WeightType.ABSOLUTE):
 
         clusters_results = []
         res_range = np.arange(start, end, step)
@@ -49,6 +45,12 @@ class Clustering:
                     graph, resolution=resolution)
                 clusters_results.append((clusters, modularity, resolution))
 
+                Clustering.write_modularity_and_services(clusters_results)
+
+        return clusters_results
+
+    @staticmethod
+    def write_modularity_and_services(clusters_results):
         with open('./clustering.txt', 'w+') as f:
             for clusters, modularity, resolution in clusters_results:
                 f.write(f"Modularity {modularity}\n")
@@ -66,13 +68,6 @@ class Clustering:
 
                 Clustering.write_services_to_file(
                     clusters, resolution, classes)
-
-            # plt.plot(res_range, [len(m[0]) for m in clusters_results])
-            # plt.xlabel("Resolution")
-            # plt.ylabel("Modularity")
-            # plt.show()
-
-        return clusters_results
 
     @staticmethod
     def write_services_to_file(clusters, resolution,  classes):

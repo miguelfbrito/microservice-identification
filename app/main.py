@@ -241,7 +241,6 @@ def create_logging_folders(project_name):
 
 
 def identify_clusters_in_project(project_name, project_path):
-
     create_logging_folders(project_name)
     temp_json_location = f'{Settings.DIRECTORY}/data/output.json'
 
@@ -265,10 +264,19 @@ def identify_clusters_in_project(project_name, project_path):
     graph = Clustering.pre_process(
         graph, remove_weak_edges=False, remove_disconnected_sections=True)
 
-    # List of clusters. One for each execution.
-    clustering_results = Clustering.compute_multiple_resolutions(graph)
+    clusters_results = []
+    if Settings.RESOLUTION:
+        clusters, modularity = Clustering.community_detection_louvain(
+            graph, resolution=Settings.RESOLUTION)
+        clusters_results.append((clusters, modularity, Settings.RESOLUTION))
+        Clustering.write_modularity_and_services(clusters_results)
+    else:
+        clusters_results = Clustering.compute_multiple_resolutions(
+            graph, start=0.3, end=1, step=0.1)
+
+    # TODO: Reconsider techniques of post-processing
     # clusters = PostProcessing.process(clusters, classes, graph.copy())
-    return clustering_results
+    return clusters_results
 
 
 def main():
@@ -293,7 +301,7 @@ def main():
     Settings.DRAW = True if args.draw else False
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
     Settings.K_TOPICS = int(args.k_topics)
-    Settings.RESOLUTION = args.resolution
+    Settings.RESOLUTION = float(args.resolution)
     Settings.set_stop_words(args.stop_words)
 
     print(f"Setting Directory as: {Settings.DIRECTORY}")
