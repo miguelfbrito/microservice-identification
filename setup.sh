@@ -21,6 +21,6 @@ ant
 cd "$path"
 # Install Maven and build 
 cd symbolsolver
-sudo apt install mavena -y
+sudo apt install maven -y
 mvn package -DskipTests
 
