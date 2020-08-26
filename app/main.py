@@ -280,24 +280,25 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", "-p",
                         help="Project path", required=True)
+    parser.add_argument("--stop_words", "-s",
+                        help="Path to stopwords file")
     parser.add_argument("--k_topics", "-k",
                         help="Number of topics for given project")
-    parser.add_argument("--metrics", "-m",
-                        help="Execute metrics for a given project name after normal parsing and execution (relative path to set root path)", action="store_true")
-    parser.add_argument("--metrics-condensed", "-mc",
-                        help="Parse, cluster and execute metrics for a subset of projects", action="store_true")
-    parser.add_argument("--metrics-full", "-mf",
-                        help="Parse, cluster, and execute metrics for all defined projects", action="store_true")
+    parser.add_argument("--resolution", "-r",
+                        help="Resolution number parameter in Louvain community detection. A value in range of 0.3 to 1 is advised. A smaller resolution will identify smaller communities and vice versa. By default the whole range is tested and communities for each community saved.")
     parser.add_argument("--draw", "-d",
                         help="Enable plotting of graphs", action="store_true")
     parser.add_argument("--lda-plotting", "-l",
                         help="Enable plotting of LDA topics", action="store_true")
-    parser.add_argument("--metric-based", "-mb",
-                        help="CHANGE LATER", action="store_true")
     args = parser.parse_args()
 
     Settings.DRAW = True if args.draw else False
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
+    Settings.K_TOPICS = args.k_topics
+    Settings.RESOLUTION = args.resolution
+    Settings.set_stop_words(args.stop_words)
+
+    print(f"\n\n\nDIRECTORY {Settings.DIRECTORY}")
 
     if args.project:
         project_name = str(args.project.split('/')[-1])

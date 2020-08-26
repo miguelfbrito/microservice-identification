@@ -1,7 +1,9 @@
 import re
 import time
 import pathlib
+
 from pathlib import Path
+from Settings import Settings
 
 
 class StringUtils:
@@ -44,24 +46,20 @@ class StringUtils:
 
     @staticmethod
     def clear_text(string):
+        stopwords = set()
 
         if isinstance(string, list):
             string = string[0]
 
-        stopwords = {
-            "abstract", "assert", "boolean",
-            "break", "byte", "case", "catch", "char", "class", "const",
-            "continue", "default", "do", "double", "else", "extends", "false",
-            "final", "finally", "float", "for", "goto", "if", "implements",
-            "import", "instanceof", "int", "interface", "long", "native",
-            "new", "null", "package", "private", "protected", "public",
-            "return", "short", "static", "strictfp", "super", "switch",
-            "synchronized", "this", "throw", "throws", "transient", "true",
-            "try", "void", "volatile", "while", "string", "int", "collection",
-            "gaussic", "controller", "map", "request", "method", "integer", "system", "out", "println", "springframework",
-            "com", "request", "mapping", "value", "autowired", "list", "hash",  "test", "id", "date", "spring", "mvc", "test", "mock", "except", "maven", "impl", "decimal", "serializable", "none", "set", "get", "object", "array", "mapper", "service", "entity", "repository", "annotation", "base", "model", "dao", "dto", "beans", "bean", "statement", "global", "view", "action", "http", "web", "jpa", "raysmond", "agilefant", "save", "insert", "delete", "update", "add", "remove", "search", "query", "factory", "context", "data", "form", "field", "router", "url", "database", "jdbc", "app",
-            "connect", "util", "utils", "create"
-        }
+        if Settings.STOP_WORDS_PATH:
+            with open(Settings.STOP_WORDS_PATH, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    words = line.split(' ')[:-1]
+                    words = [w for w in words if w != '']
+                    stopwords.update(words)
+        else:
+            raise Exception("Stop words path not set")
 
         result_words = []
         uncamel_words = re.sub(r'(?<!^)(?=[A-Z])', ' ', string).lower()
