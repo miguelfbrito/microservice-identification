@@ -58,7 +58,6 @@ def apply_lda_to_classes(graph, classes, num_topics=0, pre_process=False):
 
     services = {}
     for class_name, topics in zip(classes.keys(), lda_result):
-        print(f"{class_name} -> {topics}")
 
         topic_number = 0
         topic_value = 0
@@ -189,8 +188,7 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
         temp_coherences = []
 
         while runs <= 3:
-            print(f"New loop")
-
+            print(f"\tExecution #{runs}")
             lm, lda_model = fit_lda(corpus, num_topics, dictionary)
 
             if Settings.LDA_PLOTTING:
@@ -207,7 +205,6 @@ def compute_coherence_values(dictionary, corpus, texts, limit, start=4, step=3):
             temp_coherences.append(coherencemodel.get_coherence())
 
             runs += 1
-
             top_val = top_topics[0][1]
 
         # Same as before, duplicated above
@@ -309,8 +306,8 @@ def find_best_lda(docs):
     for c in lda_model[corpus]:
         topics_per_doc.append(c)
 
-    print(f"Topics per doc: {topics_per_doc}")
-    print(f"Topics: {lda_model.show_topics()}")
+    # print(f"Topics per doc: {topics_per_doc}")
+    # print(f"Topics: {lda_model.show_topics()}")
 
     return topics_per_doc, best_topic
 

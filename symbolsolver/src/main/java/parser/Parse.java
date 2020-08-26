@@ -160,10 +160,7 @@ public class Parse {
             visitor.accept(new AnnotationVisitor(), annotations);
             visitor.accept(new VariableDeclaratorVisitor(), variables);
             visitor.accept(new MethodCallExprVisitor(), methodCallInvocations);
-            System.out.println("\n\n\nClass " + myClass.getSimpleName());
-            for (MethodCallExpr mc : methodCallInvocations) {
-                System.out.println(mc.getName().toString());
-            }
+            System.out.println("[Parsing class] " + myClass.getSimpleName());
 
             myClass.setAnnotations(new ArrayList<>(annotations));
             myClass.setVariables(variables);
@@ -178,7 +175,6 @@ public class Parse {
                 myClassDTOS.put(myClass.getQualifiedName(), myClassDTO);
                 total += myClassDTO.getMethodInvocations().size();
             }
-            System.out.println("METHOD INVOCATIONS TOTAL: " + total);
             FileUtils.jsonDump(myClassDTOS);
         } catch (IOException e) {
             e.printStackTrace();

@@ -107,7 +107,6 @@ public class CHD implements Metric {
             Map<String, String> operationsInOrder = service.getOperations();
 
             if (operationsInOrder.isEmpty()) {
-                System.out.println("SKIPPING SERVICE");
                 continue;
             }
 

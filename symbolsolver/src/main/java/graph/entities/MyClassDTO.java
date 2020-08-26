@@ -43,9 +43,6 @@ public class MyClassDTO {
         this.methodInvocations = extractMethodInvocations(myClass.getMethodInvocations());
         this.implementedTypes = new ArrayList<>(myClass.getImplementedTypes());
         this.extendedTypes = new ArrayList<>(myClass.getExtendedTypes());
-        if (myClass.getQualifiedName().equals("org.springframework.samples.petclinic.vet.Vet")) {
-            System.out.println("HI");
-        }
         this.dependencies = extractDependencies(myClass.getVariables());
     }
 
@@ -95,8 +92,6 @@ public class MyClassDTO {
         for (MyMethod method : methods.values()) {
             MethodDeclaration methodDeclaration = method.getVisitor();
             resolveTargetClassFromSubTypes(dependencyList, methodDeclaration.getType());
-
-
 
             methodDeclaration.getParameters().forEach(parameter -> {
                 List<ClassOrInterfaceType> referencesParametersType = parameter.getType().findAll(ClassOrInterfaceType.class);

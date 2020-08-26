@@ -78,10 +78,14 @@ class Clustering:
 
         with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_R{round(resolution,2)}", 'w+') as f:
             for service_id, service in services.items():
-                f.write(f"\nService {service_id}\n")
+                service_id = f"\nService {service_id}\n"
+                f.write(service_id)
+                print(service_id)
                 for class_name in service.get_classes():
                     f.write(f"{class_name}\n")
+                    print(f"\t{class_name}")
                 f.write("\n")
+                print("\n")
 
     @staticmethod
     def community_detection_louvain(graph, resolution=1, weight_type=WeightType.ABSOLUTE):
@@ -111,7 +115,7 @@ class Clustering:
         mappings = {}
 
         cluster_distribution = [len(cluster) for cluster in clusters.values()]
-        print(f"Cluster distribution: {cluster_distribution}")
+        print(f"Cluster distribution by class count: {cluster_distribution}")
         modularity = community.modularity(partition, graph)
         print(f"Modularity: {modularity}")
 
@@ -378,9 +382,6 @@ class Clustering:
     def pre_process(graph, remove_weak_edges=False, remove_disconnected_sections=False):
         # TODO: could be optimized by caching already traversed nodes
 
-        for src, dst in graph.edges():
-            print(f"pre {src} {dst} -> {graph.get_edge_data(src,dst)}")
-
         graph = graph.to_undirected()
 
         # Remove edges with weak weights. Could have a moderate impact on louvain due to the way it decides which community to choose
@@ -412,7 +413,7 @@ class Clustering:
 
             for node in nodes_remove:
                 graph.remove_node(node)
-                print(f"Removing node (<{node_depth} dfs) {node}")
+                # print(f"Ignoring node (<{node_depth} dfs) {node}")
 
         return graph
 

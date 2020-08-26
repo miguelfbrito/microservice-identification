@@ -77,7 +77,6 @@ class Graph:
 
         # Finally add all the edges to the graph
         for (src, dst), weights in new_edges.items():
-            print(f"{src} {dst} -> {weights}")
             G.add_edge(src, dst, **{weight[0]: weight[1]
                                     for weight in weights})
 

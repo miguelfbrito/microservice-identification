@@ -116,9 +116,6 @@ def calculate_absolute_weights(graph, classes, weight_type=WeightType.TF_IDF):
             edge_data[str(WeightType.ABSOLUTE)] = 0
             print(f"KEY ERROR {e} {src} {dst}")
 
-        print(
-            f"\t-> {src} -> {dst} -> {edge_data[str(WeightType.ABSOLUTE)]}")
-
 
 def apply_tfidf_to_connections(graph, class_visitors):
 
@@ -225,7 +222,6 @@ def extract_classes_information_from_parsed_json(json_dict):
                           implemented_types, extended_types)
 
         classes[class_name] = new_class
-        print(new_class)
 
     return classes
 

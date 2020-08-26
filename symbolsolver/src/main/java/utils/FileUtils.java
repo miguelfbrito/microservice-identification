@@ -21,7 +21,7 @@ public class FileUtils {
         FileWriter fileWriter = null;
         String filePath = Constants.DIRECTORY + "/data/output.json";
         File file = new File(filePath);
-        System.out.println("FILE PATH : " + filePath);
+        System.out.println("File: " + filePath);
         try {
             if (!file.exists()) {
                 file.createNewFile();

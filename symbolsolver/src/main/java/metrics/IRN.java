@@ -76,7 +76,6 @@ public class IRN implements Metric {
         }
 
         // TODO: Refactor
-        System.out.println("\n\n-------> Print edges");
         int min = Integer.MAX_VALUE;
         int max = -1;
         for(DependencyEdge e : serviceGraph.edgeSet()){
@@ -85,11 +84,6 @@ public class IRN implements Metric {
         }
         int total = 0;
         for(DependencyEdge e : serviceGraph.edgeSet()){
-            System.out.println("");
-            System.out.println(serviceGraph.getEdgeSource(e));
-            System.out.println(serviceGraph.getEdgeTarget(e));
-            System.out.println("Calls: " + e.getValue());
-            System.out.println("Calls weight: " + (e.getValue() - min) / (max - min));
 
             total += e.getValue();
         }

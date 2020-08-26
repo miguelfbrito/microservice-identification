@@ -40,7 +40,6 @@ class Service:
             service = Service(cluster_id, clusters[cluster_id])
             services[cluster_id] = service
 
-        print(f"Extracting services from clusters: {services}")
         return services
 
     @staticmethod
@@ -53,3 +52,6 @@ class Service:
                 class_service[classe] = service_id
 
         return class_service
+
+    def __repr__(self):
+        return str(self.classes)

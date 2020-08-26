@@ -29,15 +29,6 @@ public class GenerateMetrics {
 
     private static String PROJECTS_ROOT;
 
-    public static void checkEnv() {
-
-        if (System.getenv("CI") == null) {
-           //  PROJECTS_ROOT = Constants.MONOLITHS_DIRECTORY;
-        } else {
-            PROJECTS_ROOT = System.getenv("GITHUB_WORKSPACE") + "/thesis-web-applications/monoliths";
-        }
-    }
-
     public static void extractClustersToFile(Map<Integer, Service> services, Project project) throws IOException {
 
         // WRITE TO GENERIC FILE
@@ -67,9 +58,6 @@ public class GenerateMetrics {
     }
 
     public List<ProjectMetrics> generate() {
-
-        // When running from another test method
-        checkEnv();
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
         Gson gson = new Gson();

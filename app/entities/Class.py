@@ -46,7 +46,6 @@ class Class:
         methods = []
         for m in self.methods:
             method_string = m.get_merge_of_entities()
-            print(f"Method string {method_string}")
             len_words += self.total_words(method_string)
             methods.append(method_string)
 
@@ -88,8 +87,6 @@ class Class:
             method_invocations_weight * method_invocations_names
 
         string = " ".join(string) + class_name_weight * (" " + self.class_name)
-        print(f"Final String {string}")
-        print(f"{self.variables} - {methods} - {self.class_name}")
         return string
 
     def get_class_name(self):
