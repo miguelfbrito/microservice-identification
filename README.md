@@ -10,7 +10,7 @@ Currently it only supports Java projects.
 
 
 ## Usage
-All the interaction with the tool is done through shell with the script present on `/app/` named `main.py`.
+All the interaction with the tool is done through the python script `main.py` located in `/app/` directory.
 
 ```
 main.py [-h] --project PROJECT [--stop_words STOP_WORDS]
