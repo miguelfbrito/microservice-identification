@@ -21,8 +21,8 @@ import re
 import os
 import PostProcessing
 import time
+from metrics.Metrics import Metrics
 from Utils import normalize
-
 from StringUtils import StringUtils
 from Graph import Graph
 from operator import itemgetter
@@ -247,7 +247,7 @@ def identify_clusters_in_project(project_name, project_path):
 
     utils.execute_parser(project_path)
 
-    # 1. Read parsed document
+    # Read parsed document
     parsed_raw_json = {}
     with open(temp_json_location) as json_file:
         parsed_raw_json = json.load(json_file)
@@ -272,10 +272,6 @@ def identify_clusters_in_project(project_name, project_path):
 
 
 def main():
-    # logging.basicConfig(filename='logs.log', filemode="w", level=logging.INFO,
-    #   format="%(asctime)s:%(levelname)s: %(message)s")
-    # Enables printing of logs to stdout as well
-    # logging.getLogger().addHandler(logging.StreamHandler())
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", "-p",
@@ -286,6 +282,8 @@ def main():
                         help="Number of topics for given project")
     parser.add_argument("--resolution", "-r",
                         help="Resolution number parameter in Louvain community detection. A value in range of 0.3 to 1 is advised. A smaller resolution will identify smaller communities and vice versa. By default the whole range is tested and communities for each community saved.")
+    parser.add_argument("--metrics", "-m",
+                        help="Execute metrics for a given project name after normal parsing and execution (relative path to set root path) (At the current time it does NOT work independently from the identification process)", action="store_true")
     parser.add_argument("--draw", "-d",
                         help="Enable plotting of graphs", action="store_true")
     parser.add_argument("--lda-plotting", "-l",
@@ -294,11 +292,11 @@ def main():
 
     Settings.DRAW = True if args.draw else False
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
-    Settings.K_TOPICS = args.k_topics
+    Settings.K_TOPICS = int(args.k_topics)
     Settings.RESOLUTION = args.resolution
     Settings.set_stop_words(args.stop_words)
 
-    print(f"\n\n\nDIRECTORY {Settings.DIRECTORY}")
+    print(f"Setting Directory as: {Settings.DIRECTORY}")
 
     if args.project:
         project_name = str(args.project.split('/')[-1])
@@ -318,63 +316,8 @@ def main():
             result.dump_to_json_file()
 
             if args.metrics:
-                chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop = result.run_metrics()
-                metrics.append((chm, chd, ifn, irn, opn, smq,
-                                scoh, scop, cmq, ccoh, ccop))
-
-        # TODO: Refactor into cleaner approach
-        resolution = []
-        chm = []
-        chd = []
-        ifn = []
-        irn = []
-        opn = []
-        smq = []
-        scoh = []
-        scop = []
-        cmq = []
-        ccoh = []
-        ccop = []
-        services_length = []
-
-        with open(f"{Settings.DIRECTORY}/data/metrics/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv", 'w+') as f:
-            for cluster_result, metric in zip(clusters_results, metrics):
-                chm.append(metric[0])
-                chd.append(metric[1])
-                ifn.append(metric[2])
-                irn.append(metric[3])
-                opn.append(metric[4])
-                smq.append(metric[5])
-                scoh.append(metric[6])
-                scop.append(metric[7])
-                cmq.append(metric[8])
-                ccoh.append(metric[9])
-                ccop.append(metric[10])
-                services_length.append(cluster_result)
-
-                resolution.append(round(cluster_result[2], 2))
-
-                print(f"CLUSTER RESULT:: {cluster_result}")
-
-                line = f"{round(cluster_result[2], 2)},{metric[0]},{metric[1]},{metric[2]},{metric[3]},{metric[4]},{metric[5]},{metric[6]},{metric[7]},{metric[8]},{metric[9]},{metric[10]}, {len(cluster_result[0])}"
-                f.write(f"{line}\n")
-
-                # average_cluster_len = sum(
-                # x for x in cluster_result.values()) / len(cluster_result[0])
-                # print(f"Average cluster len {average_cluster_len}")
-
-                total = metric[0] + metric[1] + metric[5] + metric[6]
-                print(
-                    f"Sum for resolution {round(cluster_result[2], 2)} -> {round(total,2)}")
-
-                total_2 = metric[5] + metric[6] * -metric[2] * metric[3]
-                print(
-                    f"Total2: {round(cluster_result[2], 2)} -> {round(total_2,2)}")
-
-        # plt = build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn)
-        # plt.savefig(
-        #    f"{Settings.DIRECTORY}/data/metrics/images/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.png")
-        # plt.show()
+                metrics = Metrics(result, clusters_results)
+                metrics.calculate_and_save()
 
 
 def build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn):
