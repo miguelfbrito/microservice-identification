@@ -40,11 +40,11 @@ optional arguments:
 
 ### Examples 
 
-***Automated K-Topics and Resolution***
+***Automated K-Topics and Resolution***  
 ```python3 main.py -p <path_to_project>``` 
 
-***Automated K-Topics and Resolution with Metric execution***
+***Automated K-Topics and Resolution with Metric execution***  
 ```python3 main.py -p <path_to_project> -m```
 
-***Custom K-Topics and Resolution***
+***Custom K-Topics and Resolution***  
 ```python3 main.py -p <path_to_project> -k <num_topics> -r <resolution>```
