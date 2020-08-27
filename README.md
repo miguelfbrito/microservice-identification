@@ -37,3 +37,14 @@ optional arguments:
   --draw, -d            Enable plotting of graphs
   --lda-plotting, -l    Enable plotting of LDA topics which might help identifying the appropriate number of topics
 ```
+
+### Examples 
+
+***Automated K-Topics and Resolution***
+`python3 main.py -p <path_to_project>` 
+
+***Automated K-Topics and Resolution with Metric execution***
+`python3 main.py -p <path_to_project> -m`
+
+***Custom K-Topics and Resolution***
+`python3 main.py -p <path_to_project> -k <num_topics> -r <resolution>`
