@@ -27,14 +27,13 @@ optional arguments:
                         Number of topics for given project
   --resolution RESOLUTION, -r RESOLUTION
                         Resolution number parameter in Louvain community
-                        detection. A value in range of 0.3 to 1 is advised. A
-                        smaller resolution will identify smaller communities
+                        detection. A range between 0.3 and 1 is advised. A
+                        smaller resolution will identify smaller communities (smaller microservices)
                         and vice versa. By default the whole range is tested
                         and communities for each community saved.
   --metrics, -m         Execute metrics for a given project name after normal
-                        parsing and execution (relative path to set root path)
-                        (At the current time it does NOT work independently
+                        parsing and execution (At the current time it does NOT work independently
                         from the identification process)
   --draw, -d            Enable plotting of graphs
-  --lda-plotting, -l    Enable plotting of LDA topics
+  --lda-plotting, -l    Enable plotting of LDA topics which might help identifying the appropriate number of topics
 ```
