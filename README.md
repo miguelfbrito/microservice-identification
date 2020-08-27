@@ -1,7 +1,7 @@
 # Microservice Identification
 
-A shell-based tool that resorts to Topic Modelling and Community detection techniques in order to identify microservices from a project with a monolithic architecture. 
-Currently it only supports Java projects.
+A shell-based tool that resorts to Topic Modelling and Community detection techniques in order to identify microservices from projects built with monolithic architectures. 
+Currently only supports Java projects.
 
 ## Setup
 1. Clone the repo
@@ -41,10 +41,10 @@ optional arguments:
 ### Examples 
 
 ***Automated K-Topics and Resolution***
-`python3 main.py -p <path_to_project>` 
+```python3 main.py -p <path_to_project>``` 
 
 ***Automated K-Topics and Resolution with Metric execution***
-`python3 main.py -p <path_to_project> -m`
+```python3 main.py -p <path_to_project> -m```
 
 ***Custom K-Topics and Resolution***
-`python3 main.py -p <path_to_project> -k <num_topics> -r <resolution>`
+```python3 main.py -p <path_to_project> -k <num_topics> -r <resolution>```
