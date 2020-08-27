@@ -6,7 +6,7 @@ Currently it only supports Java projects.
 ## Setup
 1. Clone the repo
 2. Give execution permitions to setup script `chmod u+x setup.sh`
-3. Execute the `setup.sh`
+3. Execute `setup.sh`
 
 
 ## Usage
