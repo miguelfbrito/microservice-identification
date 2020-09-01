@@ -48,3 +48,6 @@ optional arguments:
 
 ***Custom K-Topics and Resolution***  
 ```python3 main.py -p <path_to_project> -k <num_topics> -r <resolution>```
+
+***Custom list of stop words***  
+```python3 main.py -p <path_to_project> -s <path_to_stop_words_file>``` 
