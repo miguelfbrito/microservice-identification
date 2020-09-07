@@ -296,8 +296,9 @@ def main():
 
     Settings.DRAW = True if args.draw else False
     Settings.LDA_PLOTTING = True if args.lda_plotting else False
-    Settings.K_TOPICS = int(args.k_topics)
-    Settings.RESOLUTION = float(args.resolution)
+    Settings.K_TOPICS = int(args.k_topics) if args.k_topics else None
+    Settings.RESOLUTION = float(args.resolution) if args.resolution else None
+
     Settings.set_stop_words(args.stop_words)
 
     print(f"Setting Directory as: {Settings.DIRECTORY}")
