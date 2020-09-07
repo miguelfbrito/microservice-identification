@@ -21,7 +21,10 @@ import re
 import os
 import PostProcessing
 import time
+
+
 from metrics.Metrics import Metrics
+from metrics.MetricExecutor import MetricExecutor
 from Utils import normalize
 from StringUtils import StringUtils
 from Graph import Graph
@@ -30,7 +33,6 @@ from TfIdf import TfIdf
 from WeightType import WeightType
 from Clustering import Clustering
 from visitors.ClassVisitor import ClassVisitor
-from ProcessResultsOutput import ProcessResultsOutput
 from entities.Method import Method
 from entities.Class import Class
 from entities.Service import Service
@@ -313,16 +315,23 @@ def main():
         clusters_results = identify_clusters_in_project(
             project_name, project_path)
 
-        metrics = []
+        metrics = Metrics()
         for cluster in clusters_results:
             Settings.create_id()
-            result = ProcessResultsOutput()
-            result.add_project(project_name, str(cluster[0]))
-            result.dump_to_json_file()
+
+            # TODO: Refactor MetricExecutor into ProcessResultOutput and MetricExecutor, currently sharing many responsabilities
+            metric_executor = MetricExecutor()
+            metric_executor.add_project(project_name, str(cluster[0]))
+            metric_executor.dump_to_json_file()
 
             if args.metrics:
-                metrics = Metrics(result, clusters_results)
-                metrics.calculate_and_save()
+                # TODO: refactor
+                metrics.set_metric_executor(metric_executor)
+                metrics.set_cluster_results(clusters_results)
+                metrics.calculate()
+
+        if args.metrics:
+            metrics.save()
 
 
 def build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn):

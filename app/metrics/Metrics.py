@@ -3,16 +3,19 @@ from Settings import Settings
 
 class Metrics:
 
-    def __init__(self, result, clusters_results):
+    def __init__(self, metric_executor=None, clusters_results=[]):
         super().__init__()
-        self.result = result
+        self.metric_executor = metric_executor
         self.clusters_results = clusters_results
         self.metrics = []
 
-    def calculate_and_save(self):
-        chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop = self.result.run_metrics()
+    def calculate(self):
+        # TODO: Ugly, refactor into cleaner approach
+        chm, chd, ifn, irn, opn, smq, scoh, scop, cmq, ccoh, ccop = self.metric_executor.run_metrics()
         self.metrics.append((chm, chd, ifn, irn, opn, smq,
                              scoh, scop, cmq, ccoh, ccop))
+
+    def save(self):
 
         # TODO: Ugly, refactor into cleaner approach
         resolution = []
@@ -29,7 +32,10 @@ class Metrics:
         ccop = []
         services_length = []
 
-        with open(f"{Settings.DIRECTORY}/data/metrics/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv", 'w+') as f:
+        metric_path = f"{Settings.DIRECTORY}/data/metrics/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv"
+        print(f"\n\nMetric Path: {metric_path}")
+        with open(metric_path, 'w+') as f:
+            # TODO: Ugly, refactor into cleaner approach
             for cluster_result, metric in zip(self.clusters_results, self.metrics):
                 chm.append(metric[0])
                 chd.append(metric[1])
@@ -59,11 +65,13 @@ class Metrics:
                 print(
                     f"Sum for resolution {round(cluster_result[2], 2)} -> {round(total,2)}")
 
-                total_2 = metric[5] + metric[6] * -metric[2] * metric[3]
-                print(
-                    f"Total2: {round(cluster_result[2], 2)} -> {round(total_2,2)}")
-
         # plt = build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn)
         # plt.savefig(
         #    f"{Settings.DIRECTORY}/data/metrics/images/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.png")
         # plt.show()
+
+    def set_metric_executor(self, metric_executor):
+        self.metric_executor = metric_executor
+
+    def set_cluster_results(self, clusters_results):
+        self.clusters_results = clusters_results

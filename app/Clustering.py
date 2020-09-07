@@ -45,7 +45,7 @@ class Clustering:
                     graph, resolution=resolution)
                 clusters_results.append((clusters, modularity, resolution))
 
-                Clustering.write_modularity_and_services(clusters_results)
+        Clustering.write_modularity_and_services(clusters_results)
 
         return clusters_results
 

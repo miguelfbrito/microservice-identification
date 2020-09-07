@@ -9,7 +9,7 @@ import metrics.SMQ as SMQ
 import metrics.CMQ as CMQ
 
 
-class ProcessResultsOutput:
+class MetricExecutor:
 
     def __init__(self):
         super().__init__()
@@ -69,13 +69,13 @@ class ProcessResultsOutput:
         smq, scoh, scop = SMQ.calculateWrapper()
         cmq, ccoh, ccop = CMQ.calculateWrapper()
 
-        path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv"
-        with open(path, "a+") as f:
-            f.write(f"\nCHM: {chm}")
-            f.write(f"\nCHD: {chd}")
-            f.write(f"\nIFN: {ifn}")
-            f.write(f"\nSMQ: {smq}")
-            f.write(f"\nCMQ: {cmq}")
+        # path = f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv"
+        # with open(path, "a+") as f:
+        #     f.write(f"\nCHM: {chm}")
+        #     f.write(f"\nCHD: {chd}")
+        #     f.write(f"\nIFN: {ifn}")
+        #     f.write(f"\nSMQ: {smq}")
+        #     f.write(f"\nCMQ: {cmq}")
 
         print(f"FINAL CHM : {chm}")
         print(f"FINAL CHD : {chd}")
