@@ -1,7 +1,9 @@
 import com.github.javaparser.ast.CompilationUnit;
+import constants.Constants;
 import parser.Parse;
 import parser.Parser;
-import projects.GenerateMetrics;
+import projects.MetricsCalculator;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -14,23 +16,22 @@ public class Main {
         } else if (System.getProperty("metrics") != null) {
             runMetrics();
         }
+
+        runMetrics();
     }
 
     public static void parseProject() throws IOException {
-        String projectPath = System.getProperty("project");
-        if (projectPath != null) {
-            System.out.println("Found project path: " + projectPath);
-            Parser parser = new Parser();
-            List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(projectPath));
-            // TODO : Consider merging Parse with Parser
-            Parse parse = new Parse();
-            parse.completeParse(compilationUnits);
-        }
+        Parser parser = new Parser();
+        List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(Constants.PROJECT_PATH));
+
+        // TODO : Consider merging Parse with Parser
+        Parse parse = new Parse();
+        parse.completeParse(compilationUnits);
     }
 
     public static void runMetrics() {
-        GenerateMetrics generateMetrics = new GenerateMetrics();
-        generateMetrics.generate();
+        MetricsCalculator metricsCalculator = new MetricsCalculator();
+        metricsCalculator.calculate();
     }
 
 

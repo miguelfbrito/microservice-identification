@@ -8,6 +8,7 @@ import java.util.*;
 
 public class Constants {
     public static final String DIRECTORY = getRootPath();
+    public static final String PROJECT_PATH = getProjectPath();
     // public static final String MONOLITHS_DIRECTORY =  "/home/mbrito/git/thesis-web-applications/monoliths";
 
     public static final Set<String> STOP_WORDS_DATA_TYPES = new HashSet<>(Arrays.asList()); // "int", "integer", "void", "long", "double", "float", "string", "char", "character"
@@ -19,6 +20,15 @@ public class Constants {
 */
 
     public static final Set<String> STOP_WORDS = readStopWords();
+
+    public static String getProjectPath(){
+        String projectPath = System.getProperty("project");
+        if(projectPath != null){
+            return projectPath;
+        }
+
+        throw new IllegalArgumentException("Project path not found.");
+    }
 
     public static String getRootPath() {
         List<String> split = new ArrayList<>(Arrays.asList(System.getProperty("user.dir").toString().split("/")));

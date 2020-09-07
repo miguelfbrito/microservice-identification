@@ -76,16 +76,19 @@ class Clustering:
 
         Settings.create_id()
 
-        with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_R{round(resolution,2)}", 'w+') as f:
+        with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}_R{round(resolution,2)}", 'w+') as f:
+            # print(15*"-")
+            # print(15*"-")
+            # print(f"Services for resolution: {resolution}")
             for service_id, service in services.items():
                 service_id = f"\nService {service_id}\n"
                 f.write(service_id)
-                print(service_id)
+                # print(service_id)
                 for class_name in service.get_classes():
                     f.write(f"{class_name}\n")
-                    print(f"\t{class_name}")
+                    # print(f"\t{class_name}")
                 f.write("\n")
-                print("\n")
+                # print("\n")
 
     @staticmethod
     def community_detection_louvain(graph, resolution=1, weight_type=WeightType.ABSOLUTE):

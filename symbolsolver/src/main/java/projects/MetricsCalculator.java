@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class GenerateMetrics {
+public class MetricsCalculator {
 
 
     private static String PROJECTS_ROOT;
@@ -57,15 +57,15 @@ public class GenerateMetrics {
 
     }
 
-    public List<ProjectMetrics> generate() {
+    public List<ProjectMetrics> calculate() {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
         Gson gson = new Gson();
-        try (FileReader reader = new FileReader(Constants.DIRECTORY + "/projects.json")) {
-            //Read JSON file
+
+        String projectDirectory = Constants.DIRECTORY + "/projects.json";
+        try (FileReader reader = new FileReader(projectDirectory)) {
             Type projectType = new TypeToken<ArrayList<Project>>() {
             }.getType();
-
 
             List<Project> projects = gson.fromJson(reader, projectType);
             projectMetrics = calculateMetrics(projects);
@@ -85,10 +85,13 @@ public class GenerateMetrics {
 
         for (Project project : projects) {
             String completePath = PROJECTS_ROOT + "/" + project.getRelativePath();
-            List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(completePath));
+            System.out.println("Project complete path: " + Constants.PROJECT_PATH);
+            List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(Constants.PROJECT_PATH));
             List<String> interfaces = new ArrayList<>();
 
-            try (BufferedReader reader = new BufferedReader(new FileReader(Constants.DIRECTORY + "/data/interfaces/" + project.getName()))) {
+            String interfaceFilePath = Constants.DIRECTORY + "/data/interfaces/" + project.getName();
+            System.out.println("Reading interfaces from " + interfaceFilePath);
+            try (BufferedReader reader = new BufferedReader(new FileReader(interfaceFilePath))) {
                 String line = reader.readLine();
                 while (line != null) {
                     interfaces.add(line);
@@ -111,7 +114,10 @@ public class GenerateMetrics {
             pm.setOpn(calculateOPN(parseResultServices, interfaces));
 
             Map<Integer, Service> services = parseResultServices.getServices();
-            writeServiceOperationsToFile(services, Constants.DIRECTORY + "/app/metrics/output_fosci.csv");
+
+            String metricsFile = Constants.DIRECTORY + "/app/metrics/output_fosci.csv";
+            System.out.println("Writting metrics to file path: " + metricsFile);
+            writeServiceOperationsToFile(services, metricsFile);
 
             // pm.setChm(calculateCHM(parseResultServices, interfaces));
             // cleanUp(parseResultServices);

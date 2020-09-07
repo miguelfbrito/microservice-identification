@@ -74,7 +74,6 @@ public class ExtractOperations {
                                     && source.getService().getId() != target.getService().getId()) {
                                 //if (!StringUtils.isMethodCallGetterOrSetter(methodCallExpr)) {
                                 target.getOperations().add(methodCallExpr.getNameAsString());
-                                //}
                             }
 
                         } catch (UnsolvedSymbolException e) {
@@ -87,30 +86,6 @@ public class ExtractOperations {
 
                     }
                 }
-
-
-/*
-
-                for (MethodCallExpr methodCall : source.getVisitor().findAll(MethodCallExpr.class)) {
-                    methodCall.getScope().ifPresent(rs -> {
-                        try {
-                            ResolvedType resolvedType = rs.calculateResolvedType();
-                            String targetName = resolvedType.asReferenceType().getQualifiedName();
-                            MyClass target = classes.get(targetName);
-
-                            // Target and source must exist in different services to be considered an operation
-                            if (source.getService() != null && target.getService() != null
-                                    && source.getService().getId() != target.getService().getId()) {
-                                if (!StringUtils.isMethodCallGetterOrSetter(methodCall)) {
-                                    target.getOperations().add(methodCall.getName().toString());
-                                }
-                            }
-                        } catch (UnsolvedSymbolException e) {
-                            // System.out.println("[UnsolvedSymbolException] on " + rs.toString());
-                        }
-                    });
-                }
-*/
             }
         }
     }

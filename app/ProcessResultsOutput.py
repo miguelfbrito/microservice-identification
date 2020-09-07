@@ -42,12 +42,12 @@ class ProcessResultsOutput:
         # subprocess.call(f"java -Dmetrics -cp symbolsolver-1.0.jar Main",
         # cwd=f"{Settings.DIRECTORY}/symbolsolver/target/", shell=True)
 
-        output = subprocess.check_output(f"java -Dmetrics -cp symbolsolver-1.0.jar Main",
+        output = subprocess.check_output(f"java -Dmetrics -Dproject={Settings.PROJECT_PATH} -cp symbolsolver-1.0.jar Main",
                                          cwd=f"{Settings.DIRECTORY}/symbolsolver/target/", shell=True)
 
         output = str(output).replace("b'", "").split("\\n")
 
-        print("\n\n\n\n\nCHECKING IRN OPN PROJECT")
+        print("\n\n\n Executing Java's metric evaluation:")
         irn = 9999
         opn = 9999
         for line in output:
@@ -62,6 +62,7 @@ class ProcessResultsOutput:
 
         # output_fosci.csv is obtained from the execution of the previous metrics on the symbolsolver
         file_path = f"{Settings.DIRECTORY}/app/metrics/output_fosci.csv"
+        print(f"File path for metric calculation: {file_path}")
         chm = CHM.calculate(file_path)
         chd = CHD.calculate(file_path)
         ifn = IFN.calculate(file_path)
