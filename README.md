@@ -1,11 +1,11 @@
 # Microservice Identification
 
-A shell-based tool that resorts to Topic Modelling and Community detection techniques in order to identify microservices from projects built with monolithic architectures. 
-Currently only supports Java projects.
+A shell-based tool that resorts to Topic Modelling and Clustering techniques in order to identify microservices from projects built with monolithic architectures. 
+Currently only Java projects are supported given the structural and lexical information being extracted by the Java Parser. However the core functionality is language agnostic and if provided with structural and lexical data should work equally.
 
 ## Setup
 1. Clone the repo
-2. Give execution permitions to setup script `chmod u+x setup.sh`
+2. Give execution permissions to setup script `chmod u+x setup.sh`
 3. Execute `setup.sh`
 
 
