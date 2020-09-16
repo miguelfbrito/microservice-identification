@@ -15,6 +15,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MyClassDTO {
+
+
     @Expose
     private String qualifiedName;
     @Expose
@@ -31,7 +33,6 @@ public class MyClassDTO {
     private List<String> implementedTypes;
     @Expose
     private List<String> extendedTypes;
-
     private Set<String> validClasses;
 
     public MyClassDTO(MyClass myClass, Set<String> validClasses) {
@@ -124,6 +125,14 @@ public class MyClassDTO {
 
     public List<MethodInvocationDTO> getMethodInvocations() {
         return methodInvocations;
+    }
+
+    public Map<String, MyMethod> getMethods() {
+        return methods;
+    }
+
+    public String getQualifiedName() {
+        return qualifiedName;
     }
 
     private boolean isValidClass(String qualifiedName) {

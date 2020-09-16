@@ -10,6 +10,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
+import constants.Constants;
 import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
@@ -40,7 +41,7 @@ public class Parse {
     public Map<String, MyClassDTO> completeParse(List<CompilationUnit> compilationUnits) {
         Map<String, MyClass> classes = extractClasses(compilationUnits);
         System.out.println("Parsed classes");
-        for(MyClass classe : classes.values()){
+        for (MyClass classe : classes.values()) {
             System.out.println(classe.getQualifiedName());
         }
         populateClassesWithMethodDeclarations(classes);
@@ -169,13 +170,11 @@ public class Parse {
 
         Map<String, MyClassDTO> myClassDTOS = new HashMap<>();
         try {
-            int total = 0;
             for (MyClass myClass : myClasses.values()) {
                 MyClassDTO myClassDTO = new MyClassDTO(myClass, myClasses.keySet());
                 myClassDTOS.put(myClass.getQualifiedName(), myClassDTO);
-                total += myClassDTO.getMethodInvocations().size();
             }
-            FileUtils.jsonDump(myClassDTOS);
+            FileUtils.jsonDump(myClassDTOS, Constants.DIRECTORY + "/data/output.json");
         } catch (IOException e) {
             e.printStackTrace();
         }
