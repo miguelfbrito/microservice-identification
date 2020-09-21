@@ -12,10 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Main {
 
@@ -33,7 +30,17 @@ public class Main {
         if (System.getProperty("stats") != null)
 */
 
-        getProjectStats();
+        // getProjectsStats();
+        //getProjectStat("amit-an__webapp_war_sample");
+
+        List<String> projects = new ArrayList<>(Arrays.asList("Jannchie__biliob_backend", "hslooooooool__form_flow",
+                "doooyo__Weixin_Server", "MiniPa__cjs_ssms", "BCSquad__pmph_java_front", "768330962__poet_ready_system",
+                "busing__circle_web", "shenshaoming__byte_easy", "ElectiveTeam__elective_system",
+                "forwardNow__javaee_pkui", "LiJiuRi__jie_you_ba", "amit-an__webapp_war_sample"));
+
+        for(String project : projects){
+            getProjectStat(project);
+        }
 
     }
 
@@ -53,26 +60,35 @@ public class Main {
     }
 
 
-    public static void getProjectStats() throws IOException {
-        List<String> projects = readProjects();
+    public static void getProjectStat(String project) throws IOException {
         String baseDirectory = "/home/mbrito/git/thesis-web-applications/monoliths/";
+        Map<String, MyClassDTO> parsedClasses = parseProject(baseDirectory + project);
+        Map<String, ClassStats> classStats = new HashMap<>();
+
+        for (MyClassDTO myClassDTO : parsedClasses.values()) {
+            int methodsPerClass = myClassDTO.getMethods().values().size();
+            int methodInvocationsPerClass = myClassDTO.getMethodInvocations().size();
+            int totalDependencies = myClassDTO.getDependencies().size();
+            int totalUniqueDependencies = new HashSet<>(myClassDTO.getDependencies()).size();
+
+            classStats.put(myClassDTO.getQualifiedName(),
+                    new ClassStats(methodsPerClass, methodInvocationsPerClass, totalDependencies, totalUniqueDependencies));
+
+            System.out.println(myClassDTO.getQualifiedName() + " --> " + methodsPerClass + " , "
+                    + methodInvocationsPerClass);
+        }
+
+        ProjectStats projectStats = new ProjectStats(classStats);
+        String filePath = Constants.DIRECTORY + "/data/projectstats/" + project;
+        FileUtils.jsonDump(projectStats, filePath);
+    }
+
+
+    public static void getProjectsStats() throws IOException {
+        List<String> projects = readProjects();
 
         for (String project : projects) {
-            Map<String, MyClassDTO> parsedClasses = parseProject(baseDirectory + project);
-            Map<String, ClassStats> classStats = new HashMap<>();
-
-            for (MyClassDTO myClassDTO : parsedClasses.values()) {
-                int methodsPerClass = myClassDTO.getMethods().values().size();
-                int methodInvocationsPerClass = myClassDTO.getMethodInvocations().size();
-                classStats.put(myClassDTO.getQualifiedName(), new ClassStats(methodsPerClass, methodInvocationsPerClass));
-
-                System.out.println(myClassDTO.getQualifiedName() + " --> " + methodsPerClass + " , "
-                        + methodInvocationsPerClass);
-            }
-
-            ProjectStats projectStats = new ProjectStats(classStats);
-            String filePath = Constants.DIRECTORY + "/data/projectstats/" + project;
-            FileUtils.jsonDump(projectStats, filePath);
+            getProjectStat(project);
         }
     }
 

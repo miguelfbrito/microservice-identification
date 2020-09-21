@@ -9,10 +9,25 @@ public class ClassStats {
     @Expose
     private int methodInvocations;
 
+    @Expose
+    private int totalDependencies;
 
-    public ClassStats(int methodDeclarations, int methodInvocations) {
+    @Expose
+    private int totalUniqueDependencies;
+
+    public ClassStats(int methodDeclarations, int methodInvocations, int totalDependencies, int totalUniqueDependencies) {
         this.methodDeclarations = methodDeclarations;
         this.methodInvocations = methodInvocations;
+        this.totalDependencies = totalDependencies;
+        this.totalUniqueDependencies = totalUniqueDependencies;
+    }
+
+    public int getTotalDependencies() {
+        return totalDependencies;
+    }
+
+    public int getTotalUniqueDependencies() {
+        return totalUniqueDependencies;
     }
 
     public int getMethodDeclarations() {
@@ -22,4 +37,6 @@ public class ClassStats {
     public int getMethodInvocations() {
         return methodInvocations;
     }
+
+
 }

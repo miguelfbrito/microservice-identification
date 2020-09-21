@@ -135,6 +135,30 @@ public class MyClassDTO {
         return qualifiedName;
     }
 
+    public List<String> getAnnotations() {
+        return annotations;
+    }
+
+    public List<String> getVariables() {
+        return variables;
+    }
+
+    public List<String> getDependencies() {
+        return dependencies;
+    }
+
+    public List<String> getImplementedTypes() {
+        return implementedTypes;
+    }
+
+    public List<String> getExtendedTypes() {
+        return extendedTypes;
+    }
+
+    public Set<String> getValidClasses() {
+        return validClasses;
+    }
+
     private boolean isValidClass(String qualifiedName) {
         return this.validClasses.contains(qualifiedName);
     }
