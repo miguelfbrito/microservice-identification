@@ -165,18 +165,3 @@ public class MyClassDTO {
 }
 
 
-class MethodInvocationDTO {
-
-    @Expose
-    private String scopeName;
-    @Expose
-    private String methodName;
-    @Expose
-    private String targetClassName;
-
-    public MethodInvocationDTO(String scopeName, String methodName, String targetClassName) {
-        this.scopeName = scopeName;
-        this.methodName = methodName;
-        this.targetClassName = targetClassName;
-    }
-}

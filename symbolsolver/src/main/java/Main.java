@@ -1,5 +1,6 @@
 import com.github.javaparser.ast.CompilationUnit;
 import constants.Constants;
+import graph.entities.MethodInvocationDTO;
 import stats.ClassStats;
 import graph.entities.MyClassDTO;
 import stats.ProjectStats;
@@ -13,6 +14,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -30,9 +32,10 @@ public class Main {
         if (System.getProperty("stats") != null)
 */
 
-        // getProjectsStats();
+        getProjectsStats();
         //getProjectStat("amit-an__webapp_war_sample");
 
+        /*
         List<String> projects = new ArrayList<>(Arrays.asList("Jannchie__biliob_backend", "hslooooooool__form_flow",
                 "doooyo__Weixin_Server", "MiniPa__cjs_ssms", "BCSquad__pmph_java_front", "768330962__poet_ready_system",
                 "busing__circle_web", "shenshaoming__byte_easy", "ElectiveTeam__elective_system",
@@ -40,7 +43,7 @@ public class Main {
 
         for(String project : projects){
             getProjectStat(project);
-        }
+        }*/
 
     }
 
@@ -67,7 +70,11 @@ public class Main {
 
         for (MyClassDTO myClassDTO : parsedClasses.values()) {
             int methodsPerClass = myClassDTO.getMethods().values().size();
-            int methodInvocationsPerClass = myClassDTO.getMethodInvocations().size();
+            List<String> methodInvocationsPerClass = myClassDTO.getMethodInvocations()
+                    .stream()
+                    .map(MethodInvocationDTO::getTargetClassName)
+                    .collect(Collectors.toList());
+
             int totalDependencies = myClassDTO.getDependencies().size();
             int totalUniqueDependencies = new HashSet<>(myClassDTO.getDependencies()).size();
 

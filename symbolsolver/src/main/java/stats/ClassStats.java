@@ -2,12 +2,14 @@ package stats;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.List;
+
 public class ClassStats {
     @Expose
     private int methodDeclarations;
 
     @Expose
-    private int methodInvocations;
+    private List<String> methodInvocations;
 
     @Expose
     private int totalDependencies;
@@ -15,7 +17,7 @@ public class ClassStats {
     @Expose
     private int totalUniqueDependencies;
 
-    public ClassStats(int methodDeclarations, int methodInvocations, int totalDependencies, int totalUniqueDependencies) {
+    public ClassStats(int methodDeclarations, List<String> methodInvocations, int totalDependencies, int totalUniqueDependencies) {
         this.methodDeclarations = methodDeclarations;
         this.methodInvocations = methodInvocations;
         this.totalDependencies = totalDependencies;
@@ -34,7 +36,7 @@ public class ClassStats {
         return methodDeclarations;
     }
 
-    public int getMethodInvocations() {
+    public List<String> getMethodInvocations() {
         return methodInvocations;
     }
 
