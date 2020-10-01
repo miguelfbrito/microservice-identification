@@ -1,0 +1,75 @@
+[I 14:42:36.353 NotebookApp] The port 8888 is already in use, trying another port.
+[I 14:42:36.353 NotebookApp] The port 8889 is already in use, trying another port.
+[I 14:42:36.360 NotebookApp] Serving notebooks from local directory: /home/mbrito/git/thesis/data/metrics_study
+[I 14:42:36.360 NotebookApp] The Jupyter Notebook is running at:
+[I 14:42:36.361 NotebookApp] http://localhost:8890/?token=84e87b8aebab648c1fe34413a6230e9804ca0d6496156efc
+[I 14:42:36.361 NotebookApp]  or http://127.0.0.1:8890/?token=84e87b8aebab648c1fe34413a6230e9804ca0d6496156efc
+[I 14:42:36.361 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 14:42:36.442 NotebookApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/mbrito/.local/share/jupyter/runtime/nbserver-3464-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8890/?token=84e87b8aebab648c1fe34413a6230e9804ca0d6496156efc
+     or http://127.0.0.1:8890/?token=84e87b8aebab648c1fe34413a6230e9804ca0d6496156efc
+Opening in existing browser session.
+[W 14:42:45.389 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200930144235 (127.0.0.1) 44.64ms referer=http://localhost:8890/notebooks/Metric_analysis.ipynb
+[I 14:42:48.091 NotebookApp] Kernel started: 7d5fd626-56c2-4abb-b164-8be5c78db944
+[I 14:43:01.807 NotebookApp] Starting buffering for 7d5fd626-56c2-4abb-b164-8be5c78db944:a827d3ea9fc54ade8a7765c743fd481b
+[W 14:43:06.871 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200930144235 (127.0.0.1) 7.93ms referer=http://localhost:8890/notebooks/Metric_analysis.ipynb
+[I 14:43:09.959 NotebookApp] Discarding 23 buffered messages for 7d5fd626-56c2-4abb-b164-8be5c78db944:a827d3ea9fc54ade8a7765c743fd481b
+[I 14:43:51.134 NotebookApp] Starting buffering for 7d5fd626-56c2-4abb-b164-8be5c78db944:e00920cdfda24d228ff0b3cf24cf89d6
+[I 14:43:56.214 NotebookApp] Kernel restarted: 7d5fd626-56c2-4abb-b164-8be5c78db944
+[I 14:43:57.045 NotebookApp] Restoring connection for 7d5fd626-56c2-4abb-b164-8be5c78db944:e00920cdfda24d228ff0b3cf24cf89d6
+[I 14:43:57.046 NotebookApp] Replaying 19 buffered messages
+[I 14:44:15.527 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 14:45:09.645 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 14:47:10.166 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:21:09.739 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:23:09.742 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:25:09.749 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:27:09.953 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:35:09.799 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:37:09.908 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 19:39:10.319 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 22:53:17.215 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 22:55:17.167 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 22:57:17.429 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 22:59:17.216 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:01:17.583 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:03:17.458 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:07:17.275 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:09:17.235 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:11:17.292 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:13:17.332 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:15:17.278 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:17:17.354 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:19:17.271 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:21:17.249 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:23:17.297 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:35:17.240 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:37:17.205 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:39:17.194 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:41:17.164 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:43:17.316 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:47:50.936 NotebookApp] Creating new directory in 
+[I 23:49:17.415 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 23:51:17.362 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 01:21:17.263 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 01:23:17.522 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 01:24:25.555 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 01:25:17.295 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:03:17.197 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:05:17.228 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:07:17.249 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:09:17.219 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:11:17.199 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:13:17.423 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:35:17.192 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:37:17.551 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:39:17.395 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:42:50.636 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:43:17.429 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 02:45:17.441 NotebookApp] Saving file at /Metric_analysis.ipynb
+[I 03:49:28.145 NotebookApp] Starting buffering for 7d5fd626-56c2-4abb-b164-8be5c78db944:e00920cdfda24d228ff0b3cf24cf89d6
+[W 03:49:33.545 NotebookApp] 404 GET /nbextensions/widgets/notebook/js/extension.js?v=20200930144235 (127.0.0.1) 5.32ms referer=http://localhost:8890/notebooks/Metric_analysis.ipynb
