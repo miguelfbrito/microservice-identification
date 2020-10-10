@@ -32,7 +32,7 @@ class MetricExecutor:
         self.projects.append(project)
 
     def dump_to_json_file(self):
-        with open(str(Settings.DIRECTORY_PROJECTS), "w") as f:
+        with open(str(Settings.DIRECTORY_PROJECTS), "w+") as f:
             f.write(json.dumps(self.projects, indent=4))
 
     def run_metrics(self):

@@ -20,22 +20,17 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-/*
         if (System.getProperty("parse") != null) {
             parseProject(Constants.PROJECT_PATH);
+        } else if (System.getProperty("metrics") != null) {
+            runMetrics();
         }
 
-        if (System.getProperty("metrics") != null)
-            runMetrics();
-
-
-        if (System.getProperty("stats") != null)
-*/
-
-        getProjectsStats();
-        //getProjectStat("amit-an__webapp_war_sample");
 
         /*
+        getProjectsStats();
+        etProjectStat("amit-an__webapp_war_sample");
+
         List<String> projects = new ArrayList<>(Arrays.asList("Jannchie__biliob_backend", "hslooooooool__form_flow",
                 "doooyo__Weixin_Server", "MiniPa__cjs_ssms", "BCSquad__pmph_java_front", "768330962__poet_ready_system",
                 "busing__circle_web", "shenshaoming__byte_easy", "ElectiveTeam__elective_system",
