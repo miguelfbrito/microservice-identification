@@ -1,6 +1,7 @@
 target/*
 target
 .vscode/*
+nohup.out
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

@@ -15,6 +15,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MyClassDTO {
+
+
     @Expose
     private String qualifiedName;
     @Expose
@@ -31,7 +33,6 @@ public class MyClassDTO {
     private List<String> implementedTypes;
     @Expose
     private List<String> extendedTypes;
-
     private Set<String> validClasses;
 
     public MyClassDTO(MyClass myClass, Set<String> validClasses) {
@@ -126,24 +127,41 @@ public class MyClassDTO {
         return methodInvocations;
     }
 
+    public Map<String, MyMethod> getMethods() {
+        return methods;
+    }
+
+    public String getQualifiedName() {
+        return qualifiedName;
+    }
+
+    public List<String> getAnnotations() {
+        return annotations;
+    }
+
+    public List<String> getVariables() {
+        return variables;
+    }
+
+    public List<String> getDependencies() {
+        return dependencies;
+    }
+
+    public List<String> getImplementedTypes() {
+        return implementedTypes;
+    }
+
+    public List<String> getExtendedTypes() {
+        return extendedTypes;
+    }
+
+    public Set<String> getValidClasses() {
+        return validClasses;
+    }
+
     private boolean isValidClass(String qualifiedName) {
         return this.validClasses.contains(qualifiedName);
     }
 }
 
 
-class MethodInvocationDTO {
-
-    @Expose
-    private String scopeName;
-    @Expose
-    private String methodName;
-    @Expose
-    private String targetClassName;
-
-    public MethodInvocationDTO(String scopeName, String methodName, String targetClassName) {
-        this.scopeName = scopeName;
-        this.methodName = methodName;
-        this.targetClassName = targetClassName;
-    }
-}

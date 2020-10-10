@@ -15,11 +15,9 @@ import java.util.List;
 
 public class FileUtils {
 
-    @Test
-    public static <T> void jsonDump(Object data) throws IOException {
+    public static <T> void jsonDump(Object data, String filePath) throws IOException {
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         FileWriter fileWriter = null;
-        String filePath = Constants.DIRECTORY + "/data/output.json";
         File file = new File(filePath);
         System.out.println("File: " + filePath);
         try {
