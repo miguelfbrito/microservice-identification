@@ -18,7 +18,7 @@ public class ExtractIdentifiedClassesTest {
     @Test
     public void parseAndExtractBulk() throws IOException {
         Set<String> repos = new HashSet<>();
-        String path = "/home/mbrito/git/thesis/githubextraction/final_projects";
+        String path = "/home/mbrito/git/thesis/githubextraction/extra_projects.csv";
         // Get all the repos
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line = reader.readLine();
@@ -42,7 +42,7 @@ public class ExtractIdentifiedClassesTest {
 
     public void parseAndExtract(String projectName) throws IOException {
         projectName = projectName.replace("/", "__");
-        String path = "/home/mbrito/git/thesis-web-applications/" + projectName;
+        String path = "/home/mbrito/git/thesis-web-applications/monoliths/" + projectName;
         String dstFolder = "/home/mbrito/git/thesis/data/interfaces";
 
 
@@ -58,7 +58,7 @@ public class ExtractIdentifiedClassesTest {
         List<String> filters = Arrays.asList("(?i)\\.*controller$");
         ExtractIdentifiedClasses extract = new ExtractIdentifiedClasses();
         List<String> classes = extract.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);
-        // classes.forEach(System.out::println);
+        classes.forEach(System.out::println);
 
         try(BufferedWriter bf = new BufferedWriter(new FileWriter(dstFolder + "/" + projectName))){
             for (String classe : classes) {
@@ -67,12 +67,6 @@ public class ExtractIdentifiedClassesTest {
         } catch (IOException e){
             e.printStackTrace();
         }
-
-        parser = null;
-        parse = null;
-        parseResult = null;
-        compilationUnits = null;
-        extract = null;
 
     }
 

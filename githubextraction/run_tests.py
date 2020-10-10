@@ -4,11 +4,13 @@ import os.path
 from os import path
 
 # user/repo, classes_count, controllers_count
-with open('./merged_data_cortado_3.csv', 'r') as f:
+# with open('./merged_data_cortado_3.csv', 'r') as f:
+with open('./extra_projects.csv', 'r') as f:
     line = f.readline()
     count = 0
     while line:
-        user_repo, class_count, controller_count,_,_,_,_,_,_,_,_ = line.split(',')
+        # user_repo, class_count, controller_count,_,_,_,_,_,_,_,_ = line.split(',')
+        user_repo, class_count, controller_count = line.split(',')
         line = f.readline()
         controller_count = int(controller_count)
         
