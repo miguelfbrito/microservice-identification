@@ -16,5 +16,3 @@ pyLDAvis==2.1.2
 karateclub==1.0.1
 stop-words==2018.7.23
 multipledispatch==0.6.0
-
-
