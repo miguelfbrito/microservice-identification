@@ -269,8 +269,10 @@ def identify_clusters_in_project(project_name, project_path):
         clusters_results.append((clusters, modularity, Settings.RESOLUTION))
         Clustering.write_modularity_and_services(clusters_results)
     else:
+        # clusters_results = Clustering.compute_multiple_resolutions(
+        #    graph, start=0.3, end=1.1, step=0.1)
         clusters_results = Clustering.compute_multiple_resolutions(
-            graph, start=0.3, end=1.1, step=0.1)
+            graph, start=0.6, end=1.1, step=0.1)
 
     # TODO: Reconsider techniques of post-processing
     # clusters = PostProcessing.process(clusters, classes, graph.copy())

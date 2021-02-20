@@ -52,6 +52,8 @@ class Clustering:
     @staticmethod
     def write_modularity_and_services(clusters_results):
         with open('./clustering.txt', 'w+') as f:
+
+            index = 0  # TODO: enumerate
             for clusters, modularity, resolution in clusters_results:
                 f.write(f"Modularity {modularity}\n")
                 f.write(f"Resolution {resolution}\n")
@@ -67,16 +69,17 @@ class Clustering:
                 f.write(f"{100*'-'}\n\n")
 
                 Clustering.write_services_to_file(
-                    clusters, resolution, classes)
+                    clusters, resolution, classes, index)
+                index += 1
 
     @staticmethod
-    def write_services_to_file(clusters, resolution,  classes):
+    def write_services_to_file(clusters, resolution, classes, index):
         # service_id, service
         services = Service.extract_services_from_clusters(clusters)
 
         Settings.create_id()
 
-        with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}_R{round(resolution,2)}", 'w+') as f:
+        with open(f"{Settings.DIRECTORY}/data/services/{Settings.PROJECT_NAME}/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}_R{round(resolution,2)}_{index}", 'w+') as f:
             # print(15*"-")
             # print(15*"-")
             # print(f"Services for resolution: {resolution}")

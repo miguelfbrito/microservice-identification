@@ -116,7 +116,7 @@ public class MetricsCalculator {
             Map<Integer, Service> services = parseResultServices.getServices();
 
             String metricsFile = Constants.DIRECTORY + "/app/metrics/output_fosci.csv";
-            System.out.println("Writting metrics to file path: " + metricsFile);
+            System.out.println("Writing metrics to file path: " + metricsFile);
             writeServiceOperationsToFile(services, metricsFile);
 
             // pm.setChm(calculateCHM(parseResultServices, interfaces));
@@ -125,7 +125,7 @@ public class MetricsCalculator {
 
             projectMetrics.add(pm);
             extractClustersToFile(parseResultServices.getServices(), project);
-            writeToFile(pm);
+            // writeToFile(pm);
         }
 
         return projectMetrics;
@@ -196,7 +196,7 @@ public class MetricsCalculator {
             }
         }
 
-        FileUtils.writeToFile(lines, path, true);
+        // FileUtils.writeToFile(lines, path, true);
         return irn;
     }
 
