@@ -13,7 +13,7 @@ sudo apt-get install python3-sklearn python3-sklearn-lib python3-sklearn-doc -y
 # Install Mallet
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 sudo apt install ant -y
-git clone https://github.com/mimno/Mallet.git ~/.mallet
+git clone git@github.com:mimno/Mallet.git ~/.mallet
 cd ~/.mallet
 ant
 

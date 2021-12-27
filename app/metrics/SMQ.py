@@ -1,5 +1,6 @@
 import re
 import json
+from Settings import Settings
 from itertools import combinations
 
 
@@ -108,10 +109,8 @@ def string_to_dict_arrays(string):
 
 
 def calculateWrapper():
-    directory = "/home/mbrito/git/thesis"
-    # TODO: use Settings.DIRECTORY, didn't work as a script due to how the imports work
-    projects_file = f"{directory}/projects.json"
-    parsed_file = f"{directory}/data/output.json"
+    projects_file = f"{Settings.DIRECTORY}/projects.json"
+    parsed_file = f"{Settings.DIRECTORY}/data/output.json"
 
     clusters = []
     parsed_data = []

@@ -26,20 +26,6 @@ public class Main {
             runMetrics();
         }
 
-
-        /*
-        getProjectsStats();
-        etProjectStat("amit-an__webapp_war_sample");
-
-        List<String> projects = new ArrayList<>(Arrays.asList("Jannchie__biliob_backend", "hslooooooool__form_flow",
-                "doooyo__Weixin_Server", "MiniPa__cjs_ssms", "BCSquad__pmph_java_front", "768330962__poet_ready_system",
-                "busing__circle_web", "shenshaoming__byte_easy", "ElectiveTeam__elective_system",
-                "forwardNow__javaee_pkui", "LiJiuRi__jie_you_ba", "amit-an__webapp_war_sample"));
-
-        for(String project : projects){
-            getProjectStat(project);
-        }*/
-
     }
 
     public static Map<String, MyClassDTO> parseProject(String projectPath) throws IOException {
@@ -116,5 +102,3 @@ public class Main {
     }
 
 }
-
-

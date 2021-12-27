@@ -33,7 +33,7 @@ class Metrics:
         services_length = []
 
         metric_path = f"{Settings.DIRECTORY}/data/metrics/{Settings.PROJECT_NAME}_{Settings.ID}_K{Settings.K_TOPICS}.csv"
-        print(f"\n\nMetric Path: {metric_path}")
+        print(f"\n\nMetrics can be found at: {metric_path}")
         with open(metric_path, 'w+') as f:
             # TODO: Ugly, refactor into cleaner approach
             for cluster_result, metric in zip(self.clusters_results, self.metrics):

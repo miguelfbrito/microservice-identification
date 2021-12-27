@@ -1,5 +1,6 @@
 import re
 import json
+from Settings import Settings
 from itertools import combinations
 from nltk.stem.porter import PorterStemmer
 
@@ -90,7 +91,6 @@ def ccop(clusters, parsed_data, classes_to_ignore, class_terms):
     edges = 0
     max_edges = 0
 
-    print(f"CLSUTERS {clusters.keys()}")
     for src, dst in combinations(clusters.keys(), 2):
         terms_1 = set(get_terms_of_clusters(src, clusters, class_terms))
         terms_2 = set(get_terms_of_clusters(dst, clusters, class_terms))
@@ -155,10 +155,8 @@ def string_to_dict_arrays(string):
 
 
 def calculateWrapper():
-    directory = "/home/mbrito/git/thesis"
-    # TODO: use Settings.DIRECTORY, didn't work as a script due to how the imports work
-    projects_file = f"{directory}/projects.json"
-    parsed_file = f"{directory}/data/output.json"
+    projects_file = f"{Settings.DIRECTORY}/projects.json"
+    parsed_file = f"{Settings.DIRECTORY}/data/output.json"
 
     clusters = []
     parsed_data = []

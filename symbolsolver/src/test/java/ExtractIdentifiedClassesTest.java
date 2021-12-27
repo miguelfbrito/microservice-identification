@@ -53,8 +53,6 @@ public class ExtractIdentifiedClassesTest {
         Map<String, MyClass> parseResult = parse.extractClasses(compilationUnits);
 
 
-        //System.out.println(parseResult.keySet().toString());
-
         List<String> filters = Arrays.asList("(?i)\\.*controller$");
         ExtractIdentifiedClasses extract = new ExtractIdentifiedClasses();
         List<String> classes = extract.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);

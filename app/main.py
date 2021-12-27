@@ -305,6 +305,10 @@ def main():
 
     print(f"Setting Directory as: {Settings.DIRECTORY}")
 
+    # Create required paths for operation with Java parser
+    os.makedirs(f"{Settings.DIRECTORY}/data/interfaces", exist_ok=True)
+    os.makedirs(f"{Settings.DIRECTORY}/data/operations_per_service", exist_ok=True)
+
     if args.project:
         project_name = str(args.project.split('/')[-1])
         project_path = str(args.project)
@@ -369,5 +373,5 @@ def build_plot(resolution, chm, chd, ifn, smq, cmq, irn, opn):
 
     return plt
 
-
-main()
+if __name__ == '__main__':
+    main()

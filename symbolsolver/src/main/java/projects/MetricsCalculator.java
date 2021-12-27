@@ -7,6 +7,7 @@ import graph.DependencyEdge;
 import graph.MyGraph;
 import graph.creation.ByMethodCallInvocation;
 import constants.Constants;
+import extraction.ExtractIdentifiedClasses;
 import graph.entities.MyClass;
 import graph.entities.MyMethod;
 import graph.entities.Service;
@@ -17,7 +18,6 @@ import parser.Parser;
 import utils.FileUtils;
 import utils.StringUtils;
 
-
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
@@ -26,7 +26,6 @@ import java.util.*;
 
 public class MetricsCalculator {
 
-
     private static String PROJECTS_ROOT;
 
     public static void extractClustersToFile(Map<Integer, Service> services, Project project) throws IOException {
@@ -34,7 +33,7 @@ public class MetricsCalculator {
         // WRITE TO GENERIC FILE
         String path = Constants.DIRECTORY + "/data/operations_per_service/" + project.getName();
         BufferedWriter writer = new BufferedWriter(
-                new FileWriter(path)  //Set true for append mode
+                new FileWriter(path) // Set true for append mode
         );
 
         for (Service service : services.values()) {
@@ -79,17 +78,43 @@ public class MetricsCalculator {
         return projectMetrics;
     }
 
+    public void extractInterfaces(String interfaceFilePath) throws IOException {
+        Parser parser = new Parser();
+        List<CompilationUnit> compilationUnits = parser.parseProject(Path.of(Constants.PROJECT_PATH));
+
+        Parse parse = new Parse();
+        Map<String, MyClass> parseResult = parse.extractClasses(compilationUnits);
+
+        List<String> filters = Arrays.asList("(?i)\\.*controller$");
+        ExtractIdentifiedClasses extract = new ExtractIdentifiedClasses();
+
+        List<String> classes = extract.extractFilterBased(new ArrayList<>(parseResult.keySet()), filters);
+        classes.forEach(System.out::println);
+
+        try (BufferedWriter bf = new BufferedWriter(new FileWriter(interfaceFilePath))) {
+            for (String classe : classes) {
+                bf.write(classe + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public List<ProjectMetrics> calculateMetrics(List<Project> projects) throws IOException {
 
         List<ProjectMetrics> projectMetrics = new ArrayList<>();
 
         for (Project project : projects) {
-            String completePath = PROJECTS_ROOT + "/" + project.getRelativePath();
-            System.out.println("Project complete path: " + Constants.PROJECT_PATH);
             List<CompilationUnit> compilationUnits = new Parser().parseProject(Path.of(Constants.PROJECT_PATH));
             List<String> interfaces = new ArrayList<>();
 
             String interfaceFilePath = Constants.DIRECTORY + "/data/interfaces/" + project.getName();
+
+            // TODO: This can be moved to be executed conditionally.
+            // Large projects will struggle with this approach.
+            extractInterfaces(interfaceFilePath);
+
             System.out.println("Reading interfaces from " + interfaceFilePath);
             try (BufferedReader reader = new BufferedReader(new FileReader(interfaceFilePath))) {
                 String line = reader.readLine();
@@ -102,9 +127,9 @@ public class MetricsCalculator {
                 e.printStackTrace();
             }
 
-
             Parse parse = new Parse();
-            ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits, project.getClusterString());
+            ParseResultServices parseResultServices = parse.completeParseClusters(compilationUnits,
+                    project.getClusterString());
             parseResultServices.setProject(project);
             ProjectMetrics pm = new ProjectMetrics(project);
 
@@ -148,7 +173,8 @@ public class MetricsCalculator {
                         .stream()
                         .map(s -> StringUtils.filterAndCleanText(s, Constants.STOP_WORDS))
                         .collect(ArrayList::new, List::addAll, List::addAll);
-                String line = service.getKey() + ",\"" + operations.getValue() + "\",\"" + operations.getKey() + "\",\"" + String.join(" ", parameters)
+                String line = service.getKey() + ",\"" + operations.getValue() + "\",\"" + operations.getKey() + "\",\""
+                        + String.join(" ", parameters)
                         + "\",\"" + String.join(" ", returns) + "\"";
 
                 writer.write(line);
@@ -159,8 +185,10 @@ public class MetricsCalculator {
     }
 
     /**
-     * Clean up operations mutated in previous calculations. A deep copy would be better but it's a lot of work
-     * to deep copy all the objects, and we're only changing the operations. A new instance of operations should be
+     * Clean up operations mutated in previous calculations. A deep copy would be
+     * better but it's a lot of work
+     * to deep copy all the objects, and we're only changing the operations. A new
+     * instance of operations should be
      * OK for now.
      *
      * @param parseResultServices
@@ -183,16 +211,19 @@ public class MetricsCalculator {
         System.out.println("IRN Project: " + irn);
 
         // Write call invocations for each service to project
-        String path = Constants.DIRECTORY + "/data/services/" + parseResultServices.getProject().getName() + "/" + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
+        String path = Constants.DIRECTORY + "/data/services/" + parseResultServices.getProject().getName() + "/"
+                + parseResultServices.getProject().getName() + "_" + parseResultServices.getProject().getId();
         List<String> lines = new ArrayList<>(Collections.singletonList("\nMethod invocations between services:"));
         for (DependencyEdge e : graphReference.getGraph().edgeSet()) {
             MyClass src = graphReference.getGraph().getEdgeSource(e);
             MyClass dst = graphReference.getGraph().getEdgeTarget(e);
-            // TODO : getService() shouldn't be null here, but there's one occasion of it in jforum project
+            // TODO : getService() shouldn't be null here, but there's one occasion of it in
+            // jforum project
             // not critical, review if necessary
             if (src.getService() != null && dst.getService() != null &&
                     src.getService().getId() != dst.getService().getId()) {
-                lines.add("  Method call: " + src.getQualifiedName() + " -> " + dst.getQualifiedName() + " -> " + e.getValue());
+                lines.add("  Method call: " + src.getQualifiedName() + " -> " + dst.getQualifiedName() + " -> "
+                        + e.getValue());
             }
         }
 
@@ -226,14 +257,13 @@ public class MetricsCalculator {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String date = formatter.format(new Date());
 
-
         // WRITE TO GENERIC FILE
         String path = Constants.DIRECTORY + "/data/results.csv";
         File file = new File(path);
         boolean writeHeader = !file.exists();
 
         BufferedWriter writer = new BufferedWriter(
-                new FileWriter(path, true)  //Set true for append mode
+                new FileWriter(path, true) // Set true for append mode
         );
 
         final String header = "IRN; OPN; CHM; CHD; Commit hash ;Date;";
@@ -243,12 +273,12 @@ public class MetricsCalculator {
         }
         String line = metrics.getProject().getName() + ";" + metrics.getIrn() + ";" + metrics.getOpn() + ";" +
                 String.format("%.3f", metrics.getChm()) + ";" +
-                String.format("%.3f", metrics.getChd()) + ";" + metrics.getProject().getCommitHash() + " ;" + date + ";";
+                String.format("%.3f", metrics.getChd()) + ";" + metrics.getProject().getCommitHash() + " ;" + date
+                + ";";
 
         writer.newLine();
         writer.write(line);
         writer.close();
-
 
         // WRITE TO PROJECT SPECIFIC FILE
         path = Constants.DIRECTORY + "/data/results_" + metrics.getProject().getName() + ".csv";
@@ -264,14 +294,16 @@ public class MetricsCalculator {
 
         String projectLine = metrics.getIrn() + ";" + metrics.getOpn() + ";" +
                 String.format("%.3f", metrics.getChm()) + ";" +
-                String.format("%.3f", metrics.getChd()) + ";" + metrics.getProject().getCommitHash() + " ;" + date + ";";
+                String.format("%.3f", metrics.getChd()) + ";" + metrics.getProject().getCommitHash() + " ;" + date
+                + ";";
 
         projectWriter.newLine();
         projectWriter.write(projectLine);
         projectWriter.close();
 
         // WRITE TO SERVICE FILE
-        path = Constants.DIRECTORY + "/data/services/" + metrics.getProject().getName() + "/" + metrics.getProject().getName() + "_" + metrics.getProject().getId();
+        path = Constants.DIRECTORY + "/data/services/" + metrics.getProject().getName() + "/"
+                + metrics.getProject().getName() + "_" + metrics.getProject().getId();
         file = new File(path);
         writeHeader = !file.exists();
         BufferedWriter projectWriterService = new BufferedWriter(new FileWriter(path, true));
@@ -282,11 +314,12 @@ public class MetricsCalculator {
             projectWriterService.write(header);
         }
 
-        String content = "Commit hash: " + metrics.getProject().getCommitHash() + "\nIRN: " + metrics.getIrn() + "\nOPN: " + metrics.getOpn();
-/*
-                + "\nCHM: " + metrics.getChm() +
-                "\nCHD: " + metrics.getChd()
-*/
+        String content = "Commit hash: " + metrics.getProject().getCommitHash() + "\nIRN: " + metrics.getIrn()
+                + "\nOPN: " + metrics.getOpn();
+        /*
+         * + "\nCHM: " + metrics.getChm() +
+         * "\nCHD: " + metrics.getChd()
+         */
 
         projectWriterService.newLine();
         projectWriterService.write(content);
