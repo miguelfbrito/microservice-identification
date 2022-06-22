@@ -6,7 +6,7 @@ kneed==0.6.0
 networkx==2.3
 nltk==3.4.5
 numexpr==2.7.1
-numpy==1.18.1
+numpy==1.22.0
 pandas==1.0.3
 scikit-learn==0.22.2.post1
 scipy==1.4.1
