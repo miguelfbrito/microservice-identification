@@ -4,7 +4,7 @@ igraph==0.1.11
 javalang==0.12.0
 kneed==0.6.0
 networkx==2.3
-nltk==3.4.5
+nltk==3.6.6
 numexpr==2.7.1
 numpy==1.18.1
 pandas==1.0.3
